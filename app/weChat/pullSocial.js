@@ -2,8 +2,6 @@ var http = require('http');
 var fs = require('fs');
 var exec = require('child_process').exec;
 var path = require('path');
-var touchPanel = require('../../main/touchPanel.js');
-var escapeApp = require('../../main/escapeApp.js');
 
 var lastMsg = {};
 
@@ -89,28 +87,3 @@ function main() {
 
 var account = JSON.parse(fs.readFileSync(path.join(__dirname, 'account.json'), 'utf8'));
 setInterval(main, 1000);
-
-var handle = io.mug_init();
-
-fs.readFile('ledAnimation.JSON',
-  'utf8',
-  function(err, data) {
-    if (err) throw err;
-    console.log(data);
-    var msg=JSON.parse(data);
-    while(true)
-    io.mug_disp_raw_N(handle, msg.image, parseInt(msg.number), 100);
-//    io.mug_close(handle);
-  }
-);
-
-touchPanel.on('touch', function(x, y, id) {
-  
-});
-
-touchPanel.on('gesture', function(g){
-  // Back to main app or stack pop
-  if (g=='xxxxxx') {
-    escapeApp();
-  }
-});
