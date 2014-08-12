@@ -8,23 +8,27 @@ var io = new IOLIB.IO({
 
 var handle = io.mug_init();
 
-
+var logPrefix = '[display APP] ';
 var indexCurrentApp = -1;
 var app = [];
+var installedAppJSON = null;
 
 function disp_app() {
   fs.readFile('installedApp.json', 'utf8', function (err, data){
     if (err) throw err;
     if (data == '') return;
     var msg=JSON.parse(data);
+    installedAppJSON = msg;
 
     var currentApp = indexCurrentApp==-1?null:app[indexCurrentApp];
+    console.log(logPrefix+'currentApp='+currentApp);
     indexCurrentApp = -1;
     app = [];
     for (var i in msg) {
       if (msg[i].name && msg[i].icon) {
-        app.push('..\/app\/'+msg[i].name+'\/'+msg[i].iconJSON);
-        if ('..\/app\/'+msg[i].name+'\/'+msg[i].icon == currentApp) {
+        //app.push('..\/app\/'+msg[i].name+'\/'+msg[i].iconJSON);
+        app.push(i);
+        if (i == currentApp) {
           indexCurrentApp = app.length-1;
         }
       }
@@ -35,8 +39,9 @@ function disp_app() {
       if (indexCurrentApp == -1) {
         indexCurrentApp = 0;
       }
+      console.log(logPrefix+'new current app='+app[indexCurrentApp]);
     }
-    console.log('app length='+app.length);
+    console.log(logPrefix+'app length='+app.length);
     disp();
     //usleep(100 * 1000);
   });
@@ -46,10 +51,10 @@ function disp() {
   if (indexCurrentApp == -1) {
     var img = './image/none_app.json';
   } else {
-    var img = app[indexCurrentApp];
+    var img = '..\/app\/'+installedAppJSON[app[indexCurrentApp]].name+'\/'+installedAppJSON[app[indexCurrentApp]].iconJSON;
   }
 
-  console.log('show app:'+img);
+  console.log(logPrefix+'show app:'+img);
 
   fs.readFile(img,
     'utf8',
@@ -61,23 +66,37 @@ function disp() {
   );
 }
 
+var fsTimeout = null;
 // Update installed app list
 fs.watch('installedApp.json', function(e, filename) {
-  disp_app();
+  if (!fsTimeout) {
+    console.log(logPrefix+'File event='+e);
+    disp_app();
+    fsTimeout = setTimeout(function(){fsTimeout=null;}, 100);
+  }
+});
+
+touchPanel.on('touch', function(x, y, id) {
+  //var app = app[indexCurrentApp]
+  var nextApp = '..\/app\/'+installedAppJSON[app[indexCurrentApp]].name+'\/'+installedAppJSON[app[indexCurrentApp]].start;
+  // Notify main app to create a new app
+  console.log(logPrefix+"Launch a new app"+nextApp);
+  process.send({'newApp': nextApp});
 });
 
 touchPanel.on('gesture', function(gesture) {
-  console.log('getsture='+gesture+";"+(typeof gesture));
   if (app.length == 0) return;
-
-  console.log('getsture='+gesture);
+  console.log(logPrefix+'getsture='+gesture);
   if (gesture == 'MUG_SWIPE_LEFT') {
     indexCurrentApp = (indexCurrentApp+1)==app.length?0:(indexCurrentApp+1);
     disp();
   } else if (gesture == 'MUG_SWIPE_RIGHT') {
     indexCurrentApp = (indexCurrentApp==0)?(app.length-1):(indexCurrentApp-1);
     disp();
-  } else if (gesture == '');
+  } else if (gesture == 'MUG_HODE') {
+    // Notify main app current app escape
+    process.send({'escape': 'escape'});
+  }
 });
 
 disp_app();
