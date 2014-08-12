@@ -4,6 +4,7 @@
     "package": "com.intel.smart_mug.weChat",
     "version": "0.0.1",
     "icon": "icon16x12.jpg",
+    "iconJSON": "media.json",
     "start": "app.js"
   },
   "weiBo": {
@@ -11,6 +12,31 @@
     "package": "com.intel.smart_mug.weiBo",
     "version": "0.0.1",
     "icon": "icon16x12.jpg",
+    "iconJSON": "media.json",
+    "start": "app.js"
+  },
+  "weather": {
+    "name": "weather",
+    "package": "com.intel.smart_mug.weather",
+    "version": "0.0.1",
+    "icon": "icon16x12.jpg",
+    "iconJSON": "media.json",
+    "start": "app.js"
+  },
+  "email": {
+    "name": "email",
+    "package": "com.intel.smart_mug.email",
+    "version": "0.0.1",
+    "icon": "icon16x12.jpg",
+    "iconJSON": "media.json",
+    "start": "app.js"
+  },
+  "whac-a-mole": {
+    "name": "whac-a-mole",
+    "package": "com.intel.smart_mug.whac-a-mole",
+    "version": "0.0.1",
+    "icon": "icon16x12.jpg",
+    "iconJSON": "media.json",
     "start": "app.js"
   }
 }
