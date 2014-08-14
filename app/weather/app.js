@@ -17,6 +17,7 @@ function displayWeather() {
     displayWeather();
   } else {
     if (fs.existsSync(path.join(__dirname, '.\/'+w+'\/media.json'))) {
+      console.log(logPrefix+'weather file exist');
       var weather = fs.readFileSync(path.join(__dirname, '.\/'+w+'\/media.json'), 'utf8');
       disp(JSON.parse(weather));
       displayWeather();

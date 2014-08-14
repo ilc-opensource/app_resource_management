@@ -24,7 +24,7 @@ function launchApp(app) {
     var appInfo = {'app':app, 'process':childProcess, 'context':null};
     appStack.push(appInfo);
     // Authorize app to access display
-    child_process.exec('./highLevelAPI/setFrontEndApp '+childProcess.pid, function(error, stdout, stderr){
+    child_process.exec('./highLevelAPI/C/setFrontEndApp '+childProcess.pid, function(error, stdout, stderr){
       console.log(logPrefix+'stdout: ' + stdout);
       console.log(logPrefix+'stderr: ' + stderr);
       if (error !== null) {
@@ -38,7 +38,7 @@ function launchApp(app) {
     io.disp_raw_N(appStack[i].context, 1, 100);
     console.log(logPrefix+'context restore success');
     // give display to the procee
-    child_process.exec('./highLevelAPI/setFrontEndApp '+appStack[i].process.pid, function(error, stdout, stderr){
+    child_process.exec('./highLevelAPI/C/setFrontEndApp '+appStack[i].process.pid, function(error, stdout, stderr){
       console.log(logPrefix+'stdout: ' + stdout);
       console.log(logPrefix+'stderr: ' + stderr);
       if (error !== null) {
@@ -71,14 +71,13 @@ function moveToBackground(savedContext) {
   // TODO:
 
   // Disable display for this app
-  child_process.exec('./highLevelAPI/setFrontEndApp '+0, function(error, stdout, stderr){
+  /*child_process.exec('./highLevelAPI/C/setFrontEndApp '+'-1', function(error, stdout, stderr){
     console.log('stdout: ' + stdout);
     console.log('stderr: ' + stderr);
     if (error !== null) {
       console.log('exec error: ' + error);
     }
-  });
-  
+  });*/
 }
 
 var fsTimeout = null;
@@ -113,6 +112,7 @@ function addNotification(notification) {
   // add app to appStack, and pending
   
   // send a signal to escape current app
+  // Through file system
   
 }
 
@@ -156,6 +156,18 @@ function mug_gesture_on(g) {
 //);
 
 launchApp('./startup.js');
+
+// handle ctrl+c
+process.on('SIGINT', function() {
+  child_process.exec('./highLevelAPI/C/setFrontEndApp '+'0', function(error, stdout, stderr){
+    console.log(logPrefix+'stdout: ' + stdout);
+    console.log(logPrefix+'stderr: ' + stderr);
+    if (error !== null) {
+      console.log(logPrefix+'exec error: ' + error);
+    }
+  });
+  process.exit();
+});
 
 // Emulate a touchPanel input
 process.stdin.setEncoding('utf8');

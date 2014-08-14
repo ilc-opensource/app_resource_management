@@ -7,37 +7,49 @@
 #include <semaphore.h>
 #include <sys/mman.h>
 #include <stdio.h>
+using namespace std;
 
 #define SHM_NAME "/memmap"
-#define SHM_NAME_SEM "/memmap_sem"
+#define RESOURCE_SYS_FRONT_END_APP "/tmp/smart_mug_front_end_app"
 
-//int isFrontEndApp() {
 int main() {
   int fd;
-  sem_t *sem;
   int retv;
+  int lockFd;
+
+  if (lockFd == -1) {
+    lockFd = open(RESOURCE_SYS_FRONT_END_APP, O_RDWR | O_CREAT, 0666);
+    if (lockFd == -1) {
+      cout<<strerror(errno)<<endl;
+      return -1;
+    }
+  }
 
   fd = shm_open(SHM_NAME, O_RDWR | O_CREAT, 0666);
-  sem = sem_open(SHM_NAME_SEM, O_CREAT, 0666, 1);
-
-  if (fd < 0 || sem == SEM_FAILED) {
-    //cout<<"shm_open or sem_open failed...";
-    //cout<<strerror(errno)<<endl;
-    //exit(-1);
+  if (fd < 0) {
+    cout<<strerror(errno)<<endl;
     return -1;
   }
-  ftruncate(fd, sizeof(pid_t));
-  pid_t* memPtr = (pid_t *)mmap(NULL, sizeof(pid_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  retv = ftruncate(fd, sizeof(pid_t));
+  if (retv == -1) {
+    cout<<strerror(errno)<<endl;
+    return -1;
+  }
+  pid_t* shareMemPtr = (pid_t *)mmap(NULL, sizeof(pid_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  if (shareMemPtr == MAP_FAILED) {
+    cout<<strerror(errno)<<endl;
+    return -1;
+  }
   close(fd);
 
-  sem_wait(sem);
-  if (*memPtr == getpid())
+  lockf(lockFd, F_LOCK, 4);
+  cout<<"C program, frontEndApp="<<*shareMemPtr<<endl;
+  /*if (*shareMemPtr == 0 || *shareMemPtr == getpid()) {
     retv = true;
-  else
+  } else {
     retv = false;
-  sem_post(sem);
-  printf("FrontEndApp=%d\n", *memPtr);
-
-  return retv;
+  }*/
+  lockf(lockFd, F_ULOCK, 4);
+  return 0;
 }
 
