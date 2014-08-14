@@ -1,36 +1,26 @@
 var fs = require('fs');
 var child_process = require('child_process');
+var path = require('path');
 
-var touchPanel = require('../../main/touchPanel.js');
-var escapeApp = require('../../main/escapeApp.js');
+var io = require('../../main/highLevelAPI/io.js');
+var sys = require('../../main/highLevelAPI/sys.js');
 
-var IOLIB = require('../../../device');
-var io = new IOLIB.IO({
-  log: true,
-  quickInit: false
-});
-var handle = io.mug_init();
+var logPrefix = '[user weather] ';
 
-var logPrefix = '[weather APP] ';
-
-function readWeather() {
-  fs.readFile('.\/weather_from_baidu',
-    'utf8',
-    function(err, data) {
-      if (err) throw err;
-      displayWeather(data);
-    }
-  );
-
-}
-
-function displayWeather(w) {
-  var w = fs.readFileSync('.\/weather_from_baidu', 'utf8');
+function displayWeather() {
+  var w = fs.readFileSync(path.join(__dirname, '.\/weather_from_baidu'), 'utf8');
+  console.log(logPrefix+'weather='+w);
   if (w == '') {
     // TODO: Display an img, no weather information
-  } else {
-    var weather = fs.readFileSync('.\/'+w+'\/media.json', 'utf8');
+    var weather = fs.readFileSync(path.join(__dirname, '.\/media.json'), 'utf8');
     disp(JSON.parse(weather));
+    displayWeather();
+  } else {
+    if (fs.existsSync(path.join(__dirname, '.\/'+w+'\/media.json'))) {
+      var weather = fs.readFileSync(path.join(__dirname, '.\/'+w+'\/media.json'), 'utf8');
+      disp(JSON.parse(weather));
+      displayWeather();
+    }
   }
 }
 
@@ -41,32 +31,30 @@ function disp(imgs) {
     for (var i=0; i<singleImageSize; i++) {
       data[i] = imgs.image[singleImageSize*imageIter+i];
     }
-    io.mug_disp_raw_N(handle, data, 1, 100);
+    io.disp_raw_N(data, 1, 100);
   }
 }
 
-touchPanel.on('touch', function(x, y, id) {
+io.touchPanel.on('touch', function(x, y, id) {
   //var app = app[indexCurrentApp]
   //var nextApp = '..\/app\/'+installedAppJSON[app[indexCurrentApp]].name+'\/'+installedAppJSON[app[indexCurrentApp]].start;
   // Notify main app to create a new app
   //process.send({'newApp': nextApp});
 });
 
-touchPanel.on('gesture', function(gesture) {
+io.touchPanel.on('gesture', function(gesture) {
   console.log(logPrefix+'getsture='+gesture);
   if (gesture == 'MUG_SWIPE_LEFT') {
   } else if (gesture == 'MUG_SWIPE_RIGHT') {
   } else if (gesture == 'MUG_HODE') {
-    escapeApp();
+    io.escape();
   }
 });
 
 var weather = function() {
-//  var childProcess = child_process.fork('getWeather.js');
+  var childProcess = child_process.fork(path.join(__dirname, './getWeather.js'));
 
-  while(true) {
-    readWeather();
-  }
+  displayWeather();
 };
 
 weather();

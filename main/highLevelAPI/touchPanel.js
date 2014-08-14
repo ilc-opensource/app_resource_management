@@ -3,6 +3,8 @@
 var util = require("util");
 var EventEmitter = require("events").EventEmitter;
 
+var logPrefix = '[sys touchPanel] ';
+
 var touchPanel = function() {
 };
 util.inherits(touchPanel,EventEmitter);

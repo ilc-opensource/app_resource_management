@@ -9,7 +9,7 @@ var io = new IOLIB.IO({
   log: true,
   quickInit: false
 });
-var handle = io.mug_init();
+var handle = io.mug_disp_init();
 
 var imageWidth = 16;
 var imageHeight = 12;
@@ -26,7 +26,7 @@ io.touchPanel = touchPanel;
 io.disp_raw_N = function(imgs, number, interval) {
   io.mug_disp_raw_N(handle, imgs, number, interval);
   io.context.lastImg = [];
-  for (var i=0; i<singleImageSize; i++) {
+  for (var i=0; i<singleImageSizeCompressed; i++) {
     io.context.lastImg[i] = imgs[singleImageSizeCompressed*(number-1)+i];
   }
 };
