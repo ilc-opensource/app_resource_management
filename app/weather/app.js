@@ -8,17 +8,16 @@ var sys = require('../../main/highLevelAPI/sys.js');
 var logPrefix = '[user weather] ';
 
 function displayWeather() {
-  var w = fs.readFileSync(path.join(__dirname, '.\/weather_from_baidu'), 'utf8');
-  console.log(logPrefix+'weather='+w);
+  var w = fs.readFileSync(path.join(__dirname, '.\/weather_from_baidu.json'), 'utf8');
   if (w == '') {
     // TODO: Display an img, no weather information
-    var weather = fs.readFileSync(path.join(__dirname, '.\/media.json'), 'utf8');
+    var weather = fs.readFileSync(path.join(__dirname, '.\/no_weather_info_media.json'), 'utf8');
     disp(JSON.parse(weather));
     displayWeather();
   } else {
-    if (fs.existsSync(path.join(__dirname, '.\/'+w+'\/media.json'))) {
+    if (fs.existsSync(path.join(__dirname, '.\/'+JSON.parse(w).weather+'\/media.json'))) {
       console.log(logPrefix+'weather file exist');
-      var weather = fs.readFileSync(path.join(__dirname, '.\/'+w+'\/media.json'), 'utf8');
+      var weather = fs.readFileSync(path.join(__dirname, '.\/'+JSON.parse(w).weather+'\/media.json'), 'utf8');
       disp(JSON.parse(weather));
       displayWeather();
     }
