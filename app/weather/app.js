@@ -15,9 +15,9 @@ function displayWeather() {
     disp(JSON.parse(weather));
     displayWeather();
   } else {
-    if (fs.existsSync(path.join(__dirname, '.\/'+JSON.parse(w).weather+'\/media.json'))) {
+    if (fs.existsSync(path.join(__dirname, JSON.parse(w).weather, 'media.json'))) {
       console.log(logPrefix+'weather file exist');
-      var weather = fs.readFileSync(path.join(__dirname, '.\/'+JSON.parse(w).weather+'\/media.json'), 'utf8');
+      var weather = fs.readFileSync(path.join(__dirname, JSON.parse(w).weather, 'media.json'), 'utf8');
       disp(JSON.parse(weather));
       displayWeather();
     }
@@ -27,11 +27,12 @@ function displayWeather() {
 var singleImageSize = 16*12/2;
 function disp(imgs) {
   var data = [];
-  for (var imageIter=0; imageIter<imgs.number; imageIter++) {
-    for (var i=0; i<singleImageSize; i++) {
-      data[i] = imgs.image[singleImageSize*imageIter+i];
-    }
-    io.disp_raw_N(data, 1, 100);
+  for (var imageIter=0; imageIter<imgs.numberOfImg; imageIter++) {
+    //for (var i=0; i<singleImageSize; i++) {
+    //  data[i] = imgs.image[singleImageSize*imageIter+i];
+    //}
+    //io.disp_raw_N(data, 1, 100);
+    io.disp_raw_N(imgs['img'+imageIter], 1, 100);
   }
 }
 
@@ -47,7 +48,7 @@ io.touchPanel.on('gesture', function(gesture) {
   if (gesture == 'MUG_SWIPE_LEFT') {
   } else if (gesture == 'MUG_SWIPE_RIGHT') {
   } else if (gesture == 'MUG_HODE') {
-    io.escape();
+    sys.escape();
   }
 });
 

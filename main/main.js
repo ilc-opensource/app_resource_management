@@ -35,6 +35,14 @@ function launchApp(app) {
     console.log(logPrefix+'restore a existing app');
     // restore context
     console.log(logPrefix+'context='+appStack[i].context);
+    // give display to the main process
+    child_process.exec('./highLevelAPI/C/setFrontEndApp '+process.pid, function(error, stdout, stderr){
+      console.log(logPrefix+'stdout: ' + stdout);
+      console.log(logPrefix+'stderr: ' + stderr);
+      if (error !== null) {
+        console.log(logPrefix+'exec error: ' + error);
+      }
+    });
     io.disp_raw_N(appStack[i].context, 1, 100);
     console.log(logPrefix+'context restore success');
     // give display to the procee
@@ -125,7 +133,7 @@ function launchNextApp() {
 
 //process.on('message', function(o){
 var handler = function(o){
-  console.log(logPrefix+'receive a message:'+o);
+  console.log(logPrefix+'receive a sys message(newApp, escape, exit):'+o);
   if (o['escape']) {
     console.log(logPrefix+'put '+appStack[appStack.length-1].app+' into background');
     moveToBackground(o['escape']);
@@ -145,12 +153,14 @@ var handler = function(o){
 
 //io.mug_touch_on(function(x, y, id) {
 function mug_touch_on(x, y, id) {
+  console.log(logPrefix+'send a touch ('+x+','+y+','+id+') to '+appStack[appStack.length-1].app);
   appStack[appStack.length-1].process.send({'mug_touch_on':[x, y, id]});
 }
 //);
 
 //io.mug_gesture_on(function(g) {
 function mug_gesture_on(g) {
+  console.log(logPrefix+'send a gesture '+g+' to '+appStack[appStack.length-1].app);
   appStack[appStack.length-1].process.send({'mug_gesture_on':g});
 }
 //);
@@ -158,7 +168,7 @@ function mug_gesture_on(g) {
 launchApp('./startup.js');
 
 // handle ctrl+c
-process.on('SIGINT', function() {
+var signalHandler = function() {
   child_process.exec('./highLevelAPI/C/setFrontEndApp '+'0', function(error, stdout, stderr){
     console.log(logPrefix+'stdout: ' + stdout);
     console.log(logPrefix+'stderr: ' + stderr);
@@ -167,7 +177,9 @@ process.on('SIGINT', function() {
     }
   });
   process.exit();
-});
+};
+process.on('SIGINT', signalHandler);
+process.on('SIGTERM', signalHandler);
 
 // Emulate a touchPanel input
 process.stdin.setEncoding('utf8');
