@@ -9,9 +9,9 @@
 #include <stdio.h>
 using namespace std;
 
+#define RESOURCE_DISPLAY_TOUCH "/tmp/smart_mug_display_16x12"
 #define SHM_NAME "/memmap"
-//#define RESOURCE_SYS_FRONT_END_APP "/tmp/smart_mug_front_end_app"
-#define RESOURCE_SYS_FRONT_END_APP "/tmp/smart_mug_display_16x12"
+#define RESOURCE_SYS_FRONT_END_APP "/tmp/smart_mug_front_end_app"
 
 int main() {
   int fd;

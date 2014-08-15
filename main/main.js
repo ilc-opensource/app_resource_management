@@ -163,7 +163,6 @@ var handler = function(o){
     launchNextApp();
   } else if (o['newApp']) {
     console.log(logPrefix+'receive a sys message(newApp):'+JSON.stringify(o));
-    console.log(logPrefix+'create a new app'+o['newApp']);
     moveToBackground(o['newApp'].context);
     launchApp(o['newApp'].app);
   } else if (o['exit']) {
@@ -186,6 +185,16 @@ function mug_touch_on(x, y, id) {
 
 //io.mug_gesture_on(function(g) {
 function mug_gesture_on(g) {
+  // when hold, pause the frontEndApp display in order to let the frontEndApp responds to hold immediately
+  /*if (g=='MUG_HODE') {
+    child_process.exec('./highLevelAPI/C/setFrontEndApp '+process.pid, function(error, stdout, stderr){
+      console.log(logPrefix+'stdout: ' + stdout);
+      console.log(logPrefix+'stderr: ' + stderr);
+      if (error !== null) {
+        console.log(logPrefix+'exec error: ' + error);
+      }
+    });
+  }*/
   console.log(logPrefix+'send a gesture '+g+' to '+appStack[appStack.length-1].app);
   appStack[appStack.length-1].process.send({'mug_gesture_on':g});
 }

@@ -1,4 +1,12 @@
 {
+  "weather": {
+    "name": "weather",
+    "package": "com.intel.smart_mug.weather",
+    "version": "0.0.1",
+    "icon": "icon16x12.jpg",
+    "iconJSON": "media.json",
+    "start": "app.js"
+  },
   "weChat": {
     "name": "weChat",
     "package": "com.intel.smart_mug.weChat",
@@ -10,14 +18,6 @@
   "weiBo": {
     "name": "weiBo",
     "package": "com.intel.smart_mug.weiBo",
-    "version": "0.0.1",
-    "icon": "icon16x12.jpg",
-    "iconJSON": "media.json",
-    "start": "app.js"
-  },
-  "weather": {
-    "name": "weather",
-    "package": "com.intel.smart_mug.weather",
     "version": "0.0.1",
     "icon": "icon16x12.jpg",
     "iconJSON": "media.json",

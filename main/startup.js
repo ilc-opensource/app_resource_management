@@ -14,7 +14,7 @@ var startSmartMug = function() {
 
 function disp(index) {
   var appImg = fs.readFileSync(startup[index], 'utf8');
-  io.disp_raw_N(JSON.parse(appImg).img0, 1, 1000);
+  io.disp_raw_N(JSON.parse(appImg).img0, 1, 100);
 }
 
 io.touchPanel.on('touch', function(x, y, id) {

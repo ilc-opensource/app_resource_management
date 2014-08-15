@@ -35,7 +35,6 @@ function disp_app() {
     }
     console.log(logPrefix+'app length='+appKey.length);
     disp();
-    //usleep(100 * 1000);
   });
 }
 
@@ -53,7 +52,7 @@ function disp() {
     function(err, data) {
       if (err) throw err;
       var msg=JSON.parse(data);
-      io.disp_raw_N(msg.img0, 1, 1000);
+      io.disp_raw_N(msg.img0, 1, 0);
     }
   );
 }
