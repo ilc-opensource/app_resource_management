@@ -23,9 +23,11 @@ io.context = {}; //{app:, lastImg: }
 io.context.app = process.argv[2];
 
 io.touchPanel = touchPanel;
+
 io.disp_raw_N = function(imgs, number, interval) {
   io.mug_disp_raw_N(handle, imgs, number, interval);
   io.context.lastImg = [];
+  //console.log('disp_raw_N img='+imgs);
   for (var i=0; i<singleImageSizeCompressed; i++) {
     io.context.lastImg[i] = imgs[singleImageSizeCompressed*(number-1)+i];
   }

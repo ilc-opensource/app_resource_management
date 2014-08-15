@@ -12,7 +12,7 @@ var escapeApp = function() {
       console.log(logPrefix+'exec error: ' + error);
     }
   });*/
-  console.log(logPrefix+'app '+io.app+' escape');
+  console.log(logPrefix+'app '+io.context.app+' escape');
   process.send({'escape':io.context});
 };
 

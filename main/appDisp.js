@@ -53,7 +53,7 @@ function disp() {
     function(err, data) {
       if (err) throw err;
       var msg=JSON.parse(data);
-      io.disp_raw_N(msg.img0, 1, 100);
+      io.disp_raw_N(msg.img0, 1, 1000);
     }
   );
 }

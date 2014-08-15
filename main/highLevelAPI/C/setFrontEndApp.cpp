@@ -9,7 +9,8 @@
 using namespace std;
 
 #define SHM_NAME "/memmap"
-#define RESOURCE_SYS_FRONT_END_APP "/tmp/smart_mug_front_end_app"
+//#define RESOURCE_SYS_FRONT_END_APP "/tmp/smart_mug_front_end_app"
+#define RESOURCE_SYS_FRONT_END_APP "/tmp/smart_mug_display_16x12"
 
 int main(int argc, char** argv) {
   if (argc<=1) {
@@ -46,8 +47,8 @@ int main(int argc, char** argv) {
   }
   close(fd);
 
-  lockf(lockFd, F_LOCK, 4);
+  lockf(lockFd, F_LOCK, 0);
   *shareMemPtr = atoi(argv[1]);
-  lockf(lockFd, F_ULOCK, 4);
+  lockf(lockFd, F_ULOCK, 0);
   return 0;
 }

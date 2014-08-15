@@ -5,9 +5,10 @@ var sys = require('./highLevelAPI/sys.js');
 
 var logPrefix = '[sys] ';
 var appStack = []; //{'app':, 'process':, 'context'}
+//var childFinished = false;
 
 function launchApp(app) {
-  console.log(logPrefix+'launch a app '+app);
+  //console.log(logPrefix+'launch a app '+app);
   // Check if a exist process for this app
   for (var i=0; i<appStack.length; i++) {
     if (appStack[i].app == app) {
@@ -15,7 +16,7 @@ function launchApp(app) {
     }
   }
   if (i==appStack.length) {
-    console.log(logPrefix+'create a new app');
+    console.log(logPrefix+'create a new process for '+app);
     // when launch a app, pass the app name as the first parameter, correspond to io.js
     var childProcess = child_process.fork(app, [app]);
     // handle user app message (new a app, escape, exit)
@@ -32,10 +33,11 @@ function launchApp(app) {
       }
     });
   } else {
-    console.log(logPrefix+'restore a existing app');
+    console.log(logPrefix+'restore a existing process for '+app);
     // restore context
     console.log(logPrefix+'context='+appStack[i].context);
     // give display to the main process
+    //childFinished = false;
     child_process.exec('./highLevelAPI/C/setFrontEndApp '+process.pid, function(error, stdout, stderr){
       console.log(logPrefix+'stdout: ' + stdout);
       console.log(logPrefix+'stderr: ' + stderr);
@@ -43,7 +45,11 @@ function launchApp(app) {
         console.log(logPrefix+'exec error: ' + error);
       }
     });
-    io.disp_raw_N(appStack[i].context, 1, 100);
+    // Make sure the setFrontEndApp finish
+    //setTimeout(function(){restoreContext(appStack[i].process.pid);}, 10);
+    //setFrontEndAppC.on('exit', function(e){childFinished=true;});
+
+    io.disp_raw_N(appStack[i].context, 1, 1000);
     console.log(logPrefix+'context restore success');
     // give display to the procee
     child_process.exec('./highLevelAPI/C/setFrontEndApp '+appStack[i].process.pid, function(error, stdout, stderr){
@@ -57,8 +63,24 @@ function launchApp(app) {
     var c = appStack[i];
     appStack[i] = appStack[appStack.length-1];
     appStack[appStack.length-1] = c;
+    console.log(logPrefix+'redirect touch event success');
   }
 }
+
+/*function restoreContext(pid) {
+  if (childFinished==true) {
+    child_process.exec('./highLevelAPI/C/setFrontEndApp '+pid, function(error, stdout, stderr){
+      console.log(logPrefix+'stdout: ' + stdout);
+      console.log(logPrefix+'stderr: ' + stderr);
+      if (error !== null) {
+        console.log(logPrefix+'exec error: ' + error);
+      }
+    });
+    console.log('child finished');
+  } else {
+    setTimeout(function(){restoreContext(pid);}, 10);
+  }
+}*/
 
 function moveToBackground(savedContext) {
   // Now when an app escape, we will back to main app, not a real app stack;
@@ -133,21 +155,25 @@ function launchNextApp() {
 
 //process.on('message', function(o){
 var handler = function(o){
-  console.log(logPrefix+'receive a sys message(newApp, escape, exit):'+o);
   if (o['escape']) {
+    console.log(logPrefix+'receive a sys message(escape):'+JSON.stringify(o));
     console.log(logPrefix+'put '+appStack[appStack.length-1].app+' into background');
     moveToBackground(o['escape']);
     // launch
     launchNextApp();
   } else if (o['newApp']) {
+    console.log(logPrefix+'receive a sys message(newApp):'+JSON.stringify(o));
     console.log(logPrefix+'create a new app'+o['newApp']);
     moveToBackground(o['newApp'].context);
     launchApp(o['newApp'].app);
   } else if (o['exit']) {
+    console.log(logPrefix+'receive a sys message(exit):'+JSON.stringify(o));
     console.log(logPrefix+appStack[appStack.length-1].app+'exit');
     appStack.pop();
     // launch 
     launchNextApp();
+  } else {
+    console.log(logPrefix+' message error');
   }
 };
 
@@ -165,6 +191,7 @@ function mug_gesture_on(g) {
 }
 //);
 
+// Begin at this point
 launchApp('./startup.js');
 
 // handle ctrl+c
@@ -185,7 +212,7 @@ process.on('SIGTERM', signalHandler);
 process.stdin.setEncoding('utf8');
 process.stdin.on('readable', function() {
   var chunk = process.stdin.read();
-  if (chunk !== null) {
+  if (chunk !== null && chunk != '\n') {
     //process.stdout.write('gesture: ' + chunk);
     var e = JSON.parse(chunk);
     if (e.touch) {
