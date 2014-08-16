@@ -1,4 +1,6 @@
 var fs = require('fs');
+var path = require('path');
+
 var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
  
@@ -8,7 +10,7 @@ var appKey = [];
 var appJSON = null;
 
 function disp_app() {
-  fs.readFile('app.json', 'utf8', function (err, data){
+  fs.readFile(path.join(__dirname, 'app.json'), 'utf8', function (err, data){
     if (err) throw err;
     if (data == '') return;
     appJSON = JSON.parse(data);
@@ -40,9 +42,9 @@ function disp_app() {
 
 function disp() {
   if (indexCurrentApp == -1) {
-    var img = './image/none_app.json';
+    var img = path.join(__dirname, './image/none_app.json');
   } else {
-    var img = '..\/app\/'+appJSON[appKey[indexCurrentApp]].name+'\/'+appJSON[appKey[indexCurrentApp]].iconJSON;
+    var img = path.join(__dirname, '..\/app\/'+appJSON[appKey[indexCurrentApp]].name+'\/'+appJSON[appKey[indexCurrentApp]].iconJSON);
   }
 
   console.log(logPrefix+'show app:'+img);
@@ -68,7 +70,7 @@ fs.watch('app.json', function(e, filename) {
 });
 
 io.touchPanel.on('touch', function(x, y, id) {
-  var nextApp = '..\/app\/'+appJSON[appKey[indexCurrentApp]].name+'\/'+appJSON[appKey[indexCurrentApp]].start;
+  var nextApp = path.join(__dirname, '..\/app\/'+appJSON[appKey[indexCurrentApp]].name+'\/'+appJSON[appKey[indexCurrentApp]].start);
   // Notify main app to create a new app
   console.log(logPrefix+"Launch a new app"+nextApp);
   //process.send({'newApp': nextApp});

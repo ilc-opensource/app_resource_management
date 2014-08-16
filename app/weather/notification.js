@@ -12,10 +12,11 @@ function notification() {
 
 notification();
 
+// Can't access this, sys must deal with this issue
 io.touchPanel.on('touch', function(x, y, id) {
   var nextApp = path.join(__dirname, 'app.js');
   // Notify main app to create a new app
-  console.log(logPrefix+"Launch a new app"+nextApp);
+  console.log(logPrefix+"Notification launch a new app"+nextApp);
   //process.send({'newApp': nextApp});
   sys.newApp(nextApp);
 });

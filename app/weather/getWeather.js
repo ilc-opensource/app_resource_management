@@ -3,6 +3,7 @@ var path = require('path');
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
+var logPrefix = '[user weather] ';
 function getWeather() {
   // get weather information from web
   // write to weather_from_baidu.json
@@ -12,8 +13,8 @@ getWeather();
 
 //var fsTimeout = null;
 fs.watch(path.join(__dirname, 'weather_from_baidu.json'), function(e, filename) {
+  console.log(logPrefix+'File weather_from_baidu.json event='+e);
   //if (!fsTimeout) {
-    //console.log(logPrefix+'File event='+e);
     // Don't need to check is frontEndApp, register notification directly
     // System will determine if execute the notification
     /*sys.isFrontEndApp(process.pid, function(frontEnd) {
