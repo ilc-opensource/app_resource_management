@@ -1,20 +1,17 @@
 .PHONY : all
 
+CXX_FLAGS=-lrt -lpthread -O0 -g -mtune=i486 -march=i486 -m32 -I../../../../sdk_c/include/
+
 all : getFrontEndApp setFrontEndApp getNotification setNotification
 
-
 getFrontEndApp: getFrontEndApp.cpp
-	g++ getFrontEndApp.cpp -lrt -lpthread -O0 -g -mtune=i486 -march=i486 -m32 -o getFrontEndApp
+	g++ getFrontEndApp.cpp $(CXX_FLAGS) -o getFrontEndApp
 setFrontEndApp: setFrontEndApp.cpp
-	g++ setFrontEndApp.cpp -lrt -lpthread -O0 -g -mtune=i486 -march=i486 -m32 -o setFrontEndApp
+	g++ setFrontEndApp.cpp $(CXX_FLAGS) -o setFrontEndApp
 getNotification: getNotification.cpp
-	g++ getNotification.cpp -lrt -lpthread -O0 -g -mtune=i486 -march=i486 -m32 -o getNotification
+	g++ getNotification.cpp $(CXX_FLAGS) -o getNotification
 setNotification: setNotification.cpp
-	g++ setNotification.cpp -lrt -lpthread -O0 -g -mtune=i486 -march=i486 -m32 -o setNotification
-#getDisplaySem: getDisplaySem.cpp
-#	g++ getDisplaySem.cpp -lrt -lpthread -O0 -g -mtune=i486 -march=i486 -m32 -o getDisplaySem
-#setDisplaySem: setDisplaySem.cpp
-#	g++ setDisplaySem.cpp -lrt -lpthread -O0 -g -mtune=i486 -march=i486 -m32 -o setDisplaySem
+	g++ setNotification.cpp $(CXX_FLAGS) -o setNotification
 
 
 clean:

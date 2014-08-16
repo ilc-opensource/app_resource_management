@@ -1,38 +1,30 @@
-#include <iostream>  
-#include <cstring>  
-#include <errno.h>  
-#include <stdlib.h>  
-#include <unistd.h>  
-#include <fcntl.h>  
-#include <semaphore.h>  
-#include <sys/mman.h>
-#include <stdio.h>
+#include <errno.h>
+#include <res_manager.h>
 using namespace std;
 
-#define SHM_NAME "/memmap_notification"
-#define SHM_NAME_SEM "/memmap_sem_notification"
-
 int main(int argc, char** argv) {
+  cout<<argc<<endl;
+  cout<<argv[0]<<endl;
+  cout<<argv[1]<<endl;
+
   if (argc<=1) {
-    //printf("Must provide pid");
+    cout<<"Error from setFrontEndApp: Must provide pid";
     return -1;
   }
 
-  sem_t *sem;
-  sem = sem_open(SHM_NAME_SEM, O_CREAT, 0666, 1);
-  if (/*fd < 0 ||*/ sem == SEM_FAILED) {
-    cout<<"shm_open or sem_open failed...";
+  int lockFd = open(LOCK_SYS_NOTIFICATION, O_RDWR | O_CREAT, 0666);
+  if (lockFd == -1) {
     cout<<strerror(errno)<<endl;
-    exit(-1);
+    return -1;
   }
 
-  sem_wait(sem);  
-  FILE * fd = fopen("notification.json", "a");
+  lockf(lockFd, F_LOCK, 0);
+  FILE * fd = fopen(NOTIFICATION, "a");
   fputs(argv[1], fd);
   fputs("\n", fd);
   fclose(fd);
   fd = NULL;
-  sem_post(sem);
-  sem_close(sem);
+  lockf(lockFd, F_ULOCK, 0);
+  close(lockFd);
   return 0;
 }

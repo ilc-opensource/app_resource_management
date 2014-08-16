@@ -41,6 +41,7 @@ io.touchPanel.on('gesture', function(gesture) {
     indexCurrentImg = (indexCurrentImg==0)?(startup.length-1):(indexCurrentImg-1);
     disp(indexCurrentImg);
   } else if (gesture == 'MUG_HODE') {
+    sys.escape();
   }
 });
 

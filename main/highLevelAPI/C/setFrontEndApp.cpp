@@ -1,16 +1,6 @@
-#include <iostream>  
-#include <cstring>  
-#include <errno.h>  
-#include <stdlib.h>  
-#include <unistd.h>  
-#include <fcntl.h>  
-#include <semaphore.h>  
-#include <sys/mman.h>  
+#include <errno.h>
+#include <res_manager.h>
 using namespace std;
-
-#define RESOURCE_DISPLAY_TOUCH "/tmp/smart_mug_display_16x12"
-#define SHM_NAME "/memmap"
-#define RESOURCE_SYS_FRONT_END_APP "/tmp/smart_mug_front_end_app"
 
 int main(int argc, char** argv) {
   if (argc<=1) {
@@ -18,16 +8,11 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  int fd;
-  int retv;
-  int lockFd;
-
+  int fd, retv;
+  int lockFd = open(LOCK_SYS_FRONT_END_APP, O_RDWR | O_CREAT, 0666);
   if (lockFd == -1) {
-    lockFd = open(RESOURCE_SYS_FRONT_END_APP, O_RDWR | O_CREAT, 0666);
-    if (lockFd == -1) {
-      cout<<strerror(errno)<<endl;
-      return -1;
-    }
+    cout<<strerror(errno)<<endl;
+    return -1;
   }
 
   fd = shm_open(SHM_NAME, O_RDWR | O_CREAT, 0666);
@@ -50,5 +35,6 @@ int main(int argc, char** argv) {
   lockf(lockFd, F_LOCK, 0);
   *shareMemPtr = atoi(argv[1]);
   lockf(lockFd, F_ULOCK, 0);
+  close(lockFd);
   return 0;
 }

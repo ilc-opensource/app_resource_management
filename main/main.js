@@ -1,10 +1,13 @@
 var fs = require('fs');
 var child_process = require('child_process');
+var path = require('path');
+
 var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
 
 var logPrefix = '[sys] ';
 var appStack = []; //{'app':, 'process':, 'context'}
+var pendingNotification = []; //{'app':, 'time':}
 //var childFinished = false;
 
 function launchApp(app) {
@@ -24,6 +27,7 @@ function launchApp(app) {
     // maintain all living app, and redirect touch event, put the app to the stack head
     var appInfo = {'app':app, 'process':childProcess, 'context':null};
     appStack.push(appInfo);
+    console.log(logPrefix+'appStack='+appStack[appStack.length-1].app);
     // Authorize app to access display
     child_process.exec('./highLevelAPI/C/setFrontEndApp '+childProcess.pid, function(error, stdout, stderr){
       console.log(logPrefix+'stdout: ' + stdout);
@@ -63,6 +67,7 @@ function launchApp(app) {
     var c = appStack[i];
     appStack[i] = appStack[appStack.length-1];
     appStack[appStack.length-1] = c;
+    console.log(logPrefix+'appStack='+appStack[appStack.length-1].app);
     console.log(logPrefix+'redirect touch event success');
   }
 }
@@ -110,25 +115,34 @@ function moveToBackground(savedContext) {
   });*/
 }
 
-var fsTimeout = null;
-fs.watch('notification.json', function(e, filename) {
-  if (!fsTimeout) {
-    console.log(logPrefix+'File event='+e);
+// file name must be aligned with NOTIFICATION definition in sdk_c/include/res_manager.h
+var notificationFile = '/tmp/smart_mug_notification.json';
+//TODO: touch a file /tmp/smart_mug_notification.json, create a new
+var fd = fs.openSync(notificationFile, 'w');
+fs.closeSync(fd);
+//var fsTimeout = null;
+fs.watch(notificationFile, function(e, filename) {
+  //if (!fsTimeout) {
+    //console.log(logPrefix+'File event='+e);
     // C program Read the file, clean file, return content througth stdout, then add notification
-    //child_process.exec('./highLevelAPI/readNotification', function(error, stdout, stderr){
-    child_process.exec('cat notification.json; rm notification.json; touch notification.json', function(error, stdout, stderr){
-      console.log('stdout: ' + stdout);
-      console.log('stderr: ' + stderr);
+    console.log(logPrefix+'smart_mug_notification.json change');
+    if (fs.statSync(notificationFile).size == 0) {
+      return;
+    }
+    child_process.exec(path.join(__dirname, './highLevelAPI/C/getNotification'), function(error, stdout, stderr){
+    //child_process.exec('cat notification.json; rm notification.json; touch notification.json', function(error, stdout, stderr){
+      console.log('getNotification stdout: ' + stdout);
+      console.log('getNotification stderr: ' + stderr);
       if (error !== null) {
-        console.log('exec error: ' + error);
+        console.log('getNotification exec error: ' + error);
       }
       addNotification(stdout);
     });
-    fsTimeout = setTimeout(function(){fsTimeout=null;}, 100);
-  }
+    //fsTimeout = setTimeout(function(){fsTimeout=null;}, 100);
+  //}
 });
 
-function addNotification(notification) {
+function addNotification(msg) {
   // Block current app, display and touch
   /*child_process.exec('./setFrontEndApp '+childProcess.pid, function(error, stdout, stderr){
       console.log(logPrefix+'stdout: ' + stdout);
@@ -140,23 +154,62 @@ function addNotification(notification) {
   // put xxx to stack head
 
   // add app to appStack, and pending
-  
-  // send a signal to escape current app
-  // Through file system
-  
+  console.log(logPrefix+'addNotification msg='+msg+'test');
+  if (msg == '' || msg == '\n') return;
+  var notification = msg.split('\n');
+  for (var i=0; i<notification.length; i++) {
+    if (notification[i] == '') continue;
+    for (var j=0; j<pendingNotification.length; j++) {
+      if (notification[i] == pendingNotification[j]) {
+        pendingNotification[j].time = 0;
+        break;
+      }
+    }
+    if (j==pendingNotification.length) {
+      pendingNotification.push({'app':notification[i], 'time':0});
+    }
+  }
+  // send a hold to current front end app
+  console.log(logPrefix+'implicitly send a gesture '+'MUG_HODE'+' to '+appStack[appStack.length-1].app);
+  appStack[appStack.length-1].process.send({'mug_gesture_on':'MUG_HODE'});
 }
 
 function launchNextApp() {
+  // Notification app can't be disturbed
+  for (var i=0; i<pendingNotification.length; i++) {
+    if (appStack[appStack.length-1].app == pendingNotification[i].app) {
+      // wait for notification app exit
+      return;
+    }
+  }
   // If has notification, and time is meet
-
+  for (var i=0; i<pendingNotification.length; i++) {
+    console.log(logPrefix+"search for a timeout notification");
+    var timer = (new Date()).getTime();
+    if (pendingNotification[i].time == 0 || (timer - pendingNotification[i].time)>60000) {
+      pendingNotification[i].time = timer;
+      launchApp(pendingNotification[i].app);
+      console.log(logPrefix+"launch a notification");
+      return;
+    }
+  }
   // otherwise
   launchApp('./startup.js');
+}
+
+// check if there is some pending notifications
+function checkNotification() {
+
 }
 
 //process.on('message', function(o){
 var handler = function(o){
   if (o['escape']) {
     console.log(logPrefix+'receive a sys message(escape):'+JSON.stringify(o));
+    // one app may send multi escape to sys
+    if (appStack[appStack.length-1].app != o['escape'].app) {
+      return;
+    }
     console.log(logPrefix+'put '+appStack[appStack.length-1].app+' into background');
     moveToBackground(o['escape']);
     // launch
@@ -169,6 +222,7 @@ var handler = function(o){
     console.log(logPrefix+'receive a sys message(exit):'+JSON.stringify(o));
     console.log(logPrefix+appStack[appStack.length-1].app+'exit');
     appStack.pop();
+    console.log(logPrefix+'appStack='+appStack[appStack.length-1].app);
     // launch 
     launchNextApp();
   } else {
@@ -178,6 +232,13 @@ var handler = function(o){
 
 //io.mug_touch_on(function(x, y, id) {
 function mug_touch_on(x, y, id) {
+  // When notification is the front end app, del it from pendingNotification
+  for (var i=0; i<pendingNotification.length; i++) {
+    if (appStack[appStack.length-1].app == pendingNotification[i]) {
+      pendingNotification.splice(i, 1);
+      break;
+    }
+  }
   console.log(logPrefix+'send a touch ('+x+','+y+','+id+') to '+appStack[appStack.length-1].app);
   appStack[appStack.length-1].process.send({'mug_touch_on':[x, y, id]});
 }
@@ -201,6 +262,9 @@ function mug_gesture_on(g) {
 //);
 
 // Begin at this point
+//TODO: touch a file /tmp/smart_mug_notification.json, create a new
+//var fd = fs.openSync(notificationFile, 'w');
+//fs.closeSync(fd);
 launchApp('./startup.js');
 
 // handle ctrl+c
