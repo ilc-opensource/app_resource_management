@@ -73,13 +73,11 @@ io.touchPanel.on('touch', function(x, y, id) {
   var nextApp = path.join(__dirname, '..\/app\/'+appJSON[appKey[indexCurrentApp]].name+'\/'+appJSON[appKey[indexCurrentApp]].start);
   // Notify main app to create a new app
   console.log(logPrefix+"Launch a new app"+nextApp);
-  //process.send({'newApp': nextApp});
   sys.newApp(nextApp);
 });
 
 io.touchPanel.on('gesture', function(gesture) {
-  if (appKey.length == 0) return;
-  console.log(logPrefix+'getsture='+gesture);
+  //if (appKey.length == 0) return;
   if (gesture == 'MUG_SWIPE_LEFT') {
     indexCurrentApp = (indexCurrentApp+1)==appKey.length?0:(indexCurrentApp+1);
     disp();
@@ -87,8 +85,6 @@ io.touchPanel.on('gesture', function(gesture) {
     indexCurrentApp = (indexCurrentApp==0)?(appKey.length-1):(indexCurrentApp-1);
     disp();
   } else if (gesture == 'MUG_HODE') {
-    // Notify main app current app escape
-    //process.send({'escape': 'escape'});
     sys.escape();
   }
 });

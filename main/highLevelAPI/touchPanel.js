@@ -1,5 +1,4 @@
-// For end user app to receive touch screen event
-
+// For end user app to receive touch screen event, only the front end app can receive
 var util = require("util");
 var EventEmitter = require("events").EventEmitter;
 
@@ -8,7 +7,6 @@ var logPrefix = '[sys touchPanel] ';
 var touchPanel = function() {
 };
 util.inherits(touchPanel,EventEmitter);
-
 var tp = new touchPanel();
 
 process.on('message', function(o) {
