@@ -28,7 +28,7 @@ io.disp_raw_N = function(imgs, number, interval) {
   io.mug_disp_raw_N(handle, imgs, number, interval);
   sys.context.lastImg = [];
   for (var i=0; i<singleImageSizeCompressed; i++) {
-    io.context.lastImg[i] = imgs[singleImageSizeCompressed*(number-1)+i];
+    sys.context.lastImg[i] = imgs[singleImageSizeCompressed*(number-1)+i];
   }
 };
 
