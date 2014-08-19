@@ -13,13 +13,13 @@ function displayWeather() {
     // Display an img, no weather information
     var weather = fs.readFileSync(path.join(__dirname, '.\/no_weather_info_media.json'), 'utf8');
     disp(JSON.parse(weather));
-    setTimeout(displayWeather, 1);
+    setTimeout(displayWeather, 100);
   } else {
     if (fs.existsSync(path.join(__dirname, JSON.parse(w).weather, 'media.json'))) {
       console.log(logPrefix+'weather file exist');
       var weather = fs.readFileSync(path.join(__dirname, JSON.parse(w).weather, 'media.json'), 'utf8');
       disp(JSON.parse(weather));
-      setTimeout(displayWeather, 1);
+      setTimeout(displayWeather, 100);
     }
   }
 }
@@ -50,10 +50,8 @@ io.touchPanel.on('gesture', function(gesture) {
 });
 
 var weather = function() {
-  var childProcess = child_process.fork(path.join(__dirname, './getWeather.js'));
-
+  var childProcess = child_process.fork(path.join(__dirname, 'getWeather.js'));
   displayWeather();
 };
 
 weather();
-//displayWeather('Cloudy');

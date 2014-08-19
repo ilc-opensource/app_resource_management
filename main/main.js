@@ -8,6 +8,7 @@ var sys = require('./highLevelAPI/sys.js');
 var logPrefix = '[sys] ';
 var appStack = []; //{'app':, 'process':, 'context'}
 var pendingNotification = []; //{'app':, 'time':, 'dispCount':}
+var frontEndApp = null;
 
 function printAppStack() {
   console.log(logPrefix+'Begin=================================');
@@ -37,7 +38,7 @@ function launchApp(app) {
     printAppStack();
     //console.log(logPrefix+'appStack='+appStack[appStack.length-1].app);
     // Authorize app to access display
-    child_process.exec('./highLevelAPI/C/setFrontEndApp '+childProcess.pid, function(error, stdout, stderr){
+    child_process.exec(path.join(__dirname, './highLevelAPI/C/setFrontEndApp')+' '+childProcess.pid, function(error, stdout, stderr){
       console.log(logPrefix+'stdout: ' + stdout);
       console.log(logPrefix+'stderr: ' + stderr);
       if (error !== null) {
@@ -58,7 +59,7 @@ function launchApp(app) {
     }
     // give display to the main process
     //childFinished = false;
-    child_process.exec('./highLevelAPI/C/setFrontEndApp '+process.pid, function(error, stdout, stderr){
+    child_process.exec(path.join(__dirname, './highLevelAPI/C/setFrontEndApp')+' '+process.pid, function(error, stdout, stderr){
       console.log(logPrefix+'stdout: ' + stdout);
       console.log(logPrefix+'stderr: ' + stderr);
       if (error !== null) {
@@ -72,7 +73,7 @@ function launchApp(app) {
     io.disp_raw_N(appStack[i].context, 1, 1000);
     console.log(logPrefix+'context restore success');
     // give display to the procee
-    child_process.exec('./highLevelAPI/C/setFrontEndApp '+appStack[i].process.pid, function(error, stdout, stderr){
+    child_process.exec(path.join(__dirname, './highLevelAPI/C/setFrontEndApp')+' '+appStack[i].process.pid, function(error, stdout, stderr){
       console.log(logPrefix+'stdout: ' + stdout);
       console.log(logPrefix+'stderr: ' + stderr);
       if (error !== null) {
@@ -165,18 +166,6 @@ fs.watch(notificationFile, function(e, filename) {
 });
 
 function addNotification(msg) {
-  // Block current app, display and touch
-  /*child_process.exec('./setFrontEndApp '+childProcess.pid, function(error, stdout, stderr){
-      console.log(logPrefix+'stdout: ' + stdout);
-      console.log(logPrefix+'stderr: ' + stderr);
-      if (error !== null) {
-        console.log(logPrefix+'exec error: ' + error);
-      }
-    });*/
-  // put xxx to stack head
-
-  // add app to appStack, and pending
-  //console.log(logPrefix+'addNotification msg='+msg+'test');
   if (msg == '' || msg == '\n') return;
   var notification = msg.split('\n');
   var isNewNotificationAdd = false;
@@ -337,18 +326,27 @@ function mug_touch_on(x, y, id) {
 
 //io.mug_gesture_on(function(g) {
 function mug_gesture_on(g) {
-  // when hold, pause the frontEndApp display in order to let the frontEndApp responds to hold immediately
-  /*if (g=='MUG_HODE') {
-    child_process.exec('./highLevelAPI/C/setFrontEndApp '+process.pid, function(error, stdout, stderr){
+  // when hold, pause the frontEndApp display in order to let the frontEndApp responds to hold immediately; This is impossible.
+  // Sys defined gesture, escape a app
+  if (g == 'MUG_HODE' && false) {
+    //TODO: stop 
+    // Disable display access
+    child_process.exec(path.join(__dirname, './highLevelAPI/C/setFrontEndApp')+' -1', function(error, stdout, stderr){
       console.log(logPrefix+'stdout: ' + stdout);
       console.log(logPrefix+'stderr: ' + stderr);
       if (error !== null) {
         console.log(logPrefix+'exec error: ' + error);
       }
+      // Set context of the front end app to null
+      //appStack[appStack.length-1].context = null;
+      // Send a message to trigger context save if process is not hanged
+      console.log(logPrefix+'send a gesture '+'app_escape_sys'+' to '+appStack[appStack.length-1].app);
+      appStack[appStack.length-1].process.send({'mug_gesture_on':'app_escape_sys'});
     });
-  }*/
-  console.log(logPrefix+'send a gesture '+g+' to '+appStack[appStack.length-1].app);
-  appStack[appStack.length-1].process.send({'mug_gesture_on':g});
+  } else {
+    console.log(logPrefix+'send a gesture '+g+' to '+appStack[appStack.length-1].app);
+    appStack[appStack.length-1].process.send({'mug_gesture_on':g});
+  }
 }
 //);
 

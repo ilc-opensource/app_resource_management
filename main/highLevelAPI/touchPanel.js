@@ -2,6 +2,9 @@
 var util = require("util");
 var EventEmitter = require("events").EventEmitter;
 
+//var escape = require('./escape.js');
+var context = require('./context.js');
+
 var logPrefix = '[sys touchPanel] ';
 
 var touchPanel = function() {
@@ -14,8 +17,12 @@ process.on('message', function(o) {
     tp.emit('touch', o['mug_touch_on'][0], o['mug_touch_on'][1], o['mug_touch_on'][2]);
   }
   if (o['mug_gesture_on']) {
-    console.log('child receive a gesture:'+o['mug_gesture_on']);
-    tp.emit('gesture', o['mug_gesture_on']);
+    //if (o['mug_gesture_on'] == 'app_escape_sys') {
+    //  process.send({'escape':context});
+    //} else {
+      console.log('child receive a gesture:'+o['mug_gesture_on']);
+      tp.emit('gesture', o['mug_gesture_on']);
+    //}
   }
 });
 
