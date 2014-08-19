@@ -30,7 +30,7 @@ io.disp_raw_N = function(imgs, number, interval) {
 
 io.mug_touch_on(function(x, y, id) {
   console.log('touch event='+x+', '+y+', '+id);
-  //mug_touch_on(x, y, id);
+  mug_touch_on(x, y, id);
 });
 io.mug_gesture_on(io.MUG_GESTURE, function(g) {
   console.log('gesture event='+g);
@@ -76,9 +76,9 @@ io.mug_gesture_on(io.MUG_GESTURE, function(g) {
       gesture = 'MUG_HOLD_2';
       break;
   }
-  //mug_gesture_on(g);
+  mug_gesture_on(g);
 });
 
-//io.mug_run_touch_thread();
+io.mug_run_touch_thread();
 
 module.exports = io;
