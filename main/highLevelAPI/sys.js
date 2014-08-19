@@ -6,6 +6,7 @@ var sys = new system();
 sys.exit = require('./exitApp.js');
 sys.escape = require('./escapeApp.js');
 sys.newApp = require('./newApp.js');
+
 // Don't need any more
 sys.isFrontEndApp = function(pid, cb) {
   child_process.exec('./C/getFrontEndApp', function(error, stdout, stderr){
@@ -32,9 +33,5 @@ sys.registerNotification = function(app) {
     }
   });
 }
-
-sys.context = {}; //{app:, lastImg: }
-// when launch a app, pass the app name as the first parameter, correspond to app.js
-sys.context.app = process.argv[2];
 
 module.exports = sys;

@@ -2,7 +2,7 @@ var util = require("util");
 var EventEmitter = require("events").EventEmitter;
 
 var touchPanel = require('./touchPanel.js');
-var sys = require('./sys.js');
+var context = require('./context.js');
 
 var IOLIB = require('../../../device');
 var io = new IOLIB.IO({
@@ -18,17 +18,13 @@ var imageHeightCompressed = imageHeight
 var singleImageSize = imageWidth*imageHeight;
 var singleImageSizeCompressed = imageWidthCompressed*imageHeightCompressed;
 
-//io.context = {}; //{app:, lastImg: }
-// when launch a app, pass the app name as the first parameter, correspond to app.js
-//io.context.app = process.argv[2];
-
 io.touchPanel = touchPanel;
 
 io.disp_raw_N = function(imgs, number, interval) {
   io.mug_disp_raw_N(handle, imgs, number, interval);
-  sys.context.lastImg = [];
+  context.lastImg = [];
   for (var i=0; i<singleImageSizeCompressed; i++) {
-    sys.context.lastImg[i] = imgs[singleImageSizeCompressed*(number-1)+i];
+    context.lastImg[i] = imgs[singleImageSizeCompressed*(number-1)+i];
   }
 };
 

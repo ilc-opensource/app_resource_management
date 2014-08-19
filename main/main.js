@@ -8,7 +8,6 @@ var sys = require('./highLevelAPI/sys.js');
 var logPrefix = '[sys] ';
 var appStack = []; //{'app':, 'process':, 'context'}
 var pendingNotification = []; //{'app':, 'time':, 'dispCount':}
-//var childFinished = false;
 
 function printAppStack() {
   console.log(logPrefix+'Begin=================================');
@@ -19,8 +18,7 @@ function printAppStack() {
 }
 
 function launchApp(app) {
-  //console.log(logPrefix+'launch a app '+app);
-  // Check if a exist process for this app
+  // Check if there is an exist process for this app
   for (var i=0; i<appStack.length; i++) {
     if (appStack[i].app == app) {
       break;
@@ -28,7 +26,7 @@ function launchApp(app) {
   }
   if (i==appStack.length) {
     console.log(logPrefix+'create a new process for '+app);
-    // when launch a app, pass the app name as the first parameter, correspond to io.js
+    // when launch a app, pass the app name as the first parameter (part of context), part of correspond to context.js
     var childProcess = child_process.fork(app, [app]);
     // handle user app message (new a app, escape, exit)
     childProcess.on('message', handler);

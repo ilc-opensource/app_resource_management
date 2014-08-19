@@ -1,6 +1,9 @@
-var io = require('./io.js');
-var path = require('path');
 var child_process = require('child_process');
+var path = require('path');
+var context = require('./context.js');
+
+var io = require('./io.js');
+var sys = require('./sys.js');
 
 var logPrefix = '[sys escape] ';
 
@@ -12,8 +15,8 @@ var escapeApp = function() {
       console.log(logPrefix+'exec error: ' + error);
     }
   });*/
-  console.log(logPrefix+'app '+io.context.app+' escape');
-  process.send({'escape':io.context});
+  console.log(logPrefix+'app '+context.app+' escape');
+  process.send({'escape':context});
 };
 
 module.exports = escapeApp;
