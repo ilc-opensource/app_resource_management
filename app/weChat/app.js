@@ -1,57 +1,69 @@
-var http = require('http');
 var fs = require('fs');
-var exec = require('child_process').exec;
+var child_process = require('child_process');
 var path = require('path');
-var touchPanel = require('../../main/touchPanel.js');
-var escapeApp = require('../../main/escapeApp.js');
 
-var lastMsg = {};
+var io = require('../../main/highLevelAPI/io.js');
+var sys = require('../../main/highLevelAPI/sys.js');
 
-function pullData(user, app, cb) {
-  var optionsProxy = {
-    hostname: 'proxy-prc.intel.com',
-    //hostname: 'www.pia-edison.com',
-    port: 911,
-    path: 'http://www.pia-edison.com/mug?user='+user+'&app='+app,
-    method: 'GET'
-  };
+var logPrefix = '[user weChat] ';
 
-  var options = {
-    hostname: 'www.pia-edison.com',
-    port: 80,
-    path: '/mug?user='+user+'&app='+app,
-    method: 'GET'
-  };
+var isAnimationDispComplete = true;
+var isPreviousImageDisComplete = true;
+var imageIter = -1;
 
-  //var req = http.request(optionsProxy, function(res) {
-  var req = http.request(options, function(res) {
-    res.setEncoding('utf8');
-    var body = '';
-    res.on('data', function (chunk) {
-      body += chunk;
-    });
-    res.on('end', function () {
-      if (!body.match(/^</)) {
-        cb(user, app, body);
-      }
-    });
-  });
-  req.on('socket', function (socket) {
-    socket.setTimeout(2000);
-    socket.on('timeout', function() {
-        req.abort();
-    });
-  });
-  req.on('error', function(e) {
-    console.log('problem with request: ' + e.message);
-  });
-  req.end();
+var imgs = null;
+function displayweChat() {
+  if (!isAnimationDispComplete) {return;}
+  isAnimationDispComplete = false;
+  isPreviousImageDisComplete = true;
+  imageIter = -1;
+  var w = fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
+  if (w == '') {
+    // Display an img, no weChat information
+    var w = fs.readFileSync(path.join(__dirname, './media.json'), 'utf8');
+    imgs = JSON.parse(w);
+  } else {
+    //if (fs.existsSync(path.join(__dirname, JSON.parse(w).weather, 'media.json'))) {
+      console.log(logPrefix+'weChat file exist');
+      //var weather = fs.readFileSync(path.join(__dirname, JSON.parse(w).weather, 'media.json'), 'utf8');
+      imgs = JSON.parse(w);
+    //}
+  }
 }
 
-function action(user, app, msg) {
+function dispAnimation() {
+  if (!isPreviousImageDisComplete) {return;}
+  isPreviousImageDisComplete = false;
+  imageIter++;
+  if (imageIter==imgs.numberOfImg) {isAnimationDispComplete = true; return;}
+  dispSingle(imgs['img'+imageIter], 1, 0);
+  isPreviousImageDisComplete = true;
+}
+
+setInterval(displayWeather, 100);
+setInterval(function(){dispAnimation();}, 100);
+
+function dispSingle(data, number, interval) {
+  io.disp_raw_N(data, number, interval);
+}
+
+io.touchPanel.on('touch', function(x, y, id) {
+});
+
+io.touchPanel.on('gesture', function(gesture) {
+  console.log(logPrefix+'getsture='+gesture);
+  if (gesture == 'MUG_SWIPE_LEFT') {
+  } else if (gesture == 'MUG_SWIPE_RIGHT') {
+  } else if (gesture == 'MUG_HODE') {
+    sys.escape();
+  }
+});
+
+var lastMsg = null;
+function action(msg) {
   if (msg=='') return;
-  if (lastMsg[user+'@'+app] != msg) {
-    lastMsg[user+'@'+app] = msg;
+  if (lastMsg != msg)
+    lastMsg = msg;
     console.log(msg);
 
     var imageData = JSON.parse(msg);
@@ -76,41 +88,52 @@ function action(user, app, msg) {
   }
 }
 
-function main() {
-  console.log("querying");
-  for (var user in account) {
-    for (var app in account[user]) {
-      if (app!='smart_mug'&&app!='password'&&account[user][app]) {
-        pullData(user, app, function(user, app, msg){action(user, app, msg);});
+function queryweChat(cb) {
+  var mugID = 'MUG123456ILC';
+  var app = 'weChat';
+
+  var optionsProxy = {
+    hostname: 'proxy-prc.intel.com',
+    port: 911,
+    path: 'http://www.pia-edison.com/mug?user='+user+'&app='+app,
+    method: 'GET'
+  };
+
+  var options = {
+    hostname: 'www.pia-edison.com',
+    port: 80,
+    path: '/mug?user='+user+'&app='+app,
+    method: 'GET'
+  };
+
+  var req = http.request(optionsProxy, function(res) {
+  //var req = http.request(options, function(res) {
+    res.setEncoding('utf8');
+    var body = '';
+    res.on('data', function (chunk) {
+      body += chunk;
+    });
+    res.on('end', function () {
+      if (!body.match(/^</)) {
+        cb(body);
       }
-    }
-  }
+    });
+  });
+  req.on('socket', function (socket) {
+    socket.setTimeout(2000);
+    socket.on('timeout', function() {
+        req.abort();
+    });
+  });
+  req.on('error', function(e) {
+    console.log('problem with request: ' + e.message);
+  });
+  req.end();
 }
 
-var account = JSON.parse(fs.readFileSync(path.join(__dirname, 'account.json'), 'utf8'));
-setInterval(main, 1000);
+var weChat = function() {
+  setInterval(queryweChat, 500);
+  displayweChat();
+};
 
-var handle = io.mug_init();
-
-fs.readFile('ledAnimation.JSON',
-  'utf8',
-  function(err, data) {
-    if (err) throw err;
-    console.log(data);
-    var msg=JSON.parse(data);
-    while(true)
-    io.mug_disp_raw_N(handle, msg.image, parseInt(msg.number), 100);
-//    io.mug_close(handle);
-  }
-);
-
-touchPanel.on('touch', function(x, y, id) {
-  
-});
-
-touchPanel.on('gesture', function(g){
-  // Back to main app or stack pop
-  if (g=='xxxxxx') {
-    escapeApp();
-  }
-});
+weChat();

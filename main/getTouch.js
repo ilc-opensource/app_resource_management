@@ -1,36 +1,11 @@
-var util = require("util");
-var EventEmitter = require("events").EventEmitter;
+var io = require('./highLevelAPI/io.js');
+var child_process = require('child_process');
+var path = require('path');
 
-var touchPanel = require('./touchPanel.js');
-var context = require('./context.js');
-
-var IOLIB = require('../../../device');
-var io = new IOLIB.IO({
-  log: true,
-  quickInit: false
-});
-var handle = io.mug_disp_init();
-
-var imageWidth = 16;
-var imageHeight = 12;
-var imageWidthCompressed = imageWidth/2;
-var imageHeightCompressed = imageHeight
-var singleImageSize = imageWidth*imageHeight;
-var singleImageSizeCompressed = imageWidthCompressed*imageHeightCompressed;
-
-io.touchPanel = touchPanel;
-
-io.disp_raw_N = function(imgs, number, interval) {
-  io.mug_disp_raw_N(handle, imgs, number, interval);
-  context.lastImg = [];
-  for (var i=0; i<singleImageSizeCompressed; i++) {
-    context.lastImg[i] = imgs[singleImageSizeCompressed*(number-1)+i];
-  }
-};
-/*
 io.mug_touch_on(function(x, y, id) {
   console.log('touch event='+x+', '+y+', '+id);
-  mug_touch_on(x, y, id);
+  //mug_touch_on(x, y, id);
+  //touchEmitter.emit("touch", x, y, id);
 });
 io.mug_gesture_on(io.MUG_GESTURE, function(g) {
   console.log('gesture event='+g);
@@ -76,9 +51,10 @@ io.mug_gesture_on(io.MUG_GESTURE, function(g) {
       gesture = 'MUG_HOLD_2';
       break;
   }
-  mug_gesture_on(g);
+  //mug_gesture_on(g);
+  //touchEmitter.emit("gesture", gesture);
 });
 
 io.mug_run_touch_thread();
-*/
-module.exports = io;
+
+//var mainProcess = child_process.fork(path.join(__dirname, './main.js'));

@@ -1,6 +1,7 @@
 var fs = require('fs');
 var child_process = require('child_process');
 var path = require('path');
+var EventEmitter = require("events").EventEmitter
 
 var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
@@ -297,8 +298,10 @@ var handler = function(o){
   }
 };
 
+var touchEmitter = new EventEmitter();
 //io.mug_touch_on(function(x, y, id) {
 function mug_touch_on(x, y, id) {
+//touchEmitter.on('touch', function(x, y, id) {
   // When notification is the front end app, we touch on the app, del it from pendingNotification
   //printAppStack();
   //for (var i=0; i<pendingNotification.length; i++) {
@@ -323,9 +326,11 @@ function mug_touch_on(x, y, id) {
   }
 }
 //);
+//);
 
 //io.mug_gesture_on(function(g) {
 function mug_gesture_on(g) {
+//touchEmitter.on('gesture', function(g) {
   // when hold, pause the frontEndApp display in order to let the frontEndApp responds to hold immediately; This is impossible.
   // Sys defined gesture, escape a app
   if (g == 'MUG_HODE' && false) {
@@ -349,7 +354,66 @@ function mug_gesture_on(g) {
   }
 }
 //);
+//);
 
+/*
+io.mug_touch_on(function(x, y, id) {
+  console.log('touch event='+x+', '+y+', '+id);
+  //mug_touch_on(x, y, id);
+  touchEmitter.emit("touch", x, y, id);
+});
+io.mug_gesture_on(io.MUG_GESTURE, function(g) {
+  console.log('gesture event='+g);
+  var gesture = null;
+  switch(g) {
+    case 1:
+      gesture = 'MUG_GESTURE';
+      break;
+    case 2:
+      gesture = 'MUG_SWIPE';
+      break;
+    case 3:
+      gesture = 'MUG_SWIPE_LEFT';
+      break;
+    case 4:
+      gesture = 'MUG_SWIPE_RIGHT';
+      break;
+    case 5:
+      gesture = 'MUG_SWIPE_UP';
+      break;
+    case 6:
+      gesture = 'MUG_SWIPE_DOWN';
+      break;
+    case 7:
+      gesture = 'MUG_SWIPE_2';
+      break;
+    case 8:
+      gesture = 'MUG_SWIPE_LEFT_2';
+      break;
+    case 9:
+      gesture = 'MUG_SWIPE_RIGHT_2';
+      break;
+    case 10:
+      gesture = 'MUG_SWIPE_UP_2';
+      break;
+    case 11:
+      gesture = 'MUG_SWIPE_DOWN_2';
+      break;
+    case 12:
+      gesture = 'MUG_HOLD';
+      break;
+    case 13:
+      gesture = 'MUG_HOLD_2';
+      break;
+  }
+  //mug_gesture_on(g);
+  touchEmitter.emit("gesture", gesture);
+});
+
+io.mug_run_touch_thread();
+*/
+
+//var touchProcess = child_process.fork(path.join(__dirname, './highLevelAPI/getTouch.js'));
 // Begin at this point
 //TODO: touch a file /tmp/smart_mug_notification.json, create a new
 //var fd = fs.openSync(notificationFile, 'w');
