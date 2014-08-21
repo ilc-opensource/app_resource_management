@@ -1,6 +1,7 @@
 var fs = require('fs');
 var child_process = require('child_process');
 var path = require('path');
+var http = require('http');
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
@@ -40,7 +41,7 @@ function dispAnimation() {
   isPreviousImageDisComplete = true;
 }
 
-setInterval(displayWeather, 100);
+setInterval(displayweChat, 100);
 setInterval(function(){dispAnimation();}, 100);
 
 function dispSingle(data, number, interval) {
@@ -62,7 +63,7 @@ io.touchPanel.on('gesture', function(gesture) {
 var lastMsg = null;
 function action(msg) {
   if (msg=='') return;
-  if (lastMsg != msg)
+  if (lastMsg != msg) {
     lastMsg = msg;
     console.log(msg);
 
@@ -95,14 +96,14 @@ function queryweChat(cb) {
   var optionsProxy = {
     hostname: 'proxy-prc.intel.com',
     port: 911,
-    path: 'http://www.pia-edison.com/mug?user='+user+'&app='+app,
+    path: 'www.pia-edison.com/mug?mugID='+mugID+'&app='+app,
     method: 'GET'
   };
 
   var options = {
     hostname: 'www.pia-edison.com',
     port: 80,
-    path: '/mug?user='+user+'&app='+app,
+    path: '/mug?mugID='+mugID+'&app='+app,
     method: 'GET'
   };
 
@@ -132,7 +133,7 @@ function queryweChat(cb) {
 }
 
 var weChat = function() {
-  setInterval(queryweChat, 500);
+  setInterval(queryweChat, 1000);
   displayweChat();
 };
 
