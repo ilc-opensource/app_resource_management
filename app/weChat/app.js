@@ -67,23 +67,12 @@ function action(msg) {
     lastMsg = msg;
     console.log(msg);
 
-    var imageData = JSON.parse(msg);
-    var data = {};
-    data.number = imageData.numberOfImg;
-    data.image = [];
-    for (var i=0; i<imageData.numberOfImg; i++) {
-      for (var j=0; j<imageData['img'+i].length; j++) {
-        data.image.push(imageData['img'+i][j]);
-      }
-    }
-    console.log('Send image to edison:'+JSON.stringify(data));
-    fs.writeFile('ledAnimation.JSON',
-      JSON.stringify(data),
+    fs.writeFile(path.join(__dirname, 'weChat.json'),
+      msg,
       function(err) {
         if(err)
           throw err;
         console.log('It\'s saved!');
-        exec('sh push.sh', function(err, stdout, stderr){console.log(stdout);});
       }
     );
   }
@@ -107,8 +96,8 @@ function queryweChat(cb) {
     method: 'GET'
   };
 
-  var req = http.request(optionsProxy, function(res) {
-  //var req = http.request(options, function(res) {
+  //var req = http.request(optionsProxy, function(res) {
+  var req = http.request(options, function(res) {
     res.setEncoding('utf8');
     var body = '';
     res.on('data', function (chunk) {
@@ -133,7 +122,7 @@ function queryweChat(cb) {
 }
 
 var weChat = function() {
-  setInterval(queryweChat, 1000);
+  setInterval(function(){queryweChat(action)}, 1000);
   displayweChat();
 };
 
