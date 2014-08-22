@@ -8,10 +8,10 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[user weChat] ';
 
+// Animation display begin
 var isAnimationDispComplete = true;
 var isPreviousImageDisComplete = true;
 var imageIter = -1;
-
 var imgs = null;
 function displayweChat() {
   if (!isAnimationDispComplete) {return;}
@@ -20,18 +20,13 @@ function displayweChat() {
   imageIter = -1;
   var w = fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
   if (w == '') {
-    // Display an img, no weChat information
     var w = fs.readFileSync(path.join(__dirname, './media.json'), 'utf8');
     imgs = JSON.parse(w);
   } else {
-    //if (fs.existsSync(path.join(__dirname, JSON.parse(w).weather, 'media.json'))) {
-      console.log(logPrefix+'weChat file exist');
-      //var weather = fs.readFileSync(path.join(__dirname, JSON.parse(w).weather, 'media.json'), 'utf8');
-      imgs = JSON.parse(w);
-    //}
+    //console.log(logPrefix+'weChat file exist');
+    imgs = JSON.parse(w);
   }
 }
-
 function dispAnimation() {
   if (!isPreviousImageDisComplete) {return;}
   isPreviousImageDisComplete = false;
@@ -40,39 +35,39 @@ function dispAnimation() {
   dispSingle(imgs['img'+imageIter], 1, 0);
   isPreviousImageDisComplete = true;
 }
-
-setInterval(displayweChat, 100);
-setInterval(function(){dispAnimation();}, 100);
-
 function dispSingle(data, number, interval) {
   io.disp_raw_N(data, number, interval);
 }
+setInterval(displayweChat, 100);
+setInterval(function(){dispAnimation();}, 100);
+// Animation display End
 
+// Touch event handler begin
 io.touchPanel.on('touch', function(x, y, id) {
 });
 
 io.touchPanel.on('gesture', function(gesture) {
   console.log(logPrefix+'getsture='+gesture);
-  if (gesture == 'MUG_SWIPE_LEFT') {
-  } else if (gesture == 'MUG_SWIPE_RIGHT') {
-  } else if (gesture == 'MUG_HODE') {
+  if (gesture == 'MUG_HODE') {
     sys.escape();
   }
 });
+// Touch event handler end
 
+// Query info from web begin
 var lastMsg = null;
 function action(msg) {
   if (msg=='') return;
   if (lastMsg != msg) {
     lastMsg = msg;
-    console.log(msg);
+    //console.log(msg);
 
     fs.writeFile(path.join(__dirname, 'weChat.json'),
       msg,
       function(err) {
         if(err)
           throw err;
-        console.log('It\'s saved!');
+        //console.log('It\'s saved!');
       }
     );
   }
@@ -116,10 +111,18 @@ function queryweChat(cb) {
     });
   });
   req.on('error', function(e) {
-    console.log('problem with request: ' + e.message);
+    //console.log('problem with request: ' + e.message);
   });
   req.end();
 }
+// Query info from web end
+
+// Register notification begin
+fs.watch(path.join(__dirname, 'weChat.json'), function(e, filename) {
+    // write command to notification.json
+    sys.registerNotification(path.join(__dirname, 'notification.js'));
+});
+// Register notification end
 
 var weChat = function() {
   setInterval(function(){queryweChat(action)}, 1000);

@@ -12,6 +12,7 @@ var pendingNotification = []; //{'app':, 'time':, 'dispCount':}
 var frontEndApp = null;
 
 function printAppStack() {
+  return;
   console.log(logPrefix+'Begin=================================');
   for (var i=0; i<appStack.length-1; i++) {
     console.log(logPrefix+'appStack['+i+']='+appStack[i].app+', '+appStack[i].process.pid+', '+appStack[i].context);
@@ -300,8 +301,8 @@ var handler = function(o){
 
 var touchEmitter = new EventEmitter();
 //io.mug_touch_on(function(x, y, id) {
-function mug_touch_on(x, y, id) {
-//touchEmitter.on('touch', function(x, y, id) {
+//function mug_touch_on(x, y, id) {
+touchEmitter.on('touch', function(x, y, id) {
   // When notification is the front end app, we touch on the app, del it from pendingNotification
   //printAppStack();
   //for (var i=0; i<pendingNotification.length; i++) {
@@ -325,12 +326,12 @@ function mug_touch_on(x, y, id) {
     appStack[appStack.length-1].process.send({'mug_touch_on':[x, y, id]});
   }
 }
-//);
+);
 //);
 
 //io.mug_gesture_on(function(g) {
-function mug_gesture_on(g) {
-//touchEmitter.on('gesture', function(g) {
+//function mug_gesture_on(g) {
+touchEmitter.on('gesture', function(g) {
   // when hold, pause the frontEndApp display in order to let the frontEndApp responds to hold immediately; This is impossible.
   // Sys defined gesture, escape a app
   if (g == 'MUG_HODE' && false) {
@@ -353,7 +354,7 @@ function mug_gesture_on(g) {
     appStack[appStack.length-1].process.send({'mug_gesture_on':g});
   }
 }
-//);
+);
 //);
 
 /*
@@ -413,7 +414,43 @@ io.mug_gesture_on(io.MUG_GESTURE, function(g) {
 io.mug_run_touch_thread();
 */
 
-//var touchProcess = child_process.fork(path.join(__dirname, './highLevelAPI/getTouch.js'));
+
+// Clean file
+var fd = fs.openSync(path.join(__dirname, './touchEvent.json'), 'w');
+fs.closeSync(fd);
+
+// Read file to get touch event
+var touchEventTimer = (new Date()).getTime();
+var position=0;
+var isReady = true;
+function readTouch() {
+  if (!isReady) return;
+  isReady = false;
+  var fd = fs.openSync(path.join(__dirname, './touchEvent.json'), 'r');
+  var buffer=new Buffer(100);
+  fs.read(fd, buffer, 0, buffer.length, position, function(err, bytes, buffer) {
+    var msg = String(buffer);
+    if (msg == '') {fs.close(fd); isReady = true;return;}
+    var idx = msg.indexOf('\n');
+    if (idx==-1) {fs.close(fd); isReady = true;return;}
+    var idx1 = msg.indexOf('touch');
+    var idx2 = msg.indexOf('gesture');
+    if (idx1==-1 && idx2==-1) {fs.close(fd); isReady = true;return;}
+
+    var line = msg.slice(0, idx);
+    console.log('touchEvent='+line);
+    var e = JSON.parse(line);
+    var cTimer = (new Date()).getTime();
+    if (e['touch'] && (cTimer-touchEventTimer)>1000) {touchEventTimer = cTimer; touchEmitter.emit("touch", e['touch'][0], e['touch'][1], e['touch'][2]);}
+    if (e['gesture']) touchEmitter.emit("gesture", e['gesture']);
+    position=position+String(line).length+1;
+    fs.close(fd);
+    isReady = true;
+  });
+}
+setInterval(readTouch, 100);
+
+var touchProcess = child_process.fork(path.join(__dirname, './highLevelAPI/getTouch.js'));
 // Begin at this point
 //TODO: touch a file /tmp/smart_mug_notification.json, create a new
 //var fd = fs.openSync(notificationFile, 'w');
@@ -435,7 +472,7 @@ process.on('SIGINT', signalHandler);
 process.on('SIGTERM', signalHandler);
 
 // Emulate a touchPanel input
-process.stdin.setEncoding('utf8');
+/*process.stdin.setEncoding('utf8');
 process.stdin.on('readable', function() {
   var chunk = process.stdin.read();
   if (chunk !== null && chunk != '\n') {
@@ -452,4 +489,4 @@ process.stdin.on('readable', function() {
 });
 process.stdin.on('end', function() {
   process.stdout.write('end');
-});
+});*/

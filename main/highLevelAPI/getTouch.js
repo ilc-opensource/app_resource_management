@@ -1,12 +1,23 @@
+var fs = require('fs');
 var io = require('./io.js');
+var path = require('path');
 
+var timer = (new Date()).getTime();
+var i=0;
 io.mug_touch_on(function(x, y, id) {
-  console.log('touch event='+x+', '+y+', '+id);
+  //console.log('touch event='+x+', '+y+', '+id+', '+(new Date()).getTime());
   //mug_touch_on(x, y, id);
   //touchEmitter.emit("touch", x, y, id);
+  // Every one second receive a touch
+  console.log('test='+(i++));
+  if (((new Date()).getTime()-timer)>=1000) {
+    timer = (new Date()).getTime();
+    //console.log("timer="+timer);
+    fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touch':[x, y, id]})+'\n');
+  }
 });
 io.mug_gesture_on(io.MUG_GESTURE, function(g) {
-  console.log('gesture event='+g);
+  //console.log('gesture event='+g);
   var gesture = null;
   switch(g) {
     case 1:
@@ -51,6 +62,7 @@ io.mug_gesture_on(io.MUG_GESTURE, function(g) {
   }
   //mug_gesture_on(g);
   //touchEmitter.emit("gesture", gesture);
+  fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'gesture':gesture})+'\n');
 });
 
 io.mug_run_touch_thread();
