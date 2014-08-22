@@ -38,6 +38,7 @@ io.touchPanel.on('gesture', function(gesture) {
     index = (index==0)?(startup.length-1):(index-1);
     disp(index);
   } else if (gesture == 'MUG_HODE') {
+    // Don't send escape to OS
     sys.escape();
   }
 });

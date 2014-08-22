@@ -23,7 +23,9 @@ sys.isFrontEndApp = function(pid, cb) {
     }
   });
 }
-sys.registerNotification = function(app) {
+
+// We use another version, app developer can only call this in main process of the app
+/*sys.registerNotification = function(app) {
   console.log('Register a notification:'+app);
   child_process.exec(path.join(__dirname, './C/setNotification')+' '+app, function(error, stdout, stderr){
     //console.log('stdout: ' + stdout);
@@ -32,6 +34,10 @@ sys.registerNotification = function(app) {
       //console.log('exec error: ' + error);
     }
   });
-}
+}*/
+sys.registerNotification = function(app) {
+  console.log('Register a notification:'+app);
+  process.send({'notification':app});
+});
 
 module.exports = sys;

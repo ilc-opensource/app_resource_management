@@ -1,13 +1,16 @@
+/*
+ * mini OS for app runtime management
+ */
 var fs = require('fs');
-var child_process = require('child_process');
 var path = require('path');
+var child_process = require('child_process');
 var EventEmitter = require("events").EventEmitter
 
 var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
 
-var logPrefix = '[sys] ';
-var appStack = []; //{'app':, 'process':, 'context'}
+var logPrefix = '[OS] ';
+var appStack = []; //{'app':, 'process':, 'context', 'hasEscaped',}
 var pendingNotification = []; //{'app':, 'time':, 'dispCount':}
 var frontEndApp = null;
 
@@ -18,6 +21,16 @@ function printAppStack() {
     console.log(logPrefix+'appStack['+i+']='+appStack[i].app+', '+appStack[i].process.pid+', '+appStack[i].context);
   }
   console.log(logPrefix+'End  =================================');
+}
+
+function enableAppDisp(pid) {
+  child_process.exec(path.join(__dirname, './highLevelAPI/C/setFrontEndApp')+' '+pid, function(error, stdout, stderr){
+    console.log(logPrefix+'stdout: ' + stdout);
+    console.log(logPrefix+'stderr: ' + stderr);
+    if (error !== null) {
+      console.log(logPrefix+'exec error: ' + error);
+    }
+  });
 }
 
 function launchApp(app) {
@@ -31,86 +44,37 @@ function launchApp(app) {
     console.log(logPrefix+'create a new process for '+app);
     // when launch a app, pass the app name as the first parameter (part of context), part of correspond to context.js
     var childProcess = child_process.fork(app, [app]);
-    // handle user app message (new a app, escape, exit)
+    // handle user app message (new a app, escape, exit, register notification)
     childProcess.on('message', handler);
-    // maintain all living app, and redirect touch event, put the app to the stack head
-    //var appInfo = {'app':app, 'process':childProcess, 'context':null};
+    // enable app to access display
+    enableAppDisp(childProcess.pid);
+    // push app to the stack head, and redirect touch event to it
     var appInfo = {'app':app, 'process':childProcess};
     appStack.push(appInfo);
-    printAppStack();
-    //console.log(logPrefix+'appStack='+appStack[appStack.length-1].app);
-    // Authorize app to access display
-    child_process.exec(path.join(__dirname, './highLevelAPI/C/setFrontEndApp')+' '+childProcess.pid, function(error, stdout, stderr){
-      console.log(logPrefix+'stdout: ' + stdout);
-      console.log(logPrefix+'stderr: ' + stderr);
-      if (error !== null) {
-        console.log(logPrefix+'exec error: ' + error);
-      }
-    });
+    frontEndApp = appStack[appStack.length-1];
   } else {
     console.log(logPrefix+'restore a existing process for '+app);
-    // restore context
-    printAppStack();
-    //console.log(logPrefix+'context='+appStack[i].context);
     // czhan25 reuse i(j), cause a bug
+    // When re-enter one app, clean its notification
     for (var j=0; j<pendingNotification.length; j++) {
       if (path.join(path.dirname(app), 'notification.js') == pendingNotification[j]) {
         pendingNotification.splice(j, 1);
         break;
       }
     }
-    // give display to the main process
-    //childFinished = false;
-    child_process.exec(path.join(__dirname, './highLevelAPI/C/setFrontEndApp')+' '+process.pid, function(error, stdout, stderr){
-      console.log(logPrefix+'stdout: ' + stdout);
-      console.log(logPrefix+'stderr: ' + stderr);
-      if (error !== null) {
-        console.log(logPrefix+'exec error: ' + error);
-      }
-    });
-    // Make sure the setFrontEndApp finish
-    //setTimeout(function(){restoreContext(appStack[i].process.pid);}, 10);
-    //setFrontEndAppC.on('exit', function(e){childFinished=true;});
-    printAppStack();
-    io.disp_raw_N(appStack[i].context, 1, 1000);
+    // restore context, give display to the os process
+    enableAppDisp(process.pid);
+    io.disp_raw_N(appStack[i].context, 1, 0);
     console.log(logPrefix+'context restore success');
-    // give display to the procee
-    child_process.exec(path.join(__dirname, './highLevelAPI/C/setFrontEndApp')+' '+appStack[i].process.pid, function(error, stdout, stderr){
-      console.log(logPrefix+'stdout: ' + stdout);
-      console.log(logPrefix+'stderr: ' + stderr);
-      if (error !== null) {
-        console.log(logPrefix+'exec error: ' + error);
-      }
-    });
-    // redirect touch event, put the app to the stack head
-    // Not a stack
-      /*var c = appStack[i];
-      appStack[i] = appStack[appStack.length-1];
-      appStack[appStack.length-1] = c;
-      console.log(logPrefix+'appStack='+appStack[appStack.length-1].app);
-      console.log(logPrefix+'redirect touch event success');*/
-    // Is a stack
+    // give display to the re-entered app procee
+    enableAppDisp(appStack[i].process.pid);
+    // push app to the stack head, and redirect touch event to it
     var curApp = appStack.splice(i, 1);
     appStack.push(curApp[0]);
-    printAppStack();
-    //console.log(logPrefix+'appStack='+appStack[appStack.length-1].app);
+    frontEndApp = appStack[appStack.length-1];
+    //printAppStack();
   }
 }
-
-/*function restoreContext(pid) {
-  if (childFinished==true) {
-    child_process.exec('./highLevelAPI/C/setFrontEndApp '+pid, function(error, stdout, stderr){
-      console.log(logPrefix+'stdout: ' + stdout);
-      console.log(logPrefix+'stderr: ' + stderr);
-      if (error !== null) {
-        console.log(logPrefix+'exec error: ' + error);
-      }
-    });
-    console.log('child finished');
-  } else {
-    setTimeout(function(){restoreContext(pid);}, 10);
-  }
-}*/
 
 function moveToBackground(savedContext) {
   // Now when an app escape, we will back to main app, not a real app stack;
@@ -125,21 +89,15 @@ function moveToBackground(savedContext) {
     return -1;
   }
  
-  console.log(logPrefix+'save context('+savedContext.app+'):'+savedContext.lastImg); 
+  //console.log(logPrefix+'save context('+savedContext.app+'):'+savedContext.lastImg); 
   appStack[i].context = savedContext.lastImg;
   // Disable touch for this app
   // TODO:
 
-  // Disable display for this app
-  /*child_process.exec('./highLevelAPI/C/setFrontEndApp '+'-1', function(error, stdout, stderr){
-    console.log('stdout: ' + stdout);
-    console.log('stderr: ' + stderr);
-    if (error !== null) {
-      console.log('exec error: ' + error);
-    }
-  });*/
 }
 
+// We use another version of registerNotification, app developer can only call this in main process of the app
+/*
 // file name must be aligned with NOTIFICATION definition in sdk_c/include/res_manager.h
 var notificationFile = '/tmp/smart_mug_notification.json';
 //TODO: touch a file /tmp/smart_mug_notification.json, create a new
@@ -166,6 +124,7 @@ fs.watch(notificationFile, function(e, filename) {
     //fsTimeout = setTimeout(function(){fsTimeout=null;}, 100);
   //}
 });
+*/
 
 function addNotification(msg) {
   if (msg == '' || msg == '\n') return;
@@ -245,15 +204,15 @@ function checkNotification() {
 checkNotification();
 
 var isTouchOnNotification = false;
-//process.on('message', function(o){
-var handler = function(o){
+var handler = function(o) {
   if (o['escape']) {
     console.log(logPrefix+'receive a sys message(escape):'+JSON.stringify(o));
-    // one app may send multi escape to sys
-    if (appStack[appStack.length-1].app != o['escape'].app) {
+    // one app may send multi escape to os
+    //if (appStack[appStack.length-1].app != o['escape'].app) {
+    if (frontEndApp.app != o['escape'].app) {
       return;
     }
-    console.log(logPrefix+'put '+appStack[appStack.length-1].app+' into background');
+    console.log(logPrefix+'put '+frontEndApp.app+' into background');
     moveToBackground(o['escape']);
     // launch
     findNextApp();
@@ -294,11 +253,14 @@ var handler = function(o){
         findNextApp(true); // no touch on the app, app is a notification app
       }
     }
+  } else if (o['notification']) {
+    addNotification(o['notification']);
   } else {
     console.log(logPrefix+' message error');
   }
 };
 
+// Redirect touch and gesture event to front end app
 var touchEmitter = new EventEmitter();
 //io.mug_touch_on(function(x, y, id) {
 //function mug_touch_on(x, y, id) {
@@ -332,93 +294,26 @@ touchEmitter.on('touch', function(x, y, id) {
 //io.mug_gesture_on(function(g) {
 //function mug_gesture_on(g) {
 touchEmitter.on('gesture', function(g) {
+  if (frontEndApp.hasEscaped) {
+    return;
+  }
   // when hold, pause the frontEndApp display in order to let the frontEndApp responds to hold immediately; This is impossible.
-  // Sys defined gesture, escape a app
-  if (g == 'MUG_HODE' && false) {
-    //TODO: stop 
-    // Disable display access
-    child_process.exec(path.join(__dirname, './highLevelAPI/C/setFrontEndApp')+' -1', function(error, stdout, stderr){
-      console.log(logPrefix+'stdout: ' + stdout);
-      console.log(logPrefix+'stderr: ' + stderr);
-      if (error !== null) {
-        console.log(logPrefix+'exec error: ' + error);
-      }
-      // Set context of the front end app to null
-      //appStack[appStack.length-1].context = null;
-      // Send a message to trigger context save if process is not hanged
-      console.log(logPrefix+'send a gesture '+'app_escape_sys'+' to '+appStack[appStack.length-1].app);
-      appStack[appStack.length-1].process.send({'mug_gesture_on':'app_escape_sys'});
-    });
-  } else {
-    console.log(logPrefix+'send a gesture '+g+' to '+appStack[appStack.length-1].app);
-    appStack[appStack.length-1].process.send({'mug_gesture_on':g});
+  console.log(logPrefix+'send a gesture '+g+' to '+appStack[appStack.length-1].app);
+  //appStack[appStack.length-1].process.send({'mug_gesture_on':g});
+  frontEndApp.process.send({'mug_gesture_on':g});
+  if (g == 'MUG_HODE') {
+    frontEndApp.hasEscaped = true;
   }
 }
 );
 //);
 
-/*
-io.mug_touch_on(function(x, y, id) {
-  console.log('touch event='+x+', '+y+', '+id);
-  //mug_touch_on(x, y, id);
-  touchEmitter.emit("touch", x, y, id);
-});
-io.mug_gesture_on(io.MUG_GESTURE, function(g) {
-  console.log('gesture event='+g);
-  var gesture = null;
-  switch(g) {
-    case 1:
-      gesture = 'MUG_GESTURE';
-      break;
-    case 2:
-      gesture = 'MUG_SWIPE';
-      break;
-    case 3:
-      gesture = 'MUG_SWIPE_LEFT';
-      break;
-    case 4:
-      gesture = 'MUG_SWIPE_RIGHT';
-      break;
-    case 5:
-      gesture = 'MUG_SWIPE_UP';
-      break;
-    case 6:
-      gesture = 'MUG_SWIPE_DOWN';
-      break;
-    case 7:
-      gesture = 'MUG_SWIPE_2';
-      break;
-    case 8:
-      gesture = 'MUG_SWIPE_LEFT_2';
-      break;
-    case 9:
-      gesture = 'MUG_SWIPE_RIGHT_2';
-      break;
-    case 10:
-      gesture = 'MUG_SWIPE_UP_2';
-      break;
-    case 11:
-      gesture = 'MUG_SWIPE_DOWN_2';
-      break;
-    case 12:
-      gesture = 'MUG_HOLD';
-      break;
-    case 13:
-      gesture = 'MUG_HOLD_2';
-      break;
-  }
-  //mug_gesture_on(g);
-  touchEmitter.emit("gesture", gesture);
-});
-
-io.mug_run_touch_thread();
-*/
-
-
+/* get gesture event through file
+ *  find another solution
+ */
 // Clean file
 var fd = fs.openSync(path.join(__dirname, './touchEvent.json'), 'w');
 fs.closeSync(fd);
-
 // Read file to get touch event
 var touchEventTimer = (new Date()).getTime();
 var position=0;
@@ -449,12 +344,9 @@ function readTouch() {
   });
 }
 setInterval(readTouch, 100);
-
 var touchProcess = child_process.fork(path.join(__dirname, './highLevelAPI/getTouch.js'));
+
 // Begin at this point
-//TODO: touch a file /tmp/smart_mug_notification.json, create a new
-//var fd = fs.openSync(notificationFile, 'w');
-//fs.closeSync(fd);
 launchApp('./startup.js');
 
 // handle ctrl+c
