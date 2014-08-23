@@ -10,7 +10,7 @@ var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
 
 var logPrefix = '[OS] ';
-var appStack = []; //{'app':, 'process':, 'context', 'hasEscaped',}
+var appStack = []; //{'app':, 'process':, 'context', 'disableTouch',}
 var pendingNotification = []; //{'app':, 'time':, 'dispCount':}
 var frontEndApp = null;
 
@@ -49,7 +49,7 @@ function launchApp(app) {
     // enable app to access display
     enableAppDisp(childProcess.pid);
     // push app to the stack head, and redirect touch event to it
-    var appInfo = {'app':app, 'process':childProcess};
+    var appInfo = {'app':app, 'process':childProcess, 'disableTouch':false};
     appStack.push(appInfo);
     frontEndApp = appStack[appStack.length-1];
   } else {
@@ -72,6 +72,7 @@ function launchApp(app) {
     var curApp = appStack.splice(i, 1);
     appStack.push(curApp[0]);
     frontEndApp = appStack[appStack.length-1];
+    frontEndApp['disableTouch'] = false;
     //printAppStack();
   }
 }
@@ -94,6 +95,33 @@ function moveToBackground(savedContext) {
   // Disable touch for this app
   // TODO:
 
+}
+
+function findNextApp(isNotification) {
+  // Notification app can't be disturbed
+  for (var i=0; i<pendingNotification.length; i++) {
+    if (appStack[appStack.length-1].app == pendingNotification[i].app) {
+      // wait for notification app exit
+      return;
+    }
+  }
+  // If has notification, and time is meet
+  for (var i=0; i<pendingNotification.length; i++) {
+    console.log(logPrefix+"search for a timeout notification");
+    var timer = (new Date()).getTime();
+    if (pendingNotification[i].time == 0 || (timer - pendingNotification[i].time)>60000) {
+      pendingNotification[i].time = timer;
+      launchApp(pendingNotification[i].app);
+      console.log(logPrefix+"launch a notification");
+      return;
+    }
+  }
+  // otherwise
+  if (!isNotification) {
+    launchApp('./startup.js');
+  } else {
+    launchApp(appStack[appStack.length-1].app);
+  }
 }
 
 // We use another version of registerNotification, app developer can only call this in main process of the app
@@ -155,33 +183,6 @@ function addNotification(msg) {
   if (isNewNotificationAdd) {
     console.log(logPrefix+'implicitly send a gesture '+'MUG_HODE'+' to '+appStack[appStack.length-1].app);
     appStack[appStack.length-1].process.send({'mug_gesture_on':'MUG_HODE'});
-  }
-}
-
-function findNextApp(isNotification) {
-  // Notification app can't be disturbed
-  for (var i=0; i<pendingNotification.length; i++) {
-    if (appStack[appStack.length-1].app == pendingNotification[i].app) {
-      // wait for notification app exit
-      return;
-    }
-  }
-  // If has notification, and time is meet
-  for (var i=0; i<pendingNotification.length; i++) {
-    console.log(logPrefix+"search for a timeout notification");
-    var timer = (new Date()).getTime();
-    if (pendingNotification[i].time == 0 || (timer - pendingNotification[i].time)>60000) {
-      pendingNotification[i].time = timer;
-      launchApp(pendingNotification[i].app);
-      console.log(logPrefix+"launch a notification");
-      return;
-    }
-  }
-  // otherwise
-  if (!isNotification) {
-    launchApp('./startup.js');
-  } else {
-    launchApp(appStack[appStack.length-1].app);
   }
 }
 
@@ -264,6 +265,7 @@ var handler = function(o) {
 var touchEmitter = new EventEmitter();
 //io.mug_touch_on(function(x, y, id) {
 //function mug_touch_on(x, y, id) {
+/*
 touchEmitter.on('touch', function(x, y, id) {
   // When notification is the front end app, we touch on the app, del it from pendingNotification
   //printAppStack();
@@ -290,56 +292,157 @@ touchEmitter.on('touch', function(x, y, id) {
 }
 );
 //);
+*/
+
+touchEmitter.on('touchEvent', function(e, x, y, id) {
+  var touchEvent = null;
+  switch(e) {
+    case 1:
+      touchEvent = 'TOUCH_CLICK';
+      break;
+    case 4:
+      touchEvent = 'TOUCH_HOLD';
+      break;
+    default:
+      return;;
+  }
+  console.log(logPrefix+'touchEvent='+touchEvent);
+
+  // When notification is the front end app, we touch on the app, del it from pendingNotification
+  //for (var i=0; i<pendingNotification.length; i++) {
+  //  console.log(logPrefix+'pendingNotification['+i+']='+pendingNotification[i].app);
+  //}
+/*  isTouchOnNotification = false;
+  for (var i=0; i<pendingNotification.length; i++) {
+    //console.log(logPrefix+'mug_touch_on='+appStack[appStack.length-1].app+', '+pendingNotification[i].app+', '+pendingNotification.length)
+    if (appStack[appStack.length-1].app == pendingNotification[i].app) {
+      pendingNotification.splice(i, 1);
+      console.log(logPrefix+'Touch on a notification'+appStack[appStack.length-1].app);
+      isTouchOnNotification = true;
+      break;
+    }
+  }
+  if (isTouchOnNotification) {
+    // Don't need to rediret touch event to notification app as it can't handle before exit
+    //launchApp();
+  } else {
+    console.log(logPrefix+'send a touch ('+x+','+y+','+id+') to '+appStack[appStack.length-1].app);
+    appStack[appStack.length-1].process.send({'mug_touch_on':[x, y, id]});
+  }
+*/
+  if (frontEndApp.disableTouch) {
+    return;
+  }
+
+  // Check if touch on a notification app, new app directly
+  for (var i=0; i<pendingNotification.length; i++) {
+    if (frontEndApp.app == pendingNotification[i].app) {
+      pendingNotification.splice(i, 1);
+      console.log(logPrefix+'Touch on a notification'+frontEndApp.app);
+      frontEndApp.disableTouch = true;
+      //isTouchOnNotification = true;
+      break;
+    }
+  }
+
+  console.log(logPrefix+'send a touchEvent '+touchEvent+' to '+frontEndApp.app);
+  frontEndApp.process.send({'mug_touchevent_on':[touchEvent, x, y, id]});
+  if (touchEvent == 'TOUCH_HOLD') {
+    frontEndApp.disableTouch = true;
+  }
+}
+);
 
 //io.mug_gesture_on(function(g) {
 //function mug_gesture_on(g) {
 touchEmitter.on('gesture', function(g) {
-  if (frontEndApp.hasEscaped) {
+  var gesture = null;
+  switch(g) {
+    case 1:
+      gesture = 'MUG_GESTURE';
+      break;
+    case 2:
+      gesture = 'MUG_SWIPE';
+      break;
+    case 3:
+      gesture = 'MUG_SWIPE_LEFT';
+      break;
+    case 4:
+      gesture = 'MUG_SWIPE_RIGHT';
+      break;
+    case 5:
+      gesture = 'MUG_SWIPE_UP';
+      break;
+    case 6:
+      gesture = 'MUG_SWIPE_DOWN';
+      break;
+    case 7:
+      gesture = 'MUG_SWIPE_2';
+      break;
+    case 8:
+      gesture = 'MUG_SWIPE_LEFT_2';
+      break;
+    case 9:
+      gesture = 'MUG_SWIPE_RIGHT_2';
+      break;
+    case 10:
+      gesture = 'MUG_SWIPE_UP_2';
+      break;
+    case 11:
+      gesture = 'MUG_SWIPE_DOWN_2';
+      break;
+    default:
+      return;
+  }
+  console.log(logPrefix+'gesture='+gesture);
+
+  if (frontEndApp.disableTouch) {
     return;
   }
   // when hold, pause the frontEndApp display in order to let the frontEndApp responds to hold immediately; This is impossible.
-  console.log(logPrefix+'send a gesture '+g+' to '+appStack[appStack.length-1].app);
+  console.log(logPrefix+'send a gesture '+g+' to '+frontEndApp.app);
   //appStack[appStack.length-1].process.send({'mug_gesture_on':g});
   frontEndApp.process.send({'mug_gesture_on':g});
-  if (g == 'MUG_HODE') {
-    frontEndApp.hasEscaped = true;
-  }
 }
 );
 //);
 
 /* get gesture event through file
- *  find another solution
+ * TODO find another solution
  */
 // Clean file
 var fd = fs.openSync(path.join(__dirname, './touchEvent.json'), 'w');
 fs.closeSync(fd);
 // Read file to get touch event
-var touchEventTimer = (new Date()).getTime();
 var position=0;
 var isReady = true;
+var fd = fs.openSync(path.join(__dirname, './touchEvent.json'), 'r');
+var buffer=new Buffer(100);
 function readTouch() {
   if (!isReady) return;
   isReady = false;
-  var fd = fs.openSync(path.join(__dirname, './touchEvent.json'), 'r');
-  var buffer=new Buffer(100);
   fs.read(fd, buffer, 0, buffer.length, position, function(err, bytes, buffer) {
-    var msg = String(buffer);
-    if (msg == '') {fs.close(fd); isReady = true;return;}
+    if (bytes == 0) {isReady = true; return;}
+    var msg = buffer.toString(); //String(buffer);
+    //if (msg == '') {fs.close(fd); isReady = true;return;}
     var idx = msg.indexOf('\n');
-    if (idx==-1) {fs.close(fd); isReady = true;return;}
-    var idx1 = msg.indexOf('touch');
-    var idx2 = msg.indexOf('gesture');
-    if (idx1==-1 && idx2==-1) {fs.close(fd); isReady = true;return;}
+    if (idx==-1) {isReady = true;return;} //{fs.close(fd); isReady = true;return;}
+    //var idx1 = msg.indexOf('touch');
+    //var idx2 = msg.indexOf('gesture');
+    //if (idx1==-1 && idx2==-1) {fs.close(fd); isReady = true;return;}
 
     var line = msg.slice(0, idx);
     console.log('touchEvent='+line);
     var e = JSON.parse(line);
-    var cTimer = (new Date()).getTime();
-    if (e['touch'] && (cTimer-touchEventTimer)>1000) {touchEventTimer = cTimer; touchEmitter.emit("touch", e['touch'][0], e['touch'][1], e['touch'][2]);}
-    if (e['gesture']) touchEmitter.emit("gesture", e['gesture']);
-    position=position+String(line).length+1;
-    fs.close(fd);
+    //if (e['touch'] && (cTimer-touchEventTimer)>1000) {touchEventTimer = cTimer; touchEmitter.emit("touch", e['touch'][0], e['touch'][1], e['touch'][2]);}
+    if (e['touchEvent']) {
+      touchEmitter.emit("touchEvent", e['touchEvent'][0],  e['touchEvent'][1], e['touchEvent'][2], e['touchEvent'][3]);
+    }
+    if (e['gesture']) {
+      touchEmitter.emit("gesture", e['gesture']);
+    }
+    position=position+String(line).length+1; // 1 is the length of '\n'
+    //fs.close(fd);
     isReady = true;
   });
 }

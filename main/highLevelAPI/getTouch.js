@@ -2,22 +2,62 @@ var fs = require('fs');
 var io = require('./io.js');
 var path = require('path');
 
-var timer = (new Date()).getTime();
-var i=0;
-io.mug_touch_on(function(x, y, id) {
-  //console.log('touch event='+x+', '+y+', '+id+', '+(new Date()).getTime());
-  //mug_touch_on(x, y, id);
-  //touchEmitter.emit("touch", x, y, id);
-  // Every one second receive a touch
-  console.log('test='+(i++));
-  if (((new Date()).getTime()-timer)>=1000) {
-    timer = (new Date()).getTime();
-    //console.log("timer="+timer);
-    fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touch':[x, y, id]})+'\n');
-  }
+/*io.mug_touch_on(function(x, y, id) {
+  console.log('touch event='+x+','+y+''+id);
+  fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touch':[x, y, id]})+'\n');
 });
-io.mug_gesture_on(io.MUG_GESTURE, function(g) {
-  //console.log('gesture event='+g);
+*/
+
+io.mug_touch_event_on(io.TOUCH_HOLD, function(e, x, y, id) {
+/*  var touchEvent = null;
+  switch(e) {
+    case 1:
+      touchEvent = 'TOUCH_CLICK';
+      break;
+    case 2:
+      touchEvent = 'TOUCH_DOWN';
+      break;
+    case 3:
+      touchEvent = 'TOUCH_UP';
+      break;
+    case 4:
+      touchEvent = 'TOUCH_HOLD';
+      break;
+    default:
+      break;
+  }*/
+  //if (touchEvent != null) {
+    //console.log('touch event='+touchEvent+','+x+','+y+','+id);
+    fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touchEvent':[e, x, y, id]})+'\n');
+  //}
+});
+
+io.mug_touch_event_on(io.TOUCH_CLICK, function(e, x, y, id) {
+/*  var touchEvent = null;
+  switch(e) {
+    case 1:
+      touchEvent = 'TOUCH_CLICK';
+      break;
+    case 2:
+      touchEvent = 'TOUCH_DOWN';
+      break;
+    case 3:
+      touchEvent = 'TOUCH_UP';
+      break;
+    case 4:
+      touchEvent = 'TOUCH_HOLD';
+      break;
+    default:
+      break;
+  }*/
+  //if (touchEvent != null) {
+    //console.log('touch event='+touchEvent+','+x+','+y+','+id);
+    fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touchEvent':[e, x, y, id]})+'\n');
+  //}
+});
+
+io.mug_gesture_on(io.MUG_GESTURE, function(g, info) {
+/*
   var gesture = null;
   switch(g) {
     case 1:
@@ -53,16 +93,14 @@ io.mug_gesture_on(io.MUG_GESTURE, function(g) {
     case 11:
       gesture = 'MUG_SWIPE_DOWN_2';
       break;
-    case 12:
-      gesture = 'MUG_HOLD';
-      break;
-    case 13:
-      gesture = 'MUG_HOLD_2';
+    default:
       break;
   }
-  //mug_gesture_on(g);
-  //touchEmitter.emit("gesture", gesture);
-  fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'gesture':gesture})+'\n');
+*/
+  //if (gesture != null) {
+    //console.log('gesture event='+gesture);
+    fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'gesture':g})+'\n');
+  //}
 });
 
 io.mug_run_touch_thread();

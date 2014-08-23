@@ -38,6 +38,6 @@ sys.isFrontEndApp = function(pid, cb) {
 sys.registerNotification = function(app) {
   console.log('Register a notification:'+app);
   process.send({'notification':app});
-});
+};
 
 module.exports = sys;
