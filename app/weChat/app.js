@@ -44,13 +44,13 @@ setInterval(function(){dispAnimation();}, 100);
 
 // Touch event handler begin
 io.touchPanel.on('touch', function(x, y, id) {
+  if (e == 'TOUCH_HOLD') {
+    sys.escape();
+  }
 });
 
 io.touchPanel.on('gesture', function(gesture) {
   console.log(logPrefix+'getsture='+gesture);
-  if (gesture == 'MUG_HODE') {
-    sys.escape();
-  }
 });
 // Touch event handler end
 

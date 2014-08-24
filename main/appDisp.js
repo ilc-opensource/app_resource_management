@@ -69,10 +69,17 @@ fs.watch('app.json', function(e, filename) {
   }
 });
 
-io.touchPanel.on('touch', function(x, y, id) {
+/*io.touchPanel.on('touch', function(x, y, id) {
   var nextApp = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].start);
   console.log(logPrefix+"Launch a new app"+nextApp);
   sys.newApp(nextApp);
+});*/
+io.touchPanel.on('touchEvent', function(e, x, y, id) {
+  if (e == 'TOUCH_CLICK') {
+    var nextApp = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].start);
+    console.log(logPrefix+"Launch a new app"+nextApp);
+    sys.newApp(nextApp);
+  }
 });
 
 io.touchPanel.on('gesture', function(gesture) {
@@ -82,8 +89,6 @@ io.touchPanel.on('gesture', function(gesture) {
   } else if (gesture == 'MUG_SWIPE_RIGHT') {
     index = (index==0)?(appKey.length-1):(index-1);
     disp();
-  } else if (gesture == 'MUG_HODE') {
-    sys.escape();
   }
 });
 

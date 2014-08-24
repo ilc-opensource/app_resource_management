@@ -1,14 +1,20 @@
 var child_process = require('child_process');
 var path = require('path');
 var context = require('./context.js');
-
+var touchPanel = require('./touchPanel.js');
 var io = require('./io.js');
-var sys = require('./sys.js');
 
 var logPrefix = '[sys new] ';
 
 var newApp = function(app) {
-  console.log(logPrefix+'context='+(context)+(sys));
+  // Disable touch and gesture event after this point
+  touchPanel.disableTouch = true;
+  //clean all emitted event 
+  touchPanel.touchEventListener = touchPanel.listeners('touchEvent');
+  touchPanel.gestureListener = touchPanel.listeners('gesture');
+  touchPanel.removeAllListeners('touchEvent');
+  touchPanel.removeAllListeners('gesture');
+
   process.send({'newApp': {'app':app, 'context':context}});
 };
 

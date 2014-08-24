@@ -19,13 +19,24 @@ function disp(i) {
   io.disp_raw_N(JSON.parse(appImg).img0, 1, 100);
 }
 
-io.touchPanel.on('touch', function(x, y, id) {
+/*io.touchPanel.on('touch', function(x, y, id) {
   if (index == 0) {
     sys.newApp('appDisp.js');
   }
   if (index == 1) {
   }
   if (index == 2) {
+    child_process.exec('shutdown')
+  }
+});*/
+
+io.touchPanel.on('touchEvent', function(e, x, y, id) {
+  if (index == 0 && e == 'TOUCH_CLICK') {
+    sys.newApp('appDisp.js');
+  }
+  if (index == 1 && e == 'TOUCH_CLICK') {
+  }
+  if (index == 2 && e == 'TOUCH_CLICK') {
     child_process.exec('shutdown')
   }
 });
@@ -37,9 +48,6 @@ io.touchPanel.on('gesture', function(gesture) {
   } else if (gesture == 'MUG_SWIPE_RIGHT') {
     index = (index==0)?(startup.length-1):(index-1);
     disp(index);
-  } else if (gesture == 'MUG_HODE') {
-    // Don't send escape to OS
-    sys.escape();
   }
 });
 

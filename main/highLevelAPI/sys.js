@@ -4,11 +4,11 @@ var path = require('path');
 var system = function(){};
 var sys = new system();
 sys.exit = require('./exitApp.js');
-sys.escape = require('./escapeApp.js');
+//sys.escape = require('./escapeApp.js');
 sys.newApp = require('./newApp.js');
 
 // Don't need any more
-sys.isFrontEndApp = function(pid, cb) {
+/*sys.isFrontEndApp = function(pid, cb) {
   child_process.exec('./C/getFrontEndApp', function(error, stdout, stderr){
     //console.log(logPrefix+'stdout: ' + stdout);
     // stdout == C program, frontEndApp=0\n
@@ -22,7 +22,7 @@ sys.isFrontEndApp = function(pid, cb) {
       //console.log(logPrefix+'exec error: ' + error);
     }
   });
-}
+}*/
 
 // We use another version, app developer can only call this in main process of the app
 /*sys.registerNotification = function(app) {

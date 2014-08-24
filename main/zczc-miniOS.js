@@ -9,16 +9,8 @@ var EventEmitter = require("events").EventEmitter
 var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
 
-// TODO: read these info from config file
-var defaultApp = path.join(__dirname, '../app/weather/app.js');
-var timeToLaunchDefaultApp = 60000;
-var intervalToShowNotification = 5000;
-var maxCountToShowNotification = 3;
-var checkInterval = 1000; // Find no touch event or some pending notifications
-var escapeFromDefaultApp = false;
-
 var logPrefix = '[OS] ';
-var appStack = []; //{'app':, 'process':, 'context', 'disableTouch', 'isClicked'} //isClicked only for notification app
+var appStack = []; //{'app':, 'process':, 'context', 'disableTouch',}
 var pendingNotification = []; //{'app':, 'time':, 'dispCount':}
 var frontEndApp = null;
 
@@ -60,16 +52,6 @@ function launchApp(app) {
     var appInfo = {'app':app, 'process':childProcess, 'disableTouch':false};
     appStack.push(appInfo);
     frontEndApp = appStack[appStack.length-1];
-    // if the notification is show maxCountToShowNotification, del it
-    for (var j=0; j<pendingNotification.length; j++) {
-      if (path.join(path.dirname(app), 'notification.js') == pendingNotification[j]) {
-        pendingNotification[j].dispCount--;
-        if (pendingNotification[j].dispCount == 0) {
-          pendingNotification.splice(j, 1);
-        }
-        break;
-      }
-    }
   } else {
     console.log(logPrefix+'restore a existing process for '+app);
     // czhan25 reuse i(j), cause a bug
@@ -87,7 +69,6 @@ function launchApp(app) {
     // give display to the re-entered app procee
     enableAppDisp(appStack[i].process.pid);
     // push app to the stack head, and redirect touch event to it
-    appStack[i].process.send({'enableTouch': true});
     var curApp = appStack.splice(i, 1);
     appStack.push(curApp[0]);
     frontEndApp = appStack[appStack.length-1];
@@ -109,96 +90,120 @@ function moveToBackground(savedContext) {
     return -1;
   }
  
+  //console.log(logPrefix+'save context('+savedContext.app+'):'+savedContext.lastImg); 
   appStack[i].context = savedContext.lastImg;
+  // Disable touch for this app
+  // TODO:
+
 }
 
-// condition
-// 1: click on a notification app, new app directly
-// 2: a notification app exit without click on, back to the previous app
-// 3: normal
-// 4: escape from default app
-function findNextApp(condition) {
+function findNextApp(isNotification) {
   // Notification app can't be disturbed
-  /*for (var i=0; i<pendingNotification.length; i++) {
+  for (var i=0; i<pendingNotification.length; i++) {
     if (appStack[appStack.length-1].app == pendingNotification[i].app) {
       // wait for notification app exit
       return;
     }
-  }*/
-  if (condition == 1) {
-    launchApp(path.join(path.dirname(frontEndApp.app), 'app.js'));
-    return;
-  }
-  if (condition == 2) {
-    launchApp(appStack[appStack.length-1].app);
-    return;
   }
   // If has notification, and time is meet
   for (var i=0; i<pendingNotification.length; i++) {
     console.log(logPrefix+"search for a timeout notification");
     var timer = (new Date()).getTime();
-    if (pendingNotification[i].time == 0 || (timer - pendingNotification[i].time)>intervalToShowNotification) {
+    if (pendingNotification[i].time == 0 || (timer - pendingNotification[i].time)>60000) {
       pendingNotification[i].time = timer;
       launchApp(pendingNotification[i].app);
       console.log(logPrefix+"launch a notification");
       return;
     }
   }
-  if (condition == 4) {
-    // default app has not been poped
-    launchApp(appStack[appStack.length-2].app);
-    return;
-  }
   // otherwise
-  if (((new Date()).getTime() - timerLastTouchEvent) > timeToLaunchDefaultApp) {
-    timerLastTouchEvent = (new Date()).getTime();
-    escapeFromDefaultApp = true;
-    launchApp(defaultApp);
-  } else {
+  if (!isNotification) {
     launchApp('./startup.js');
+  } else {
+    launchApp(appStack[appStack.length-1].app);
   }
 }
 
-function addNotification(notification) {
-  if (notification == '') return;
-  // frontEndApp is not allowed to register notification
-  if (path.dirname(frontEndApp.app) == path.dirname(notification)) {
-    return;
-  }
-  // Update an existing notification or add a new notification
-  for (var j=0; j<pendingNotification.length; j++) {
-    if (notification == pendingNotification[j].app) {
-      pendingNotification[j].time = 0;
-      pendingNotification[j].dispCount = 0;
-      break;
+// We use another version of registerNotification, app developer can only call this in main process of the app
+/*
+// file name must be aligned with NOTIFICATION definition in sdk_c/include/res_manager.h
+var notificationFile = '/tmp/smart_mug_notification.json';
+//TODO: touch a file /tmp/smart_mug_notification.json, create a new
+var fd = fs.openSync(notificationFile, 'w');
+fs.closeSync(fd);
+//var fsTimeout = null;
+fs.watch(notificationFile, function(e, filename) {
+  //if (!fsTimeout) {
+    //console.log(logPrefix+'File event='+e);
+    // C program Read the file, clean file, return content througth stdout, then add notification
+    console.log(logPrefix+'smart_mug_notification.json change');
+    if (fs.statSync(notificationFile).size == 0) {
+      return;
+    }
+    child_process.exec(path.join(__dirname, './highLevelAPI/C/getNotification'), function(error, stdout, stderr){
+    //child_process.exec('cat notification.json; rm notification.json; touch notification.json', function(error, stdout, stderr){
+      console.log('getNotification stdout: ' + stdout);
+      console.log('getNotification stderr: ' + stderr);
+      if (error !== null) {
+        console.log('getNotification exec error: ' + error);
+      }
+      addNotification(stdout);
+    });
+    //fsTimeout = setTimeout(function(){fsTimeout=null;}, 100);
+  //}
+});
+*/
+
+function addNotification(msg) {
+  if (msg == '' || msg == '\n') return;
+  var notification = msg.split('\n');
+  var isNewNotificationAdd = false;
+  for (var i=0; i<notification.length; i++) {
+    if (notification[i] == '') continue;
+    // frontEndApp is not allowed to register notification
+    if (path.dirname(appStack[appStack.length-1].app) == path.dirname(notification[i])) {
+      continue;
+    }
+    for (var j=0; j<pendingNotification.length; j++) {
+      if (notification[i] == pendingNotification[j].app) {
+        pendingNotification[j].time = 0;
+        isNewNotificationAdd = true;
+        break;
+      }
+    }
+    if (j==pendingNotification.length) {
+      isNewNotificationAdd = true;
+      pendingNotification.push({'app':notification[i], 'time':0});
+      for (var k=0; k<pendingNotification.length; k++) {
+        console.log(logPrefix+'At push pendingNotification['+k+']='+pendingNotification[k]);
+      }
     }
   }
-  if (j==pendingNotification.length) {
-    pendingNotification.push({'app':notification, 'time':0, 'dispCount':0});
-  }
   // send a hold to current front end app
-  console.log(logPrefix+'notification app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
-  frontEndApp.process.send({'mug_touchevent_on':['TOUCH_HOLD', 0, 0, 0]});
+  if (isNewNotificationAdd) {
+    console.log(logPrefix+'implicitly send a gesture '+'MUG_HODE'+' to '+appStack[appStack.length-1].app);
+    appStack[appStack.length-1].process.send({'mug_gesture_on':'MUG_HODE'});
+  }
 }
 
 // check if there is some pending notifications
-function checkNotificationPeriodically() {
+function checkNotification() {
   for (var i=0; i<pendingNotification.length; i++) {
     console.log(logPrefix+"search for a timeout notification periodically");
     var timer = (new Date()).getTime();
-    if (pendingNotification[i].time == 0 || (timer - pendingNotification[i].time)>intervalToShowNotification) {
+    if (pendingNotification[i].time == 0 || (timer - pendingNotification[i].time)>10000) {
       pendingNotification[i].time = timer;
+      //launchApp(pendingNotification[i].app);
       console.log(logPrefix+"reAdd a notification");
       addNotification(pendingNotification[i].app);
-      setTimeout(checkNotification, checkInterval);
+      setTimeout(checkNotification, 10000);
       return;
     }
   }
-  setTimeout(checkNotificationPeriodically, checkInterval);
+  setTimeout(checkNotification, 10000);
 }
-checkNotificationPeriodically();
+checkNotification();
 
-var isTouchOnNotification = false;
 var handler = function(o) {
   if (o['escape']) {
     console.log(logPrefix+'receive a sys message(escape):'+JSON.stringify(o));
@@ -209,30 +214,44 @@ var handler = function(o) {
     }
     console.log(logPrefix+'put '+frontEndApp.app+' into background');
     moveToBackground(o['escape']);
-    if (escapeFromDefaultApp) {
-      escapeFromDefaultApp = false;
-      findNextApp(4);
-    } else {
-      // launch
-      findNextApp(3);
-    }
+    // launch
+    findNextApp();
   } else if (o['newApp']) {
-    // Don't allow none front end app new a app
-    if (frontEndApp.app != o['newApp'].context.app) {
-      return;
-    }
     console.log(logPrefix+'receive a sys message(newApp):'+JSON.stringify(o));
     moveToBackground(o['newApp'].context);
     launchApp(o['newApp'].app);
-  } else if (o['exit']) { // Explicit exit, only used for notification
+  } else if (o['exit']) {
     console.log(logPrefix+'receive a sys message(exit):'+JSON.stringify(o));
-    console.log(logPrefix+frontEndApp.app+'exit');
+    console.log(logPrefix+appStack[appStack.length-1].app+'exit');
+    // Notification will back to stack-1 app not startup app, if no touch
+    // otherwise, it will launch the notification's main app
+    for (var i=0; i<pendingNotification.length; i++) {
+      if (appStack[appStack.length-1].app == pendingNotification[i].app) {
+        break;
+      }
+    }
+    var lastApp = appStack[appStack.length-1].app;
     appStack.pop();
+    printAppStack();
     
-    if (frontEndApp.isClicked == true) {
-      findNextApp(1);
+    //console.log(logPrefix+'appStack='+appStack[appStack.length-1].app);
+    // Touch on the notification, launch the 
+    if (isTouchOnNotification) {
+      // Can't meet this check
+      /*if (i == pendingNotification.length) {
+        console.log(logPrefix+'fatal error:'+i+', '+pendingNotification.length);
+        throw 0;
+      }*/
+      isTouchOnNotification = false;
+      console.log(logPrefix+'Notification launch its main app:'+path.join(path.dirname(lastApp), 'app.js'));
+      launchApp(path.join(path.dirname(lastApp), 'app.js'));
+    // launch 
     } else {
-      findNextApp(2); // no touch on the app, app is a notification app
+      if (i == pendingNotification.length) {
+        findNextApp(false); // no touch on the app, app is not a notification app
+      } else {
+        findNextApp(true); // no touch on the app, app is a notification app
+      }
     }
   } else if (o['notification']) {
     addNotification(o['notification']);
@@ -241,25 +260,9 @@ var handler = function(o) {
   }
 };
 
-var timerLastTouchEvent = (new Date()).getTime();
-function launchDefaultApp() {
-  // no touch action for one minute, launch the default app
-  if (((new Date()).getTime() - timerLastTouchEvent) > timeToLaunchDefaultApp) {
-    console.log(logPrefix+'default app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
-    frontEndApp.process.send({'mug_touchevent_on':['TOUCH_HOLD', 0, 0, 0]});
-  }
-  setTimeout(launchDefaultApp, checkInterval);
-}
-setTimeout(launchDefaultApp, checkInterval);
-
-// Redirect touch and gesture event to front end app
+// Redirect touchEvent and gesture event to front end app
 var touchEmitter = new EventEmitter();
 touchEmitter.on('touchEvent', function(e, x, y, id) {
-  timerLastTouchEvent = (new Date()).getTime();
-  console.log(logPrefix+'touchEvent='+e);
-  if (frontEndApp == null) {
-    return;
-  }
   var touchEvent = null;
   switch(e) {
     case 1:
@@ -276,14 +279,17 @@ touchEmitter.on('touchEvent', function(e, x, y, id) {
     return;
   }
 
-  // Check if click on a notification app, new app directly
-  for (var i=0; i<pendingNotification.length; i++) {
-    if (frontEndApp.app == pendingNotification[i].app) {
-      pendingNotification.splice(i, 1);
-      console.log(logPrefix+'Touch on a notification'+frontEndApp.app);
-      frontEndApp.disableTouch = true;
-      frontEndApp.isClicked = true;
-      return;
+  // if click on a notification app, new app directly
+  if (touchEvent == 'TOUCH_CLICK') {
+    for (var i=0; i<pendingNotification.length; i++) {
+      if (frontEndApp.app == pendingNotification[i].app) {
+        pendingNotification.splice(i, 1);
+        console.log(logPrefix+'Touch on a notification'+frontEndApp.app);
+        frontEndApp.disableTouch = true;
+        // Launch app directly
+        
+        break;
+      }
     }
   }
 
@@ -295,11 +301,6 @@ touchEmitter.on('touchEvent', function(e, x, y, id) {
 });
 
 touchEmitter.on('gesture', function(g) {
-  timerLastTouchEvent = (new Date()).getTime();
-  console.log(logPrefix+'gesture='+g);
-  if (frontEndApp == null) {
-    return;
-  }
   var gesture = null;
   switch(g) {
     case 1:
@@ -342,8 +343,8 @@ touchEmitter.on('gesture', function(g) {
   if (frontEndApp.disableTouch) {
     return;
   }
-  console.log(logPrefix+'send a gesture '+gesture+' to '+frontEndApp.app);
-  frontEndApp.process.send({'mug_gesture_on':gesture});
+  console.log(logPrefix+'send a gesture '+g+' to '+frontEndApp.app);
+  frontEndApp.process.send({'mug_gesture_on':g});
 });
 
 /* get gesture event through file
@@ -374,15 +375,16 @@ function readTouch() {
 
     var line = msg.slice(0, idx);
     var e = JSON.parse(line);
-    if (e['touch']) {
-      touchEmitter.emit("touch", e['touch'][0], e['touch'][1], e['touch'][2]);}
+    /*if (e['touch']) {
+      touchEmitter.emit("touch", e['touch'][0], e['touch'][1], e['touch'][2]);
+    }*/
     if (e['touchEvent']) {
       touchEmitter.emit("touchEvent", e['touchEvent'][0],  e['touchEvent'][1], e['touchEvent'][2], e['touchEvent'][3]);
     }
     if (e['gesture']) {
       touchEmitter.emit("gesture", e['gesture']);
     }
-    position=position+String(line).length+1; // 1 is the length of '\n'
+    position=position+msg.length;
     isReady = true;
   });
 }

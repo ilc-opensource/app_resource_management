@@ -7,7 +7,7 @@ var sys = require('../../main/highLevelAPI/sys.js');
 function notification() {
   var w = JSON.parse(fs.readFileSync(path.join(__dirname, 'notification.json'), 'utf8'));
   io.disp_raw_N(w.image, w.numberOfImg, 200);
-  //sys.exit();
+  sys.exit();
 }
 
 notification();
