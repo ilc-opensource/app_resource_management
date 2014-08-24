@@ -8,6 +8,14 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[user weather] ';
 
+var getWeatherProcess = null;
+var weatherContent = '';
+var handler = function(o) {
+  if (o['weather']) {
+    weatherContent = o['weather'];
+  }
+};
+
 // Animation display begin
 var isAnimationDispComplete = true;
 var isPreviousImageDisComplete = true;
@@ -18,7 +26,7 @@ function displayWeather() {
   isAnimationDispComplete = false;
   isPreviousImageDisComplete = true;
   imageIter = -1;
-  var w = fs.readFileSync(path.join(__dirname, '.\/weather_from_baidu.json'), 'utf8');
+  var w = weatherContent; //fs.readFileSync(path.join(__dirname, '.\/weather_from_baidu.json'), 'utf8');
   if (w == '') {
     var weather = fs.readFileSync(path.join(__dirname, '.\/no_weather_info_media.json'), 'utf8');
     imgs = JSON.parse(weather);
@@ -57,6 +65,7 @@ io.touchPanel.on('gesture', function(gesture) {
 });
 // Touch event handler end
 
+/*
 // Query info from web begin
 var lastWeather = {};
 var lastMsg = null;
@@ -136,9 +145,12 @@ fs.watch(path.join(__dirname, 'weather_from_baidu.json'), function(e, filename) 
     sys.registerNotification(path.join(__dirname, 'notification.js'));
 });
 // Register notification end
+*/
 
 var weather = function() {
-  setInterval(function(){queryWeather('116.305145,39.982368', action)}, 5000);
+  getWeatherProcess = child_process.fork(path.join(__dirname, 'getWeather.js'));
+  getWeatherProcess.on('message', handler);
+  //setInterval(function(){queryWeather('116.305145,39.982368', action)}, 5000);
   displayWeather();
 };
 weather();

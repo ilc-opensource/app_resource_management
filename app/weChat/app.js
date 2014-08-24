@@ -8,6 +8,15 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[user weChat] ';
 
+var getWeChatProcess = null;
+var weChatContent = '';
+var handler = function(o) {
+  if (o['weChat']) {
+    weChatContent = o['weChat'];
+    //displayweChat(o['weChat']);
+  }
+};
+
 // Animation display begin
 var isAnimationDispComplete = true;
 var isPreviousImageDisComplete = true;
@@ -18,7 +27,7 @@ function displayweChat() {
   isAnimationDispComplete = false;
   isPreviousImageDisComplete = true;
   imageIter = -1;
-  var w = fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
+  var w = weChatContent; //fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
   if (w == '') {
     var w = fs.readFileSync(path.join(__dirname, './media.json'), 'utf8');
     imgs = JSON.parse(w);
@@ -54,6 +63,7 @@ io.touchPanel.on('gesture', function(gesture) {
 });
 // Touch event handler end
 
+/*
 // Query info from web begin
 var lastMsg = null;
 function action(msg) {
@@ -123,9 +133,12 @@ fs.watch(path.join(__dirname, 'weChat.json'), function(e, filename) {
     sys.registerNotification(path.join(__dirname, 'notification.js'));
 });
 // Register notification end
+*/
 
 var weChat = function() {
-  setInterval(function(){queryweChat(action)}, 1000);
+  getWeChatProcess = child_process.fork(path.join(__dirname, 'getWeChat.js'));
+  getWeChatProcess.on('message', handler);
+  //setInterval(function(){queryweChat(action)}, 1000);
   displayweChat();
 };
 
