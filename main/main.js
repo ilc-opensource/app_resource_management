@@ -11,7 +11,7 @@ var sys = require('./highLevelAPI/sys.js');
 
 // TODO: read these info from config file
 var defaultApp = path.join(__dirname, '../app/weather/app.js');
-var timeToLaunchDefaultApp = 60000;
+var timeToLaunchDefaultApp = 10000;
 var intervalToShowNotification = 5000;
 var maxCountToShowNotification = 3;
 var checkInterval = 1000; // Find no touch event or some pending notifications
@@ -160,6 +160,7 @@ function findNextApp(condition) {
 }
 
 function addNotification(notification) {
+  
   if (notification == '') return;
   // frontEndApp is not allowed to register notification
   if (path.dirname(frontEndApp.app) == path.dirname(notification)) {
@@ -197,6 +198,17 @@ function checkNotificationPeriodically() {
   setTimeout(checkNotificationPeriodically, checkInterval);
 }
 checkNotificationPeriodically();
+
+fs.watch(path.join(__dirname, '../app/weather/weatherNotification'), function(e, filename) {
+  // write command to notification.json
+  //sys.registerNotification(path.join(__dirname, 'notification.js'));
+  addNotification(path.join(__dirname, '../app/weather/notification.js'));
+});
+fs.watch(path.join(__dirname, '../app/weChat/weChatNotification'), function(e, filename) {
+    // write command to notification.json
+    //sys.registerNotification(path.join(__dirname, 'notification.js'));
+    addNotification(path.join(__dirname, '../app/weChat/notification.js'));
+});
 
 var isTouchOnNotification = false;
 var handler = function(o) {
@@ -245,8 +257,11 @@ var timerLastTouchEvent = (new Date()).getTime();
 function launchDefaultApp() {
   // no touch action for one minute, launch the default app
   if (((new Date()).getTime() - timerLastTouchEvent) > timeToLaunchDefaultApp) {
-    console.log(logPrefix+'default app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
-    frontEndApp.process.send({'mug_touchevent_on':['TOUCH_HOLD', 0, 0, 0]});
+    if (frontEndApp.app != defaultApp) {
+      console.log(logPrefix+'default app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
+      //console.log(logPrefix+frontEndApp.app+','+defaultApp);
+      frontEndApp.process.send({'mug_touchevent_on':['TOUCH_HOLD', 0, 0, 0]});
+    }
   }
   setTimeout(launchDefaultApp, checkInterval);
 }
