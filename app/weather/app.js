@@ -32,7 +32,7 @@ function displayWeather() {
     imgs = JSON.parse(weather);
   } else {
     if (fs.existsSync(path.join(__dirname, JSON.parse(w).weather, 'media.json'))) {
-      console.log(logPrefix+'weather file exist');
+      //console.log(logPrefix+'weather file exist');
       var weather = fs.readFileSync(path.join(__dirname, JSON.parse(w).weather, 'media.json'), 'utf8');
       imgs = JSON.parse(weather);
     }

@@ -17,7 +17,7 @@ function action(msg) {
     lastMsg = msg;
     console.log(msg);
 
-    process.send({'weather':msg});
+    process.send({'weather':JSON.stringify({'weather':msg})});
 
     fs.writeFile(path.join(__dirname, 'weather_from_baidu.json'),
       JSON.stringify({"weather":msg}),
@@ -93,4 +93,4 @@ fs.watch(path.join(__dirname, 'weather_from_baidu.json'), function(e, filename) 
 var weatherContent = fs.readFileSync(path.join(__dirname, './weather_from_baidu.json'), 'utf8');
 process.send({'weather':weatherContent});
 
-setInterval(function(){queryWeather(action)}, 1000);
+setInterval(function(){queryWeather('116.305145,39.982368', action)}, 1000);
