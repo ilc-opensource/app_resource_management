@@ -18,7 +18,10 @@ io.touchPanel.appHandleEscape = true;
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
   if (e == 'TOUCH_HOLD') {
     console.log(logPrefix+'kill the main app pid='+appProcess.pid);
-    process.kill(appProcess.pid);
+    try {
+      process.kill(appProcess.pid);
+    } catch (ex) {
+    }
     sys.escape();
   }
 });
