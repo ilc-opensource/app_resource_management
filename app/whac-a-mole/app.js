@@ -6,10 +6,10 @@ var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[app mole] '
-var appProcess = child_process.execFile(path.join(__dirname, 'mole'), [], {'cwd':path.join(__dirname, '../app/whac-a-mole')});
-
+//var appProcess = child_process.execFile(path.join(__dirname, 'mole'), [], {'cwd':path.join(__dirname, '../app/whac-a-mole')});
+var appProcess = child_process.execFile(path.join(__dirname, 'mole'));
 appProcess.on('close', function (code, signal) {
-  console.log('child process terminated due to receipt of signal '+signal);
+  console.log('child process terminated due to receipt of signal '+code+', '+signal);
 });
 
 // Touch event handler begin
@@ -23,6 +23,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
     } catch (ex) {
     }
     sys.escape();
+    process.exit();
   }
 });
 

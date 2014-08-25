@@ -58,6 +58,7 @@ function launchApp(app) {
       appStack.splice(i, 1);
     }
   }
+  console.log(logPrefix+'processExit='+processExit);
   if (i==appStack.length || processExit) {
     console.log(logPrefix+'create a new process for '+app);
     // when launch a app, pass the app name as the first parameter (part of context), part of correspond to context.js
