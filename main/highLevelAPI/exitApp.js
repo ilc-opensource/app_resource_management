@@ -5,7 +5,7 @@ var logPrefix = '[sys exit] ';
 
 var exitApp = function() {
   process.send({'exit':true});
-  process.exit(0);
+  //process.exit(0);
 };
 
 module.exports = exitApp;

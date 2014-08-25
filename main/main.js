@@ -191,7 +191,7 @@ function checkNotificationPeriodically() {
       pendingNotification[i].time = timer;
       console.log(logPrefix+"reAdd a notification");
       addNotification(pendingNotification[i].app);
-      setTimeout(checkNotification, checkInterval);
+      setTimeout(checkNotificationPeriodically, checkInterval);
       return;
     }
   }
@@ -199,15 +199,23 @@ function checkNotificationPeriodically() {
 }
 checkNotificationPeriodically();
 
+var fsTimeout_1 = null;
 fs.watch(path.join(__dirname, '../app/weather/weatherNotification'), function(e, filename) {
   // write command to notification.json
   //sys.registerNotification(path.join(__dirname, 'notification.js'));
-  addNotification(path.join(__dirname, '../app/weather/notification.js'));
+  if (!fsTimeout_1) {
+    addNotification(path.join(__dirname, '../app/weather/notification.js'));
+    fsTimeout_1 = setTimeout(function(){fsTimeout_1=null;}, 100);
+  }
 });
+var fsTimeout_2 = null;
 fs.watch(path.join(__dirname, '../app/weChat/weChatNotification'), function(e, filename) {
     // write command to notification.json
     //sys.registerNotification(path.join(__dirname, 'notification.js'));
-    addNotification(path.join(__dirname, '../app/weChat/notification.js'));
+    if (!fsTimeout_2) {
+      addNotification(path.join(__dirname, '../app/weChat/notification.js'));
+      fsTimeout_2 = setTimeout(function(){fsTimeout_2=null;}, 100);
+    }
 });
 
 var isTouchOnNotification = false;
@@ -257,6 +265,7 @@ var timerLastTouchEvent = (new Date()).getTime();
 function launchDefaultApp() {
   // no touch action for one minute, launch the default app
   if (((new Date()).getTime() - timerLastTouchEvent) > timeToLaunchDefaultApp) {
+    //if (frontEndApp.app != defaultApp && path.basename(frontEndApp.app) != 'notification.js') {
     if (frontEndApp.app != defaultApp) {
       console.log(logPrefix+'default app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
       //console.log(logPrefix+frontEndApp.app+','+defaultApp);
