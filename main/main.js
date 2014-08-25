@@ -62,7 +62,8 @@ function launchApp(app) {
     frontEndApp = appStack[appStack.length-1];
     // if the notification is show maxCountToShowNotification, del it
     for (var j=0; j<pendingNotification.length; j++) {
-      if (path.join(path.dirname(app), 'notification.js') == pendingNotification[j]) {
+      console.log(logPrefix+'count'+app+','+JSON.stringify(pendingNotification[j]));
+      if (app == pendingNotification[j].app) {
         pendingNotification[j].dispCount--;
         if (pendingNotification[j].dispCount == 0) {
           pendingNotification.splice(j, 1);
@@ -159,7 +160,7 @@ function findNextApp(condition) {
   }
 }
 
-function addNotification(notification) {
+function addNotification(notification, isPeriodical) {
   
   if (notification == '') return;
   // frontEndApp is not allowed to register notification
@@ -170,12 +171,14 @@ function addNotification(notification) {
   for (var j=0; j<pendingNotification.length; j++) {
     if (notification == pendingNotification[j].app) {
       pendingNotification[j].time = 0;
-      pendingNotification[j].dispCount = 0;
+      if (!isPeriodical) {
+        pendingNotification[j].dispCount = maxCountToShowNotification;
+      }
       break;
     }
   }
   if (j==pendingNotification.length) {
-    pendingNotification.push({'app':notification, 'time':0, 'dispCount':0});
+    pendingNotification.push({'app':notification, 'time':0, 'dispCount':maxCountToShowNotification});
   }
   // send a hold to current front end app
   console.log(logPrefix+'notification app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
@@ -190,7 +193,7 @@ function checkNotificationPeriodically() {
     if (pendingNotification[i].time == 0 || (timer - pendingNotification[i].time)>intervalToShowNotification) {
       pendingNotification[i].time = timer;
       console.log(logPrefix+"reAdd a notification");
-      addNotification(pendingNotification[i].app);
+      addNotification(pendingNotification[i].app, true);
       setTimeout(checkNotificationPeriodically, checkInterval);
       return;
     }
@@ -204,7 +207,7 @@ fs.watch(path.join(__dirname, '../app/weather/weatherNotification'), function(e,
   // write command to notification.json
   //sys.registerNotification(path.join(__dirname, 'notification.js'));
   if (!fsTimeout_1) {
-    addNotification(path.join(__dirname, '../app/weather/notification.js'));
+    addNotification(path.join(__dirname, '../app/weather/notification.js'), false);
     fsTimeout_1 = setTimeout(function(){fsTimeout_1=null;}, 100);
   }
 });
@@ -213,7 +216,7 @@ fs.watch(path.join(__dirname, '../app/weChat/weChatNotification'), function(e, f
     // write command to notification.json
     //sys.registerNotification(path.join(__dirname, 'notification.js'));
     if (!fsTimeout_2) {
-      addNotification(path.join(__dirname, '../app/weChat/notification.js'));
+      addNotification(path.join(__dirname, '../app/weChat/notification.js'), false);
       fsTimeout_2 = setTimeout(function(){fsTimeout_2=null;}, 100);
     }
 });
@@ -255,7 +258,7 @@ var handler = function(o) {
       findNextApp(2); // no touch on the app, app is a notification app
     }
   } else if (o['notification']) {
-    addNotification(o['notification']);
+    addNotification(o['notification'], false);
   } else {
     console.log(logPrefix+' message error');
   }
