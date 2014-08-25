@@ -1,11 +1,23 @@
 var fs = require('fs');
 var child_process = require('child_process');
+var path = require('path');
 
-var appProcess = child_process.fork(path.join(__dirname, 'mole'));
+var io = require('../../main/highLevelAPI/io.js');
+var sys = require('../../main/highLevelAPI/sys.js');
+
+var logPrefix = '[app mole] '
+var appProcess = child_process.execFile(path.join(__dirname, 'mole'));
+
+appProcess.on('close', function (code, signal) {
+  console.log('child process terminated due to receipt of signal '+signal);
+});
 
 // Touch event handler begin
+// For none js app only
+io.touchPanel.appHandleEscape = true;
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
   if (e == 'TOUCH_HOLD') {
+    console.log(logPrefix+'kill the main app pid='+appProcess.pid);
     process.kill(appProcess.pid);
     sys.escape();
   }

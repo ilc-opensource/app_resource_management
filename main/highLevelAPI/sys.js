@@ -4,7 +4,7 @@ var path = require('path');
 var system = function(){};
 var sys = new system();
 sys.exit = require('./exitApp.js');
-//sys.escape = require('./escapeApp.js');
+sys.escape = require('./escapeApp.js');
 sys.newApp = require('./newApp.js');
 
 // Don't need any more
