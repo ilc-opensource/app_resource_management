@@ -6,7 +6,7 @@ var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[app mole] '
-var appProcess = child_process.execFile(path.join(__dirname, 'mole'));
+var appProcess = child_process.execFile(path.join(__dirname, 'mole'), [], {'cwd':path.join(__dirname, '../app/whac-a-mole')});
 
 appProcess.on('close', function (code, signal) {
   console.log('child process terminated due to receipt of signal '+signal);
