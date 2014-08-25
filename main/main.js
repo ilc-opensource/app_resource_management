@@ -48,7 +48,17 @@ function launchApp(app) {
       break;
     }
   }
-  if (i==appStack.length) {
+  // Check for exit of one app
+  var processExit = false;
+  if (i!=appStack.length) {
+    try {
+      process.kill(appStack[i].process.pid, 0);
+    } catch (ex) {
+      processExit = true;
+      appStack.splice(i, 1);
+    }
+  }
+  if (i==appStack.length || processExit) {
     console.log(logPrefix+'create a new process for '+app);
     // when launch a app, pass the app name as the first parameter (part of context), part of correspond to context.js
     var childProcess = child_process.fork(app, [app]);
