@@ -33,8 +33,8 @@ function printAppStack() {
 
 function enableAppDisp(pid) {
   child_process.exec(path.join(__dirname, './highLevelAPI/C/setFrontEndApp')+' '+pid, function(error, stdout, stderr){
-    console.log(logPrefix+'stdout: ' + stdout);
-    console.log(logPrefix+'stderr: ' + stderr);
+    if (stdout != '') console.log(logPrefix+'stdout: ' + stdout);
+    if (stderr != '') console.log(logPrefix+'stderr: ' + stderr);
     if (error !== null) {
       console.log(logPrefix+'exec error: ' + error);
     }
@@ -121,7 +121,10 @@ function moveToBackground(savedContext) {
     return -1;
   }
  
-  appStack[i].context = savedContext.lastImg;
+  if (savedContext.lastImg) {
+    console.log(logPrefix+'save context success');
+    appStack[i].context = savedContext.lastImg;
+  }
 }
 
 // condition
@@ -146,8 +149,8 @@ function findNextApp(condition) {
     return;
   }
   // If has notification, and time is meet
+  console.log(logPrefix+"search for a timeout notification");
   for (var i=0; i<pendingNotification.length; i++) {
-    console.log(logPrefix+"search for a timeout notification");
     var timer = (new Date()).getTime();
     if (pendingNotification[i].time == 0 || (timer - pendingNotification[i].time)>intervalToShowNotification) {
       pendingNotification[i].time = timer;
@@ -167,7 +170,7 @@ function findNextApp(condition) {
     escapeFromDefaultApp = true;
     launchApp(defaultApp);
   } else {
-    launchApp('./startup.js');
+    launchApp(path.join(__dirname, './startup.js'));
   }
 }
 
@@ -178,6 +181,7 @@ function addNotification(notification, isPeriodical) {
   if (path.dirname(frontEndApp.app) == path.dirname(notification)) {
     return;
   }
+  console.log(logPrefix+'addNotification='+notification+','+isPeriodical);
   // Update an existing notification or add a new notification
   for (var j=0; j<pendingNotification.length; j++) {
     if (notification == pendingNotification[j].app) {
@@ -235,7 +239,8 @@ fs.watch(path.join(__dirname, '../app/weChat/weChatNotification'), function(e, f
 var isTouchOnNotification = false;
 var handler = function(o) {
   if (o['escape']) {
-    console.log(logPrefix+'receive a sys message(escape):'+JSON.stringify(o));
+    //console.log(logPrefix+'receive a sys message(escape):'+JSON.stringify(o));
+    console.log(logPrefix+'receive a sys message(escape):');
     // one app may send multi escape to os
     //if (appStack[appStack.length-1].app != o['escape'].app) {
     if (frontEndApp.app != o['escape'].app) {
@@ -255,11 +260,13 @@ var handler = function(o) {
     if (frontEndApp.app != o['newApp'].context.app) {
       return;
     }
-    console.log(logPrefix+'receive a sys message(newApp):'+JSON.stringify(o));
+    //console.log(logPrefix+'receive a sys message(newApp):'+JSON.stringify(o));
+    console.log(logPrefix+'receive a sys message(newApp):');
     moveToBackground(o['newApp'].context);
     launchApp(o['newApp'].app);
   } else if (o['exit']) { // Explicit exit, only used for notification
-    console.log(logPrefix+'receive a sys message(exit):'+JSON.stringify(o));
+    //console.log(logPrefix+'receive a sys message(exit):'+JSON.stringify(o));
+    console.log(logPrefix+'receive a sys message(exit):');
     console.log(logPrefix+frontEndApp.app+'exit');
     appStack.pop();
     
@@ -294,7 +301,7 @@ setTimeout(launchDefaultApp, checkInterval);
 var touchEmitter = new EventEmitter();
 touchEmitter.on('touchEvent', function(e, x, y, id) {
   timerLastTouchEvent = (new Date()).getTime();
-  console.log(logPrefix+'touchEvent='+e);
+  //console.log(logPrefix+'touchEvent='+e);
   if (frontEndApp == null) {
     return;
   }
@@ -325,6 +332,9 @@ touchEmitter.on('touchEvent', function(e, x, y, id) {
     }
   }
 
+  if (frontEndApp.app == path.join(__dirname, './startup.js') && touchEvent == 'TOUCH_HOLD') {
+    return;
+  }
   console.log(logPrefix+'send a touchEvent '+touchEvent+' to '+frontEndApp.app);
   frontEndApp.process.send({'mug_touchevent_on':[touchEvent, x, y, id]});
   if (touchEvent == 'TOUCH_HOLD') {
@@ -334,7 +344,7 @@ touchEmitter.on('touchEvent', function(e, x, y, id) {
 
 touchEmitter.on('gesture', function(g) {
   timerLastTouchEvent = (new Date()).getTime();
-  console.log(logPrefix+'gesture='+g);
+  //console.log(logPrefix+'gesture='+g);
   if (frontEndApp == null) {
     return;
   }
@@ -428,7 +438,7 @@ setInterval(readTouch, 100);
 var touchProcess = child_process.fork(path.join(__dirname, './highLevelAPI/getTouch.js'));
 
 // Begin at this point
-launchApp('./startup.js');
+launchApp(path.join(__dirname, './startup.js'));
 
 // handle ctrl+c
 var signalHandler = function() {

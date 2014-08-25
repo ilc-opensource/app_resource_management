@@ -31,6 +31,7 @@ function disp(i) {
 });*/
 
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
+  console.log(logPrefix+'touchEvent='+e);
   if (index == 0 && e == 'TOUCH_CLICK') {
     sys.newApp('appDisp.js');
   }

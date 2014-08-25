@@ -42,7 +42,7 @@ function dispAnimation() {
   if (!isPreviousImageDisComplete) {return;}
   isPreviousImageDisComplete = false;
   imageIter++;
-  if (imageIter==imgs.numberOfImg) {isAnimationDispComplete = true; return;}
+  if (imageIter>=imgs.numberOfImg) {isAnimationDispComplete = true; return;}
   dispSingle(imgs['img'+imageIter], 1, 0);
   isPreviousImageDisComplete = true;
 }

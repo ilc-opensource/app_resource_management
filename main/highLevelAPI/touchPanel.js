@@ -15,6 +15,7 @@ tp.gestureListener = null;
 tp.appHandleEscape = false;
 
 process.on('message', function(o) {
+  console.log(logPrefix+'tp.disableTouch='+tp.disableTouch);
   // When re-enter one app, because when new aother app in this app, these will be set
   if (o['enableTouch']) {
     tp.disableTouch = false;
@@ -32,6 +33,7 @@ process.on('message', function(o) {
     return;
   }
   if (o['mug_touchevent_on']) {
+    console.log(logPrefix+'o[mug_touchevent_on]='+o['mug_touchevent_on']);
     // OS in app handle the escape
     if (o['mug_touchevent_on'][0] == 'TOUCH_HOLD' && !tp.appHandleEscape) {
       process.send({'escape':context});

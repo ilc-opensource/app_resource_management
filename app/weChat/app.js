@@ -28,19 +28,26 @@ function displayweChat() {
   isPreviousImageDisComplete = true;
   imageIter = -1;
   var w = weChatContent; //fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
-  if (w == '') {
+//  console.log(logPrefix+'w='+w);
+  if (w == '' || w == '\n') {
     var w = fs.readFileSync(path.join(__dirname, './media.json'), 'utf8');
     imgs = JSON.parse(w);
   } else {
     //console.log(logPrefix+'weChat file exist');
+    try {
     imgs = JSON.parse(w);
+    } catch(ex) {
+      imgs = null;
+      isAnimationDispComplete = true;
+      isPreviousImageDisComplete = false;
+    }
   }
 }
 function dispAnimation() {
   if (!isPreviousImageDisComplete) {return;}
   isPreviousImageDisComplete = false;
   imageIter++;
-  if (imageIter==imgs.numberOfImg) {isAnimationDispComplete = true; return;}
+  if (imageIter>=imgs.numberOfImg) {isAnimationDispComplete = true; return;}
   dispSingle(imgs['img'+imageIter], 1, 0);
   isPreviousImageDisComplete = true;
 }
