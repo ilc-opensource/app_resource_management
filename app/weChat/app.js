@@ -54,15 +54,25 @@ function dispAnimation() {
 function dispSingle(data, number, interval) {
   io.disp_raw_N(data, number, interval);
 }
-setInterval(displayweChat, 100);
-setInterval(function(){dispAnimation();}, 100);
 // Animation display End
 
+var weChat = function() {
+  getWeChatProcess = child_process.fork(path.join(__dirname, 'getWeChat.js'));
+  getWeChatProcess.on('message', handler);
+  //setInterval(function(){queryweChat(action)}, 1000);
+  displayweChat();
+};
+
+weChat();
+
+setInterval(displayweChat, 100);
+setInterval(function(){dispAnimation();}, 100);
+
 // Touch event handler begin
-io.touchPanel.on('touch', function(x, y, id) {
-  if (e == 'TOUCH_HOLD') {
-    sys.escape();
-  }
+io.touchPanel.on('touchEvent', function(e, x, y, id) {
+  //if (e == 'TOUCH_HOLD') {
+  //  sys.escape();
+  //}
 });
 
 io.touchPanel.on('gesture', function(gesture) {
@@ -141,12 +151,3 @@ fs.watch(path.join(__dirname, 'weChat.json'), function(e, filename) {
 });
 // Register notification end
 */
-
-var weChat = function() {
-  getWeChatProcess = child_process.fork(path.join(__dirname, 'getWeChat.js'));
-  getWeChatProcess.on('message', handler);
-  //setInterval(function(){queryweChat(action)}, 1000);
-  displayweChat();
-};
-
-weChat();

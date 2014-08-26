@@ -16,8 +16,11 @@ var startSmartMug = function() {
 
 function disp(i) {
   var appImg = fs.readFileSync(startup[i], 'utf8');
-  io.disp_raw_N(JSON.parse(appImg).img0, 1, 100);
+  io.disp_raw_N(JSON.parse(appImg).img0, 1, 0);
 }
+
+var index = 0;
+startSmartMug();
 
 /*io.touchPanel.on('touch', function(x, y, id) {
   if (index == 0) {
@@ -51,6 +54,3 @@ io.touchPanel.on('gesture', function(gesture) {
     disp(index);
   }
 });
-
-var index = 0;
-startSmartMug();

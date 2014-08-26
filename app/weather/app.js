@@ -49,9 +49,18 @@ function dispAnimation() {
 function dispSingle(data, number, interval) {
   io.disp_raw_N(data, number, interval);
 }
+// Animation display End
+
+var weather = function() {
+  getWeatherProcess = child_process.fork(path.join(__dirname, 'getWeather.js'));
+  getWeatherProcess.on('message', handler);
+  //setInterval(function(){queryWeather('116.305145,39.982368', action)}, 5000);
+  displayWeather();
+};
+weather();
+
 setInterval(displayWeather, 100);
 setInterval(function(){dispAnimation();}, 100);
-// Animation display End
 
 // Touch event handler begin
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
@@ -146,11 +155,3 @@ fs.watch(path.join(__dirname, 'weather_from_baidu.json'), function(e, filename) 
 });
 // Register notification end
 */
-
-var weather = function() {
-  getWeatherProcess = child_process.fork(path.join(__dirname, 'getWeather.js'));
-  getWeatherProcess.on('message', handler);
-  //setInterval(function(){queryWeather('116.305145,39.982368', action)}, 5000);
-  displayWeather();
-};
-weather();

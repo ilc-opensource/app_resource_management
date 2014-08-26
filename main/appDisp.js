@@ -5,6 +5,7 @@ var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
  
 var logPrefix = '[sys appDisp] ';
+var appReady = false;
 var index = -1;
 var appKey = [];
 var appJSON = null;
@@ -55,6 +56,7 @@ function disp() {
       if (err) throw err;
       var msg=JSON.parse(data);
       io.disp_raw_N(msg.img0, 1, 0);
+      appReady = true;
     }
   );
 }
@@ -69,12 +71,15 @@ fs.watch('app.json', function(e, filename) {
   }
 });
 
+disp_app();
+
 /*io.touchPanel.on('touch', function(x, y, id) {
   var nextApp = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].start);
   console.log(logPrefix+"Launch a new app"+nextApp);
   sys.newApp(nextApp);
 });*/
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
+  if (!appReady) return;
   if (e == 'TOUCH_CLICK') {
     var nextApp = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].start);
     console.log(logPrefix+"Launch a new app"+nextApp);
@@ -83,6 +88,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
 });
 
 io.touchPanel.on('gesture', function(gesture) {
+  if (!appReady) return;
   if (gesture == 'MUG_SWIPE_LEFT') {
     index = (index+1)==appKey.length?0:(index+1);
     disp();
@@ -92,4 +98,3 @@ io.touchPanel.on('gesture', function(gesture) {
   }
 });
 
-disp_app();

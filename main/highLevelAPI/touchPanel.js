@@ -15,16 +15,20 @@ tp.gestureListener = null;
 tp.appHandleEscape = false;
 
 process.on('message', function(o) {
-  console.log(logPrefix+'tp.disableTouch='+tp.disableTouch);
+  console.log(logPrefix+'tp.disableTouch='+tp.disableTouch+process.pid);
   // When re-enter one app, because when new aother app in this app, these will be set
   if (o['enableTouch']) {
     tp.disableTouch = false;
-    if (tp.touchEventListener && tp.gestureListener) {
+    if (tp.touchEventListener != null) {
       for (var i=0; i<tp.touchEventListener.length; i++) {
         tp.on('touchEvent', tp.touchEventListener[i]);
+        console.log(logPrefix+'restore touchEventListener'+process.pid);
       }
+    }
+    if (tp.gestureListener != null) {
       for (var i=0; i<tp.gestureListener.length; i++) {
         tp.on('gesture', tp.gestureListener[i]);
+        console.log(logPrefix+'restore gestureListener'+process.pid);
       }
     }
   }
@@ -33,7 +37,7 @@ process.on('message', function(o) {
     return;
   }
   if (o['mug_touchevent_on']) {
-    console.log(logPrefix+'o[mug_touchevent_on]='+o['mug_touchevent_on']);
+    console.log(logPrefix+'o[mug_touchevent_on]='+o['mug_touchevent_on'][0]);
     // OS in app handle the escape
     if (o['mug_touchevent_on'][0] == 'TOUCH_HOLD' && !tp.appHandleEscape) {
       process.send({'escape':context});
