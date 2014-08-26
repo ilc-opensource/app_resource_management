@@ -343,7 +343,8 @@ touchEmitter.on('touchEvent', function(e, x, y, id) {
       console.log(logPrefix+'Touch on a notification'+frontEndApp.app);
       frontEndApp.disableTouch = true;
       frontEndApp.isClicked = true;
-      return;
+      //return;
+      break;
     }
   }
 

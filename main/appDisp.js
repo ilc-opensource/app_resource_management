@@ -82,7 +82,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
   if (!appReady) return;
   if (e == 'TOUCH_CLICK') {
     var nextApp = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].start);
-    //console.log(logPrefix+"Launch a new app"+nextApp);
+    console.log(logPrefix+"Launch a new app"+nextApp+', '+process.pid);
     sys.newApp(nextApp);
   }
 });
