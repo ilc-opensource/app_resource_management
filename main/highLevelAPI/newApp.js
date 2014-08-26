@@ -12,8 +12,8 @@ var newApp = function(app) {
   //clean all emitted event 
   touchPanel.touchEventListener = touchPanel.listeners('touchEvent');
   touchPanel.gestureListener = touchPanel.listeners('gesture');
-  console.log(logPrefix+'touchEventListener'+(touchPanel.touchEventListener==null));
-  console.log(logPrefix+'gestureListener'+(touchPanel.gestureListener==null));
+  console.log(logPrefix+'===============touchEventListener'+(touchPanel.touchEventListener.length));
+  console.log(logPrefix+'===============gestureListener'+(touchPanel.gestureListener.length));
   touchPanel.removeAllListeners('touchEvent');
   touchPanel.removeAllListeners('gesture');
 

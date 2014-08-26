@@ -22,8 +22,8 @@ function createJSON() {
 
       var canvas = new Canvas(16, 12);
       var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 2, 0, img.width, img.height);
-      //ctx.drawImage(img, 0, 0, img.width, img.height);
+      //ctx.drawImage(img, 2, 0, img.width, img.height);
+      ctx.drawImage(img, 0, 0, img.width, img.height);
       var p = ctx.getImageData(0, 0, 16, 12);
       for (var x=0; x<p.data.length; x+=8) {
         //console.log(p.data[x]+' '+p.data[x+1]+' '+p.data[x+2]);
@@ -31,17 +31,17 @@ function createJSON() {
         var R = p.data[x]>128?1:0;
         var G = p.data[x+1]>128?1:0;
         var B = p.data[x+2]>128?1:0;
-        if (!(R==1 && G==1 && B==1)) {
+        //if (!(R==1 && G==1 && B==1)) {
           pixels += R+G*2+B*4;
-        }
+        //}
 
         //console.log(p.data[x+4]+' '+p.data[x+5]+' '+p.data[x+6]);
         R = p.data[x+4]>128?1:0;
         G = p.data[x+5]>128?1:0;
         B = p.data[x+6]>128?1:0;
-        if (!(R==1 && G==1 && B==1)) {
+        //if (!(R==1 && G==1 && B==1)) {
           pixels += (R+G*2+B*4)*16;
-        }
+        //}
         image.push(pixels);
       }
       mediaJSON['img'+count] = image;

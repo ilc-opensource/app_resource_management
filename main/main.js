@@ -98,7 +98,7 @@ function launchApp(app) {
     if (appStack[i].context != null) {
       io.disp_raw_N(appStack[i].context, 1, 0);
     }
-    console.log(logPrefix+'context restore success');
+    //console.log(logPrefix+'context restore success');
     // give display to the re-entered app procee
     enableAppDisp(appStack[i].process.pid);
     // push app to the stack head, and redirect touch event to it
@@ -126,7 +126,7 @@ function moveToBackground(savedContext) {
   }
  
   if (savedContext.lastImg) {
-    console.log(logPrefix+'save context success');
+    //console.log(logPrefix+'save context success');
     appStack[i].context = savedContext.lastImg;
   }
 }

@@ -65,7 +65,7 @@ var fsTimeout = null;
 // Update installed app list
 fs.watch('app.json', function(e, filename) {
   if (!fsTimeout) {
-    console.log(logPrefix+'File event='+e);
+    //console.log(logPrefix+'File event='+e);
     disp_app();
     fsTimeout = setTimeout(function(){fsTimeout=null;}, 100);
   }
@@ -82,7 +82,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
   if (!appReady) return;
   if (e == 'TOUCH_CLICK') {
     var nextApp = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].start);
-    console.log(logPrefix+"Launch a new app"+nextApp);
+    //console.log(logPrefix+"Launch a new app"+nextApp);
     sys.newApp(nextApp);
   }
 });
