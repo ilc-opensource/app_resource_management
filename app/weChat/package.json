@@ -1,0 +1,11 @@
+{
+  "name": "weChat",
+  "package": "com.intel.smart_mug.weChat",
+  "version": "0.0.1",
+  "icon": "icon16x12.jpg",
+  "iconJSON": "media.json",
+  "start": "app.js",
+  "notification": "notification",
+  "notificationICON": "notification.json"
+  "discription": "desc"
+}

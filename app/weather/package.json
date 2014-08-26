@@ -1,0 +1,11 @@
+{
+  "name": "weather",
+  "package": "com.intel.smart_mug.weather",
+  "version": "0.0.1",
+  "icon": "icon16x12.jpg",
+  "iconJSON": "media.json",
+  "start": "app.js",
+  "notification": "notification",
+  "notificationICON": "notification.json",
+  "description": "desc"
+}
