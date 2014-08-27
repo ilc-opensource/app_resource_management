@@ -6,6 +6,6 @@
   "iconJSON": "media.json",
   "start": "app.js",
   "notification": "notification",
-  "notificationICON": "notification.json"
-  "discription": "desc"
+  "notificationICON": "notification.json",
+  "description": "desc"
 }

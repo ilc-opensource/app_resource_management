@@ -231,6 +231,7 @@ function checkNotificationPeriodically() {
 }
 checkNotificationPeriodically();
 
+/*
 var fsTimeout_1 = null;
 fs.watch(path.join(__dirname, '../app/weather/weatherNotification'), function(e, filename) {
   // write command to notification.json
@@ -249,6 +250,22 @@ fs.watch(path.join(__dirname, '../app/weChat/weChatNotification'), function(e, f
       fsTimeout_2 = setTimeout(function(){fsTimeout_2=null;}, 100);
     }
 });
+*/
+
+var appNotificationFile = [];
+function appNotification(file) {
+  appNotificationFile.push(file);
+  var fsTimeout = null;
+  console.log(logPrefix+'notification file='+file);
+  fs.watch(file, function(e, filename) {
+    // write command to notification.json
+    //sys.registerNotification(path.join(__dirname, 'notification.js'));
+    if (!fsTimeout) {
+      addNotification(file+'.js', false);
+      fsTimeout = setTimeout(function(){fsTimeout=null;}, 100);
+    }
+  });
+}
 
 var handler = function(o) {
   if (o['escape']) {
@@ -290,7 +307,19 @@ var handler = function(o) {
     }
   } else if (o['notification']) {
     //addNotification(o['notification'], false);
-  } else {
+  } else if (o['installedApps']) {
+    // Clean all watch
+    for (var i=0; i<appNotificationFile.length; i++) {
+      fs.unwatchFile(appNotificationFile[i]);
+    }
+    appNotificationFile = [];
+    var appJSON = o['installedApps'];
+    for (var key in appJSON) {
+      if (appJSON[key].name && appJSON[key].icon && appJSON[key].notification) {
+        appNotification(path.join(__dirname, '../app/', appJSON[key].name, appJSON[key].notification));
+      }
+    }
+  }else {
     console.log(logPrefix+' message error');
   }
 };

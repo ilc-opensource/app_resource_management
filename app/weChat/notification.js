@@ -37,6 +37,7 @@ notification();
 
 // Can't access this, sys must deal with this issue
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
+  console.log('weChat notification receive a touch event:'+e);
   if (e == 'TOUCH_CLICK') {
     sys.exit();
   }
