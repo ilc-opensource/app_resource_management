@@ -36,7 +36,7 @@ sys.newApp = require('./newApp.js');
   });
 }*/
 sys.registerNotification = function(app) {
-  console.log('Register a notification:'+app);
+  //console.log('Register a notification:'+app);
   process.send({'notification':app});
 };
 

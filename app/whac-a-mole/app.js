@@ -9,7 +9,7 @@ var logPrefix = '[app mole] '
 //var appProcess = child_process.execFile(path.join(__dirname, 'mole'), [], {'cwd':path.join(__dirname, '../app/whac-a-mole')});
 var appProcess = child_process.execFile(path.join(__dirname, 'mole'));
 appProcess.on('close', function (code, signal) {
-  console.log('child process terminated due to receipt of signal '+code+', '+signal);
+  //console.log('child process terminated due to receipt of signal '+code+', '+signal);
 });
 
 // Touch event handler begin
@@ -17,7 +17,7 @@ appProcess.on('close', function (code, signal) {
 io.touchPanel.appHandleEscape = true;
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
   if (e == 'TOUCH_HOLD') {
-    console.log(logPrefix+'kill the main app pid='+appProcess.pid);
+    //console.log(logPrefix+'kill the main app pid='+appProcess.pid);
     try {
       process.kill(appProcess.pid);
     } catch (ex) {
@@ -28,6 +28,6 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
 });
 
 io.touchPanel.on('gesture', function(gesture) {
-  console.log(logPrefix+'getsture='+gesture);
+  //console.log(logPrefix+'getsture='+gesture);
 });
 // Touch event handler end

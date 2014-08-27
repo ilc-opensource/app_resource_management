@@ -70,7 +70,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
 });
 
 io.touchPanel.on('gesture', function(gesture) {
-  console.log(logPrefix+'getsture='+gesture);
+  //console.log(logPrefix+'getsture='+gesture);
 });
 // Touch event handler end
 

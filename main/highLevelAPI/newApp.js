@@ -14,15 +14,15 @@ var newApp = function(app) {
   //clean all emitted event 
   touchPanel.touchEventListener = touchPanel.listeners('touchEvent');
   touchPanel.gestureListener = touchPanel.listeners('gesture');
-  console.log(logPrefix+'===============touchEventListener'+(touchPanel.touchEventListener.length)+', '+context.app);
-  console.log(logPrefix+'===============gestureListener'+(touchPanel.gestureListener.length)+', '+process.pid);
+  //console.log(logPrefix+'===============touchEventListener'+(touchPanel.touchEventListener.length)+', '+context.app);
+  //console.log(logPrefix+'===============gestureListener'+(touchPanel.gestureListener.length)+', '+process.pid);
   while(true) {
     var length = touchPanel.touchEventListener.length;
     for (var i=0; i<length; i++) {
       for (var j=1; j<length; j++) {
         if (touchPanel.touchEventListener[i] == touchPanel.touchEventListener[j]) {
           touchPanel.touchEventListener.splice(i, 1);
-          console.log('delete one repeat listener');
+          //console.log('delete one repeat listener');
           break;
         }
       }
@@ -39,7 +39,7 @@ var newApp = function(app) {
     for (var i=0; i<length; i++) {
       for (var j=1; j<length; j++) {
         if (touchPanel.gestureListener[i] == touchPanel.gestureListener[j]) {
-          console.log('delete one repeat listener');
+          //console.log('delete one repeat listener');
           touchPanel.gestureListener.splice(i, 1);
           break;
         }

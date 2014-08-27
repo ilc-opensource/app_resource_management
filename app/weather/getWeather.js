@@ -15,7 +15,7 @@ function action(msg) {
   if (msg=='') return;
   if (lastMsg != msg) {
     lastMsg = msg;
-    console.log(msg);
+    //console.log(msg);
 
     process.send({'weather':JSON.stringify({'weather':msg})});
 
@@ -24,7 +24,7 @@ function action(msg) {
       function(err) {
         if(err)
           throw err;
-        console.log('It\'s saved!');
+        //console.log('It\'s saved!');
       }
     );
   }
@@ -69,7 +69,7 @@ var queryWeather = function(city, cb) {
         } else if(weather.indexOf('雪') != -1) {
           weatherKey = 'Snowy';
         }
-        console.log('weatherKey='+weatherKey);
+        //console.log('weatherKey='+weatherKey);
         if (weatherKey != null) {
           cb(weatherKey);
         }
@@ -77,7 +77,7 @@ var queryWeather = function(city, cb) {
     });
   });
   req.on('error', function(e) {
-    console.log('problem with request: ' + e.message);
+    //console.log('problem with request: ' + e.message);
   });
   req.end();
 }
