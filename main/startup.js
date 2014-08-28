@@ -36,9 +36,10 @@ startSmartMug();
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
   //console.log(logPrefix+'touchEvent='+e);
   if (index == 0 && e == 'TOUCH_CLICK') {
-    sys.newApp('appDisp.js');
+    sys.newApp(path.join(__dirname, 'appDisp.js'));
   }
   if (index == 1 && e == 'TOUCH_CLICK') {
+    sys.newApp(path.join(__dirname, 'setting.js'));
   }
   if (index == 2 && e == 'TOUCH_CLICK') {
     child_process.exec('shutdown')
