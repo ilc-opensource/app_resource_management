@@ -8,15 +8,6 @@
     "start"  : "app.js",
     "description": "get ip address of wlan0"
   },
-  "fish": {
-    "name"   : "fish",
-    "package": "com.intel.smart_mug.fish-for-health",
-    "version": "0.0.1",
-    "icon"   : "icon.bmp",
-    "iconJSON": "media.json",
-    "start"  : "app.js",
-    "description": "a digital pet for monitoring user water drinking behavior"
-  },
   "temperature": {
     "name"   : "temperature",
     "package": "com.intel.smart_mug.temprature",
