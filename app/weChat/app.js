@@ -48,7 +48,7 @@ function dispAnimation() {
   isPreviousImageDisComplete = false;
   imageIter++;
   if (imageIter>=imgs.numberOfImg) {isAnimationDispComplete = true; return;}
-  dispSingle(imgs['img'+imageIter], 1, 70);
+  dispSingle(imgs['img'+imageIter], 1, 50);
   isPreviousImageDisComplete = true;
 }
 function dispSingle(data, number, interval) {
