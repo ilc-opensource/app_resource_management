@@ -7,8 +7,9 @@ var sys = require('./highLevelAPI/sys.js');
 var logPrefix = '[sys startup] ';
 
 var startup = [path.join(__dirname, './image/app.json'),
-  path.join(__dirname, './image/setting.json'),
-  path.join(__dirname, './image/shutdown.json')];
+  path.join(__dirname, './image/setting.json')];
+  //path.join(__dirname, './image/setting.json'),
+//  path.join(__dirname, './image/shutdown.json')];
 
 var startSmartMug = function() {
   disp(index);
@@ -41,9 +42,9 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
   if (index == 1 && e == 'TOUCH_CLICK') {
     sys.newApp(path.join(__dirname, 'setting.js'));
   }
-  if (index == 2 && e == 'TOUCH_CLICK') {
-    child_process.exec('shutdown')
-  }
+  //if (index == 2 && e == 'TOUCH_CLICK') {
+    //child_process.exec('shutdown')
+  //}
 });
 
 io.touchPanel.on('gesture', function(gesture) {

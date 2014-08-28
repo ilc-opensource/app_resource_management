@@ -11,7 +11,7 @@ var sys = require('./highLevelAPI/sys.js');
 
 // TODO: read these info from config file
 var defaultApp = path.join(__dirname, '../app/weather/app.js');
-var timeToLaunchDefaultApp = 20000;
+var timeToLaunchDefaultApp = 3000000;
 var intervalToShowNotification = 10000;
 var maxCountToShowNotification = 3;
 var checkInterval = 1000; // Find no touch event or some pending notifications
