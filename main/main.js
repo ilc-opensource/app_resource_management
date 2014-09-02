@@ -231,7 +231,7 @@ function checkNotificationPeriodically() {
       pendingNotification[i].dispCount == maxCountToShowNotification ||
       (timer - pendingNotification[i].time)>intervalToShowNotification) {
       //pendingNotification[i].time = timer;
-      console.log(logPrefix+"reAdd a notification"+pendingNotification[i].app);
+      console.log(logPrefix+"reAdd a notification"+pendingNotification[i].app+','+timer+','+pendingNotification[i].time);
       addNotification(pendingNotification[i].app, true);
       setTimeout(checkNotificationPeriodically, checkInterval);
       return;
@@ -346,7 +346,7 @@ function launchDefaultApp() {
     //if (frontEndApp.app != defaultApp && path.basename(frontEndApp.app) != 'notification.js') {
     if (frontEndApp.app != defaultApp) {
       //console.log(logPrefix+'default app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
-      //console.log(logPrefix+frontEndApp.app+','+defaultApp);
+      console.log(logPrefix+frontEndApp.app+','+defaultApp+','+(new Date()).getTime()+','+timerLastTouchEvent);
       frontEndApp.process.send({'mug_touchevent_on':['TOUCH_HOLD', 0, 0, 0]});
     }
   }

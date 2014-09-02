@@ -9,8 +9,8 @@
     "notification": "notification",
     "notificationICON": "notification.json"
   },
-  "whac-a-mole": {
-    "name": "whac-a-mole",
+  "mole": {
+    "name": "mole",
     "package": "com.intel.smart_mug.whac-a-mole",
     "version": "0.0.1",
     "icon": "icon16x12.jpg",
