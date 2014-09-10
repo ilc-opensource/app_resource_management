@@ -17,7 +17,7 @@ function disp_app() {
     appJSON = JSON.parse(data);
 
     // Send app install and uninstall to miniOS
-    process.send({'installedApps':appJSON});
+    //process.send({'installedApps':appJSON});
 
     var currentApp = index==-1?null:appKey[index];
     //console.log(logPrefix+'currentApp='+currentApp);

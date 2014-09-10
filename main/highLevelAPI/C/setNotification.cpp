@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
   }
 
   lockf(lockFd, F_LOCK, 0);
-  FILE * fd = fopen(NOTIFICATION, "a");
+  FILE * fd = fopen(NOTIFICATION_C, "a");
   fputs(argv[1], fd);
   fputs("\n", fd);
   fclose(fd);

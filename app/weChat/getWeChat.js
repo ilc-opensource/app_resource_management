@@ -75,6 +75,7 @@ function queryweChat(cb) {
 // Register notification begin
 fs.watch(path.join(__dirname, 'weChat.json'), function(e, filename) {
   // write command to notification.json
+  console.log(logPrefix+'register a notification');
   sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
   //fs.appendFileSync(path.join(__dirname, 'notification'), 'register notification');
 });

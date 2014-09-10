@@ -263,7 +263,7 @@ function checkNotificationPeriodically() {
 }
 checkNotificationPeriodically();
 
-/*var appNotificationFile = [];
+var appNotificationFile = [];
 function appNotification(file) {
   appNotificationFile.push(file);
   var fsTimeout = null;
@@ -276,7 +276,7 @@ function appNotification(file) {
       fsTimeout = setTimeout(function(){fsTimeout=null;}, 100);
     }
   });
-}*/
+}
 
 // file name must be aligned with NOTIFICATION_C and NOTIFICATION_JS definition in sdk_c/include/res_manager.h
 var notificationFileC = '/tmp/smart_mug_notification_c.json';
@@ -368,7 +368,7 @@ var handler = function(o) {
     //} else {
       findNextApp(2); // no touch on the app, app is a notification app
     //}
-  } else if (o['notification']) {
+  } /*else if (o['notification']) {
     //addNotification(o['notification'], false);
   } else if (o['installedApps']) {
     // Clean all watch
@@ -382,7 +382,7 @@ var handler = function(o) {
         appNotification(path.join(__dirname, '../app/', appJSON[key].name, appJSON[key].notification));
       }
     }
-  }else {
+  }*/ else {
     //console.log(logPrefix+' message error');
   }
 };

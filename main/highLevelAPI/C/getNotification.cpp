@@ -4,7 +4,7 @@
 using namespace std;
 
 int main() {
-  FILE* fd, fdOut;
+  FILE *fd, *fdOut;
   int retv;
   struct stat buf;
 
