@@ -4,7 +4,7 @@ var path = require('path');
 var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
  
-var logPrefix = '[sys appDisp] ';
+var logPrefix = '[sys app] ';
 var appReady = false;
 var index = -1;
 var appKey = [];
