@@ -86,8 +86,8 @@ var queryWeather = function(city, cb) {
 // Register notification begin
 fs.watch(path.join(__dirname, 'weather_from_baidu.json'), function(e, filename) {
   // write command to notification.json
-  //sys.registerNotification(path.join(__dirname, 'notification.js'));
-  fs.appendFileSync(path.join(__dirname, 'notification'), 'register notification');
+  sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
+  //fs.appendFileSync(path.join(__dirname, 'notification'), 'register notification');
 });
 // Register notification end
 

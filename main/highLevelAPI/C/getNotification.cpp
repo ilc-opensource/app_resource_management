@@ -4,7 +4,7 @@
 using namespace std;
 
 int main() {
-  FILE* fd;
+  FILE* fd, fdOut;
   int retv;
   struct stat buf;
 
@@ -15,7 +15,7 @@ int main() {
   }
 
   lockf(lockFd, F_LOCK, 0);
-  retv = stat(NOTIFICATION, &buf);
+  retv = stat(NOTIFICATION_C, &buf);
   if (retv == -1) {
     return -1;
   }
@@ -23,16 +23,20 @@ int main() {
     return 0;
   }
   char myString[100];
-  fd = fopen(NOTIFICATION, "r+");
-  if (fd == NULL) perror("Error opening file");
+  fd = fopen(NOTIFICATION_C, "r+");
+  fdOut = fopen(NOTIFICATION_JS, "w");
+  if (fd == NULL || fdOut == NULL) perror("Error opening file");
   else {
     while (fgets(myString, 100, fd) != NULL) {
-      puts(myString);
+      //puts(myString);
+      fputs(myString, fdOut);
     }
     fclose(fd);
+    fclose(fdOut);
     fd = NULL;
+    fdOut = NULL;
   }
-  fd = fopen(NOTIFICATION, "w");
+  fd = fopen(NOTIFICATION_C, "w");
   if (fd == NULL) perror("Error opening file");
   fclose(fd);
   fd = NULL;

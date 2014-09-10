@@ -10,7 +10,8 @@ var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
 
 // TODO: read these info from config file
-var defaultApp = path.join(__dirname, '../app/weather/app.js');
+//var defaultApp = path.join(__dirname, '../app/weather/app.js');
+var defaultApp = null;
 var timeToLaunchDefaultApp = 3000000;
 var intervalToShowNotification = 10000;
 var maxCountToShowNotification = 3;
@@ -20,7 +21,8 @@ var escapeFromDefaultApp = false;
 var isAppReady = false;
 var logPrefix = '[OS] ';
 var appStack = []; //{'app':, 'process':, 'context', 'disableTouch', 'isClicked'} //isClicked only for notification app
-var pendingNotification = []; //{'app':, 'time':, 'dispCount':}
+var mainAppOfNotification = null;
+var pendingNotification = []; //{'icon':, 'app':, 'time':, 'dispCount':}
 var frontEndApp = null;
 
 function printAppStack() {
@@ -43,6 +45,35 @@ function enableAppDisp(pid) {
 }
 
 function launchApp(app) {
+  if (app == path.join(__dirname, 'notification.js')) {
+    console.log(logPrefix+'launch a notification');
+    for (var i=0; i<pendingNotification.length; i++) {
+      if (mainAppOfNotification == pendingNotification[i].app) {
+        var childProcess = child_process.fork(app, [app, pendingNotification[i].icon, pendingNotification[i].app]);
+        childProcess.on('message', handler);
+        enableAppDisp(childProcess.pid);
+        var appInfo = {'app':app, 'process':childProcess, 'disableTouch':false};
+        frontEndApp = appInfo;
+        // if the notification is show maxCountToShowNotification, del it
+        pendingNotification[i].time = (new Date()).getTime();
+        pendingNotification[i].dispCount--;
+        if (pendingNotification[i].dispCount == 0) {
+          //pendingNotification.splice(i, 1);
+        }
+        break;
+      }
+    }
+    return;
+  }
+
+  // Delete its pending notification
+  for (var i=0; i<pendingNotification.length; i++) {
+    if (pendingNotification[i].app == app) {
+      pendingNotification.splice(i, 1);
+      break;
+    }
+  }
+
   // Check if there is an exist process for this app
   for (var i=0; i<appStack.length; i++) {
     if (appStack[i].app == app) {
@@ -59,6 +90,7 @@ function launchApp(app) {
       appStack.splice(i, 1);
     }
   }
+
   //console.log(logPrefix+'processExit='+processExit);
   if (i==appStack.length || processExit) {
     console.log(logPrefix+'create a new process for '+app);
@@ -73,7 +105,7 @@ function launchApp(app) {
     appStack.push(appInfo);
     frontEndApp = appStack[appStack.length-1];
     // if the notification is show maxCountToShowNotification, del it
-    for (var j=0; j<pendingNotification.length; j++) {
+    /*for (var j=0; j<pendingNotification.length; j++) {
       console.log(logPrefix+'count'+app+','+JSON.stringify(pendingNotification[j]));
       if (app == pendingNotification[j].app) {
         pendingNotification[j].time = (new Date()).getTime();
@@ -83,13 +115,14 @@ function launchApp(app) {
         }
         break;
       }
-    }
+    }*/
   } else {
     console.log(logPrefix+'restore a existing process for '+app);
     // czhan25 reuse i(j), cause a bug
     // When re-enter one app, clean its notification
     for (var j=0; j<pendingNotification.length; j++) {
-      if (path.join(path.dirname(app), 'notification.js') == pendingNotification[j]) {
+      //if (path.join(path.dirname(app), 'notification.js') == pendingNotification[j]) {
+      if (app == pendingNotification[j].app) {
         pendingNotification.splice(j, 1);
         break;
       }
@@ -138,15 +171,9 @@ function moveToBackground(savedContext) {
 // 3: normal
 // 4: escape from default app
 function findNextApp(condition) {
-  // Notification app can't be disturbed
-  /*for (var i=0; i<pendingNotification.length; i++) {
-    if (appStack[appStack.length-1].app == pendingNotification[i].app) {
-      // wait for notification app exit
-      return;
-    }
-  }*/
   if (condition == 1) {
-    launchApp(path.join(path.dirname(frontEndApp.app), 'app.js'));
+    //launchApp(path.join(path.dirname(frontEndApp.app), 'app.js'));
+    launchApp(mainAppOfNotification);
     return;
   }
   if (condition == 2) {
@@ -160,10 +187,9 @@ function findNextApp(condition) {
     if (/*pendingNotification[i].time == 0 ||*/
       pendingNotification[i].dispCount == maxCountToShowNotification || 
       (timer - pendingNotification[i].time) > intervalToShowNotification) {
-      //pendingNotification[j].time = 0;
-      //pendingNotification[i].time = timer;
       console.log(logPrefix+"launch a notification"+pendingNotification[i].app);
-      launchApp(pendingNotification[i].app);
+      mainAppOfNotification = pendingNotification[i].app; 
+      launchApp(path.join(__dirname, 'notification.js'));
       return;
     }
   }
@@ -173,7 +199,7 @@ function findNextApp(condition) {
     return;
   }
   // otherwise
-  if (((new Date()).getTime() - timerLastTouchEvent) > timeToLaunchDefaultApp) {
+  if (defaultApp != null && ((new Date()).getTime() - timerLastTouchEvent) > timeToLaunchDefaultApp) {
     timerLastTouchEvent = (new Date()).getTime();
     escapeFromDefaultApp = true;
     launchApp(defaultApp);
@@ -185,12 +211,13 @@ function findNextApp(condition) {
 function addNotification(notification, isPeriodical) {
   if (!isAppReady) return;
 
-  if (notification == '') return;
+  //if (notification == '') return;
   // frontEndApp is not allowed to register notification
-  if (path.dirname(frontEndApp.app) == path.dirname(notification)) {
+  //if (path.dirname(frontEndApp.app) == path.dirname(notification)) {
+  if (frontEndApp.app == notification.app) {
     // Del it from pending
     for (var i=0; i<pendingNotification.length; i++) {
-      if (pendingNotification[i].app == notification) {
+      if (pendingNotification[i].app == notification.app) {
         pendingNotification.splice(i, 1);
         break;
       }
@@ -200,17 +227,12 @@ function addNotification(notification, isPeriodical) {
   //console.log(logPrefix+'addNotification='+notification+','+isPeriodical);
   // Update an existing notification or add a new notification
   for (var j=0; j<pendingNotification.length; j++) {
-    if (notification == pendingNotification[j].app) {
-      //pendingNotification[j].time = 0;
-      if (!isPeriodical) {
-        pendingNotification[j].time = (new Date()).getTime();
-        pendingNotification[j].dispCount = maxCountToShowNotification;
-      }
+    if (notification.app == pendingNotification[j].app) {
       break;
     }
   }
   if (j==pendingNotification.length) {
-    pendingNotification.push({'app':notification, 'time':(new Date()).getTime(), 'dispCount':maxCountToShowNotification});
+    pendingNotification.push({'icon': notification.icon, 'app':notification.app, 'time':(new Date()).getTime(), 'dispCount':maxCountToShowNotification});
   }
   // send a hold to current front end app
   console.log(logPrefix+'notification app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
@@ -232,7 +254,7 @@ function checkNotificationPeriodically() {
       (timer - pendingNotification[i].time)>intervalToShowNotification) {
       //pendingNotification[i].time = timer;
       console.log(logPrefix+"reAdd a notification"+pendingNotification[i].app+','+timer+','+pendingNotification[i].time);
-      addNotification(pendingNotification[i].app, true);
+      addNotification({'icon': pendingNotification[i].icon, 'app': pendingNotification[i].app}, true);
       setTimeout(checkNotificationPeriodically, checkInterval);
       return;
     }
@@ -241,28 +263,7 @@ function checkNotificationPeriodically() {
 }
 checkNotificationPeriodically();
 
-/*
-var fsTimeout_1 = null;
-fs.watch(path.join(__dirname, '../app/weather/weatherNotification'), function(e, filename) {
-  // write command to notification.json
-  //sys.registerNotification(path.join(__dirname, 'notification.js'));
-  if (!fsTimeout_1) {
-    addNotification(path.join(__dirname, '../app/weather/notification.js'), false);
-    fsTimeout_1 = setTimeout(function(){fsTimeout_1=null;}, 100);
-  }
-});
-var fsTimeout_2 = null;
-fs.watch(path.join(__dirname, '../app/weChat/weChatNotification'), function(e, filename) {
-    // write command to notification.json
-    //sys.registerNotification(path.join(__dirname, 'notification.js'));
-    if (!fsTimeout_2) {
-      addNotification(path.join(__dirname, '../app/weChat/notification.js'), false);
-      fsTimeout_2 = setTimeout(function(){fsTimeout_2=null;}, 100);
-    }
-});
-*/
-
-var appNotificationFile = [];
+/*var appNotificationFile = [];
 function appNotification(file) {
   appNotificationFile.push(file);
   var fsTimeout = null;
@@ -275,7 +276,57 @@ function appNotification(file) {
       fsTimeout = setTimeout(function(){fsTimeout=null;}, 100);
     }
   });
+}*/
+
+// file name must be aligned with NOTIFICATION_C and NOTIFICATION_JS definition in sdk_c/include/res_manager.h
+var notificationFileC = '/tmp/smart_mug_notification_c.json';
+var fd = fs.openSync(notificationFileC, 'w');
+fs.closeSync(fd);
+
+var notificationFileJS = '/tmp/smart_mug_notification_js.json';
+var fd = fs.openSync(notificationFileJS, 'w');
+fs.closeSync(fd);
+
+var isNotificationFileReady = true;
+function getNotificationFromFileJS() {
+  if (!isNotificationFileReady) {
+    setTimeout(getNotification, 100);
+    return;
+  }
+  isNotificationFileReady = false;
+  var notifications = fs.readFileSync(notificationFileJS, 'utf8').split('\n');;
+  for (var i=0; i<notifications.length; i++) {
+    if (notifications[i] != '') {
+      addNotification(JSON.parse(notifications[i]), false);
+    }
+  }
+  isNotificationFileReady = true;
 }
+
+function getNotificationFromFileC() {
+  if (!isNotificationFileReady) {
+    setTimeout(getNotificationFromFileC, 100);
+    return;
+  }
+  isNotificationFileReady = false;
+  child_process.exec(path.join(__dirname, './highLevelAPI/C/getNotification'), function(error, stdout, stderr){
+    //console.log('getNotification stdout: ' + stdout);
+    //console.log('getNotification stderr: ' + stderr);
+    //if (error !== null) {
+    //  console.log('getNotification exec error: ' + error);
+    //}
+    isNotificationFileReady = true;
+    getNotificationFromFileJS();
+  });
+}
+
+fs.watch(notificationFileC, function(e, filename) {
+  if (fs.statSync(notificationFileC).size == 0) {
+    return;
+  }
+
+  getNotificationFromFileC();
+});
 
 var handler = function(o) {
   if (o['escape']) {
@@ -302,19 +353,21 @@ var handler = function(o) {
     }
     //console.log(logPrefix+'receive a sys message(newApp):'+JSON.stringify(o));
     //console.log(logPrefix+'receive a sys message(newApp):');
-    moveToBackground(o['newApp'].context);
+    if (o['newApp'].context.app != path.join(__dirname, 'notification.js')) {
+      moveToBackground(o['newApp'].context);
+    }
     launchApp(o['newApp'].app);
-  } else if (o['exit']) { // Explicit exit, only used for notification
+  } else if (o['exit']) { // Explicit exit, used for notification without click and C language APP
     //console.log(logPrefix+'receive a sys message(exit):'+JSON.stringify(o));
     //console.log(logPrefix+'receive a sys message(exit):');
     //console.log(logPrefix+frontEndApp.app+'exit');
     appStack.pop();
     
-    if (frontEndApp.isClicked == true) {
-      findNextApp(1);
-    } else {
+    //if (frontEndApp.isClicked == true) {
+    //  findNextApp(1);
+    //} else {
       findNextApp(2); // no touch on the app, app is a notification app
-    }
+    //}
   } else if (o['notification']) {
     //addNotification(o['notification'], false);
   } else if (o['installedApps']) {
@@ -338,6 +391,10 @@ var timerLastTouchEvent = (new Date()).getTime();
 function launchDefaultApp() {
   if (!isAppReady) {
     setTimeout(launchDefaultApp, checkInterval);
+    return;
+  }
+
+  if (defaultApp == null) {
     return;
   }
 
@@ -390,6 +447,7 @@ touchEmitter.on('touchEvent', function(e, x, y, id) {
     }
   }
 
+  // The first app can't escape
   if (frontEndApp.app == path.join(__dirname, './startup.js') && touchEvent == 'TOUCH_HOLD') {
     return;
   }
@@ -499,6 +557,7 @@ setInterval(readTouch, 100);
 // Begin at this point
 launchApp(path.join(__dirname, './startup.js'));
 
+// Begin to get touch event
 var touchProcess = child_process.fork(path.join(__dirname, './highLevelAPI/getTouch.js'));
 
 // handle ctrl+c
