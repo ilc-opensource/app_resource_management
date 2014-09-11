@@ -181,13 +181,14 @@ function findNextApp(condition) {
     return;
   }
   // If has notification, and time is meet
-  console.log(logPrefix+"search for a timeout notification"+pendingNotification.length);
+  console.log(logPrefix+"search for a timeout notification "+pendingNotification.length);
   for (var i=0; i<pendingNotification.length; i++) {
     var timer = (new Date()).getTime();
     if (/*pendingNotification[i].time == 0 ||*/
       pendingNotification[i].dispCount == maxCountToShowNotification || 
-      (timer - pendingNotification[i].time) > intervalToShowNotification) {
-      console.log(logPrefix+"launch a notification"+pendingNotification[i].app);
+      ((timer - pendingNotification[i].time) > intervalToShowNotification && 
+        pendingNotification[i].dispCount > 0)) {
+      console.log(logPrefix+"launch a notification for "+pendingNotification[i].app);
       mainAppOfNotification = pendingNotification[i].app; 
       launchApp(path.join(__dirname, 'notification.js'));
       return;
@@ -263,7 +264,7 @@ function checkNotificationPeriodically() {
 }
 checkNotificationPeriodically();
 
-var appNotificationFile = [];
+/*var appNotificationFile = [];
 function appNotification(file) {
   appNotificationFile.push(file);
   var fsTimeout = null;
@@ -277,6 +278,7 @@ function appNotification(file) {
     }
   });
 }
+*/
 
 // file name must be aligned with NOTIFICATION_C and NOTIFICATION_JS definition in sdk_c/include/res_manager.h
 var notificationFileC = '/tmp/smart_mug_notification_c.json';
@@ -297,7 +299,12 @@ function getNotificationFromFileJS() {
   var notifications = fs.readFileSync(notificationFileJS, 'utf8').split('\n');;
   for (var i=0; i<notifications.length; i++) {
     if (notifications[i] != '') {
-      addNotification(JSON.parse(notifications[i]), false);
+      try {
+        var n = JSON.parse(notifications[i]);
+        addNotification(n, false);
+      } catch (ex) {
+
+      }
     }
   }
   isNotificationFileReady = true;
@@ -324,13 +331,12 @@ fs.watch(notificationFileC, function(e, filename) {
   if (fs.statSync(notificationFileC).size == 0) {
     return;
   }
-
   getNotificationFromFileC();
 });
 
 var handler = function(o) {
   if (o['escape']) {
-    //console.log(logPrefix+'receive a sys message(escape):'+JSON.stringify(o));
+    console.log(logPrefix+'receive a sys message(escape):'+JSON.stringify(o));
     //console.log(logPrefix+'receive a sys message(escape):');
     // one app may send multi escape to os
     //if (appStack[appStack.length-1].app != o['escape'].app) {
@@ -351,22 +357,28 @@ var handler = function(o) {
     if (frontEndApp.app != o['newApp'].context.app) {
       return;
     }
-    //console.log(logPrefix+'receive a sys message(newApp):'+JSON.stringify(o));
+    console.log(logPrefix+'receive a sys message(newApp):'+JSON.stringify(o));
     //console.log(logPrefix+'receive a sys message(newApp):');
     if (o['newApp'].context.app != path.join(__dirname, 'notification.js')) {
       moveToBackground(o['newApp'].context);
     }
     launchApp(o['newApp'].app);
   } else if (o['exit']) { // Explicit exit, used for notification without click and C language APP
-    //console.log(logPrefix+'receive a sys message(exit):'+JSON.stringify(o));
+    console.log(logPrefix+'receive a sys message(exit):'+JSON.stringify(o));
     //console.log(logPrefix+'receive a sys message(exit):');
     //console.log(logPrefix+frontEndApp.app+'exit');
-    appStack.pop();
+    if (frontEndApp.app == path.join(__dirname, 'notification.js')) {
+      findNextApp(2); // no touch on the app, app is a notification app
+    } else {
+      appStack.pop();
+      findNextApp(3);
+    }
+    //appStack.pop();
     
     //if (frontEndApp.isClicked == true) {
     //  findNextApp(1);
     //} else {
-      findNextApp(2); // no touch on the app, app is a notification app
+    //  findNextApp(2); // no touch on the app, app is a notification app
     //}
   } /*else if (o['notification']) {
     //addNotification(o['notification'], false);

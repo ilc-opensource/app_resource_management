@@ -6,7 +6,7 @@ var http = require('http');
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
-var logPrefix = '[user weChat getWeChat] ';
+var logPrefix = '[user freeDraw getFreeDraw] ';
 
 var lastMsg = null;
 function action(msg) {
@@ -30,7 +30,7 @@ function action(msg) {
 
 function queryweChat(cb) {
   var mugID = 'MUG123456ILC';
-  var app = 'weChat';
+  var app = 'freeDraw';
 
   var optionsProxy = {
     hostname: 'proxy-prc.intel.com',
