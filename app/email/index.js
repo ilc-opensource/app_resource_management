@@ -1,6 +1,7 @@
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
+var fs = require('fs');
 var notify = require('./pop3.js').notify;
 var config = require('./config.js');
 //var disp = require('./disp.js').disp;
