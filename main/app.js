@@ -76,6 +76,8 @@ fs.watch('app.json', function(e, filename) {
 
 disp_app();
 
+setInterval(disp_app, 100);
+
 /*io.touchPanel.on('touch', function(x, y, id) {
   var nextApp = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].start);
   console.log(logPrefix+"Launch a new app"+nextApp);
