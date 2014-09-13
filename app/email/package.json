@@ -4,5 +4,5 @@
   "version": "0.0.1",
   "icon": "icon16x12.jpg",
   "iconJSON": "media.json",
-  "start": "app.js"
+  "start": "index.js"
 }
