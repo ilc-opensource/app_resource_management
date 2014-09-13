@@ -45,5 +45,13 @@
     "iconJSON": "media.json",
     "start"  : "app.js",
     "description": "a digital pet for monitoring user water drinking behavior"
+  },
+  "email": {
+    "name": "email",
+    "package": "com.intel.smart_mug.email",
+    "version": "0.0.1",
+    "icon": "icon16x12.jpg",
+    "iconJSON": "media.json",
+    "start": "index.js"
   }
 }
