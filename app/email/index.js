@@ -2,6 +2,7 @@ var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
 var fs = require('fs');
+var path = require('path');
 var notify = require('./pop3.js').notify;
 var config = require('./config.js');
 //var disp = require('./disp.js').disp;
@@ -33,7 +34,7 @@ function dispEmail() {
   }
 }
 function dispAnimation() {
-  if (!isPreviousImageDisComplete) {return;}
+  if (imgs == null || !isPreviousImageDisComplete) {return;}
   isPreviousImageDisComplete = false;
   imageIter++;
   if (imageIter>=imgs.numberOfImg) {isAnimationDispComplete = true; return;}
@@ -73,3 +74,5 @@ var runNotify = function(){
 };
 
 runNotify();
+//dispSingle();
+setInterval(function(){dispAnimation();}, 100);

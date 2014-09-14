@@ -289,7 +289,8 @@ var notificationFileJS = '/tmp/smart_mug_notification_js.json';
 var fd = fs.openSync(notificationFileJS, 'w');
 fs.closeSync(fd);
 
-var isNotificationFileReady = true;
+//var isNotificationFileReady = true;
+var isNotificationFileReady = false;
 function getNotificationFromFileJS() {
   if (!isNotificationFileReady) {
     setTimeout(getNotification, 100);
