@@ -5,7 +5,7 @@ var fs = require('fs');
 var path = require('path');
 var notify = require('./pop3.js').notify;
 var config = require('./config.js');
-//var disp = require('./disp.js').disp;
+var disp = require('./disp.js');
 
 // Animation display begin
 var isAnimationDispComplete = true;
@@ -37,7 +37,11 @@ function dispAnimation() {
   if (imgs == null || !isPreviousImageDisComplete) {return;}
   isPreviousImageDisComplete = false;
   imageIter++;
-  if (imageIter>=imgs.numberOfImg) {isAnimationDispComplete = true; return;}
+  if (imageIter>=imgs.numberOfImg) {
+    isAnimationDispComplete = true; 
+	disp.disp_num(parseInt(countSave));
+    return;
+  }
   dispSingle(imgs['img'+imageIter], 1, 50);
   isPreviousImageDisComplete = true;
 }
@@ -53,9 +57,11 @@ var statCallback = function(err, data) {
 
   console.log(data);
  
-  if(countSave == undefined)
+  if(countSave == undefined) {
     countSave = data.count
-
+	disp.disp_num(parseInt(countSave));
+  }
+  
   if(countSave != data.count) {
     console.log("***** New Mail Arrivaled *****");
     countSave = data.count;
@@ -72,6 +78,8 @@ var runNotify = function(){
     });
   }, config.delay);   
 };
+
+disp.disp_num(0);
 
 runNotify();
 
