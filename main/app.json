@@ -23,7 +23,7 @@
     "version": "0.0.1",
     "icon": "icon16x12.jpg",
     "iconJSON": "media.json",
-    "start": "app.js",
+    "start": "app.js"
   },
   "fish": {
     "name"   : "fish",
@@ -40,7 +40,8 @@
     "version": "0.0.1",
     "icon": "icon16x12.jpg",
     "iconJSON": "media.json",
-    "start": "index.js"
+    "start": "index.js",
+    "description": "desc"
   },
   "mole": {
     "name": "mole",

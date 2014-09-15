@@ -237,7 +237,8 @@ function addNotification(notification, isPeriodical) {
   }
   // send a hold to current front end app
   console.log(logPrefix+'notification app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
-  frontEndApp.process.send({'mug_touchevent_on':['TOUCH_HOLD', 0, 0, 0]});
+  touchEmitter.emit("touchEvent", 4, 0, 0, 0);
+  //frontEndApp.process.send({'mug_touchevent_on':['TOUCH_HOLD', 0, 0, 0]});
 }
 
 // check if there is some pending notifications
@@ -417,7 +418,8 @@ function launchDefaultApp() {
     if (frontEndApp.app != defaultApp) {
       //console.log(logPrefix+'default app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
       console.log(logPrefix+frontEndApp.app+','+defaultApp+','+(new Date()).getTime()+','+timerLastTouchEvent);
-      frontEndApp.process.send({'mug_touchevent_on':['TOUCH_HOLD', 0, 0, 0]});
+      //frontEndApp.process.send({'mug_touchevent_on':['TOUCH_HOLD', 0, 0, 0]});
+      touchEmitter.emit("touchEvent", 4, 0, 0, 0);
     }
   }
   setTimeout(launchDefaultApp, checkInterval);
