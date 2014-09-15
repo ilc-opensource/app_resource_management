@@ -24,12 +24,14 @@ process.on('message', function(o) {
         tp.on('touchEvent', tp.touchEventListener[i]);
         //console.log(logPrefix+'restore touchEventListener'+process.pid);
       }
+      tp.touchEventListener = null;
     }
     if (tp.gestureListener != null) {
       for (var i=0; i<tp.gestureListener.length; i++) {
         tp.on('gesture', tp.gestureListener[i]);
         //console.log(logPrefix+'restore gestureListener'+process.pid);
       }
+      tp.gestureListener = null;
     }
   }
 
