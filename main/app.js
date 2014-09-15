@@ -52,7 +52,11 @@ function disp() {
     var img = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].iconJSON);
   }
   //console.log(logPrefix+'show app:'+appJSON[appKey[index]].name);
-  var data = fs.readFileSync(img, 'utf8');
+  try {
+    var data = fs.readFileSync(img, 'utf8');
+  } catch (ex) {
+    return;
+  }
   var msg=JSON.parse(data);
   io.disp_raw_N(msg.img0, 1, 0);
   appReady = true;

@@ -3,6 +3,7 @@ var util = require("util");
 var EventEmitter = require("events").EventEmitter;
 
 var context = require('./context.js');
+//var escapeApp = require('./escapeApp.js');
 
 var logPrefix = '[sys touchPanel] ';
 
@@ -79,6 +80,7 @@ process.on('message', function(o) {
     // OS in app handle the escape
     if (o['mug_touchevent_on'][0] == 'TOUCH_HOLD' && !tp.appHandleEscape) {
       process.send({'escape':context});
+      //escapeApp();
     } else {
       tp.emit('touchEvent',
         o['mug_touchevent_on'][0],
