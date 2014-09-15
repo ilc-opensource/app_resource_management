@@ -88,7 +88,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
 
 io.touchPanel.on('gesture', function(gesture) {
   if (!appReady) return;
-  //console.log('====='+io.touchPanel.listeners('gesture').length);
+  console.log('====='+io.touchPanel.listeners('gesture').length);
   if (gesture == 'MUG_SWIPE_LEFT') {
     index = (index+1)==appKey.length?0:(index+1);
     //console.log('after gesture:'+appJSON[appKey[index]].name);

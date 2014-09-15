@@ -20,6 +20,24 @@ process.on('message', function(o) {
   if (o['enableTouch']) {
     tp.disableTouch = false;
     if (tp.touchEventListener != null) {
+      while(true) {
+        var length = tp.touchEventListener.length;
+        for (var i=0; i<length; i++) {
+          for (var j=1; j<length; j++) {
+            if (tp.touchEventListener[i] == tp.touchEventListener[j]) {
+              tp.touchEventListener.splice(i, 1);
+              //console.log('delete one repeat listener');
+              break;
+            }
+          }
+          if (j<length) {
+            break;
+          }
+        }
+        if (i==length) {
+          break;
+        }
+      }
       for (var i=0; i<tp.touchEventListener.length; i++) {
         tp.on('touchEvent', tp.touchEventListener[i]);
         //console.log(logPrefix+'restore touchEventListener'+process.pid);
@@ -27,6 +45,24 @@ process.on('message', function(o) {
       tp.touchEventListener = null;
     }
     if (tp.gestureListener != null) {
+      while(true) {
+        var length = tp.gestureListener.length;
+        for (var i=0; i<length; i++) {
+          for (var j=1; j<length; j++) {
+            if (tp.gestureListener[i] == tp.gestureListener[j]) {
+              //console.log('delete one repeat listener');
+              tp.gestureListener.splice(i, 1);
+              break;
+            }
+          }
+          if (j<length) {
+            break;
+          }
+        }
+        if (i==length) {
+          break;
+        }
+      }
       for (var i=0; i<tp.gestureListener.length; i++) {
         tp.on('gesture', tp.gestureListener[i]);
         //console.log(logPrefix+'restore gestureListener'+process.pid);
