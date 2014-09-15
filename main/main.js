@@ -181,7 +181,7 @@ function findNextApp(condition) {
     return;
   }
   // If has notification, and time is meet
-  console.log(logPrefix+"search for a timeout notification "+pendingNotification.length);
+  //console.log(logPrefix+"search for a timeout notification "+pendingNotification.length);
   for (var i=0; i<pendingNotification.length; i++) {
     var timer = (new Date()).getTime();
     if (/*pendingNotification[i].time == 0 ||*/
@@ -338,7 +338,8 @@ fs.watch(notificationFileC, function(e, filename) {
 
 var handler = function(o) {
   if (o['escape']) {
-    console.log(logPrefix+'receive a sys message(escape):'+JSON.stringify(o));
+    //console.log(logPrefix+'receive a sys message(escape):'+JSON.stringify(o));
+    console.log(logPrefix+'receive a sys message(escape):'+o.escape.app+' escape');
     //console.log(logPrefix+'receive a sys message(escape):');
     // one app may send multi escape to os
     //if (appStack[appStack.length-1].app != o['escape'].app) {
@@ -359,13 +360,14 @@ var handler = function(o) {
     if (frontEndApp.app != o['newApp'].context.app) {
       return;
     }
-    console.log(logPrefix+'receive a sys message(newApp):'+JSON.stringify(o));
+    //console.log(logPrefix+'receive a sys message(newApp):'+JSON.stringify(o));
+    console.log(logPrefix+'receive a sys message(newApp):'+o.newApp.context.app+'-->'+o.newApp.app);
     //console.log(logPrefix+'receive a sys message(newApp):');
     if (o['newApp'].context.app != path.join(__dirname, 'notification.js')) {
       moveToBackground(o['newApp'].context);
     }
     launchApp(o['newApp'].app);
-  } else if (o['exit']) { // Explicit exit, used for notification without click and C language APP
+  } else if (o['exit']) { // Explicit exit, used for notification without click no C language APP
     console.log(logPrefix+'receive a sys message(exit):'+JSON.stringify(o));
     //console.log(logPrefix+'receive a sys message(exit):');
     //console.log(logPrefix+frontEndApp.app+'exit');
@@ -428,6 +430,7 @@ setTimeout(launchDefaultApp, checkInterval);
 
 // Redirect touch and gesture event to front end app
 var touchEmitter = new EventEmitter();
+//var touchEmitter = require('./resManagerEventEmitter.js').touchEventEmitter;
 touchEmitter.on('touchEvent', function(e, x, y, id) {
   timerLastTouchEvent = (new Date()).getTime();
   //console.log(logPrefix+'touchEvent='+e);
@@ -569,11 +572,40 @@ function readTouch() {
 }
 setInterval(readTouch, 100);
 
+
 // Begin at this point
 launchApp(path.join(__dirname, './startup.js'));
 
 // Begin to get touch event
 var touchProcess = child_process.fork(path.join(__dirname, './highLevelAPI/getTouch.js'));
+
+//var io = require('./highLevelAPI/io.js');
+//var touchHandle = io.mug_touch_init();
+
+//var touchEventEmitter = require('../resManagerEventEmitter.js').touchEventEmitter;
+/*io.mug_touch_on(function(x, y, id) {
+  fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touch':[x, y, id]})+'\n');
+});
+*/
+
+/*
+io.mug_touch_event_on(touchHandle, io.TOUCH_HOLD, function(e, x, y, id) {
+  //fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touchEvent':[e, x, y, id]})+'\n');
+  touchEmitter.emit("touchEvent", e, x, y, id);
+});
+
+io.mug_touch_event_on(touchHandle, io.TOUCH_CLICK, function(e, x, y, id) {
+  //fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touchEvent':[e, x, y, id]})+'\n');
+  touchEmitter.emit("touchEvent", e, x, y, id);
+});
+
+io.mug_gesture_on(touchHandle, io.MUG_GESTURE, function(g, info) {
+  //fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'gesture':g})+'\n');
+  touchEmitter.emit("gesture", g);
+});
+
+io.mug_run_touch_thread(touchHandle);
+*/
 
 // handle ctrl+c
 var signalHandler = function() {
