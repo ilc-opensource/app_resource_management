@@ -24,7 +24,7 @@ process.on('message', function(o) {
       while(true) {
         var length = tp.touchEventListener.length;
         for (var i=0; i<length; i++) {
-          for (var j=1; j<length; j++) {
+          for (var j=(i+1); j<length; j++) {
             if (tp.touchEventListener[i] == tp.touchEventListener[j]) {
               tp.touchEventListener.splice(i, 1);
               //console.log('delete one repeat listener');
@@ -49,7 +49,7 @@ process.on('message', function(o) {
       while(true) {
         var length = tp.gestureListener.length;
         for (var i=0; i<length; i++) {
-          for (var j=1; j<length; j++) {
+          for (var j=(i+1); j<length; j++) {
             if (tp.gestureListener[i] == tp.gestureListener[j]) {
               //console.log('delete one repeat listener');
               tp.gestureListener.splice(i, 1);

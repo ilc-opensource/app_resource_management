@@ -4,7 +4,7 @@ var path = require('path');
 var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
 
-var logPrefix = '[sys app] ';
+var logPrefix = '[sys setting] ';
 var appReady = false;
 var index = -1;
 var appKey = [];
@@ -52,7 +52,11 @@ function disp() {
     var img = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].iconJSON);
   }
   //console.log(logPrefix+'show app:'+appJSON[appKey[index]].name);
-  var data = fs.readFileSync(img, 'utf8');
+  try {
+    var data = fs.readFileSync(img, 'utf8');
+  } catch (ex) {
+    return;
+  }
   var msg=JSON.parse(data);
   io.disp_raw_N(msg.img0, 1, 0);
   appReady = true;
@@ -79,6 +83,10 @@ disp_app();
 });*/
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
   if (!appReady) return;
+  console.log('====='+logPrefix+io.touchPanel.listeners('touchEvent').length);
+  for (var i=1; i<io.touchPanel.listeners('touchEvent').length; i++) {
+    io.touchPanel.listeners('touchEvent').splice(i, 1);
+  }
   if (e == 'TOUCH_CLICK') {
     var nextApp = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].start);
     //console.log(logPrefix+"Launch a new app"+nextApp+', '+process.pid);
@@ -88,7 +96,10 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
 
 io.touchPanel.on('gesture', function(gesture) {
   if (!appReady) return;
-  //console.log('====='+io.touchPanel.listeners('gesture').length);
+  console.log('====='+logPrefix+io.touchPanel.listeners('gesture').length);
+  for (var i=1; i<io.touchPanel.listeners('gesture').length; i++) {
+    io.touchPanel.listeners('gesture').splice(i, 1);
+  }
   if (gesture == 'MUG_SWIPE_LEFT') {
     index = (index+1)==appKey.length?0:(index+1);
     //console.log('after gesture:'+appJSON[appKey[index]].name);

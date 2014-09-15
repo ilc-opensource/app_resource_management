@@ -95,7 +95,7 @@ function launchApp(app) {
   if (i==appStack.length || processExit) {
     console.log(logPrefix+'create a new process for '+app);
     // when launch a app, pass the app name as the first parameter (part of context), part of correspond to context.js
-    var childProcess = child_process.fork(app, [app]);
+    var childProcess = child_process.fork(app, [app], {'cwd':path.dirname(app)});
     // handle user app message (new a app, escape, exit, register notification)
     childProcess.on('message', handler);
     // enable app to access display

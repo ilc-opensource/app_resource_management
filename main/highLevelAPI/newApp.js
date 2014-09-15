@@ -19,7 +19,7 @@ var newApp = function(app) {
   while(true) {
     var length = touchPanel.touchEventListener.length;
     for (var i=0; i<length; i++) {
-      for (var j=1; j<length; j++) {
+      for (var j=(i+1); j<length; j++) {
         if (touchPanel.touchEventListener[i] == touchPanel.touchEventListener[j]) {
           touchPanel.touchEventListener.splice(i, 1);
           //console.log('delete one repeat listener');
@@ -37,7 +37,7 @@ var newApp = function(app) {
   while(true) {
     var length = touchPanel.gestureListener.length;
     for (var i=0; i<length; i++) {
-      for (var j=1; j<length; j++) {
+      for (var j=(i+1); j<length; j++) {
         if (touchPanel.gestureListener[i] == touchPanel.gestureListener[j]) {
           //console.log('delete one repeat listener');
           touchPanel.gestureListener.splice(i, 1);
