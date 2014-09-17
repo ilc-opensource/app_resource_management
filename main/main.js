@@ -141,7 +141,6 @@ function launchApp(app) {
     appStack.push(curApp[0]);
     frontEndApp = appStack[appStack.length-1];
     frontEndApp['disableTouch'] = false;
-    //printAppStack();
   }
   isAppReady = true;
 }

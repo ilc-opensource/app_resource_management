@@ -17,7 +17,9 @@ function action(msg) {
 
     process.send({'weChat':msg});
 
-    fs.writeFile(path.join(__dirname, 'weChat.json'),
+    sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
+
+/*    fs.writeFile(path.join(__dirname, 'weChat.json'),
       msg,
       function(err) {
         if(err)
@@ -25,6 +27,7 @@ function action(msg) {
         //console.log('It\'s saved!');
       }
     );
+*/
   }
 }
 
@@ -72,15 +75,7 @@ function queryweChat(cb) {
 }
 // Query info from web end
 
-// Register notification begin
-fs.watch(path.join(__dirname, 'weChat.json'), function(e, filename) {
-  // write command to notification.json
-  //console.log(logPrefix+'register a notification');
-  sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
-  //fs.appendFileSync(path.join(__dirname, 'notification'), 'register notification');
-});
-
-var weChatContent = fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
-process.send({'weChat':weChatContent});
+//var weChatContent = fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
+//process.send({'weChat':weChatContent});
 
 setInterval(function(){queryweChat(action)}, 1000);
