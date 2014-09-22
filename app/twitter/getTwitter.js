@@ -6,7 +6,7 @@ var http = require('http');
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
-var logPrefix = '[user weChat getWeChat] ';
+var logPrefix = '[user twitter getTwitter] ';
 
 var lastMsg = null;
 function action(msg) {
@@ -15,7 +15,7 @@ function action(msg) {
     lastMsg = msg;
     //console.log(msg);
 
-    process.send({'weChat':msg});
+    process.send({'twitter':msg});
 
     sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
 
@@ -31,9 +31,9 @@ function action(msg) {
   }
 }
 
-function queryweChat(cb) {
+function queryTwitter(cb) {
   var mugID = 'MUG123456ILC';
-  var app = 'weChat';
+  var app = 'twitter';
 
   var optionsProxy = {
     hostname: 'proxy-prc.intel.com',
@@ -78,4 +78,4 @@ function queryweChat(cb) {
 //var weChatContent = fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
 //process.send({'weChat':weChatContent});
 
-setInterval(function(){queryweChat(action)}, 1000);
+setInterval(function(){queryTwitter(action)}, 1000);

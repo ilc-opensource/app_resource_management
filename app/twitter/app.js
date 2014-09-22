@@ -12,7 +12,7 @@ var getTwitterProcess = null;
 var content = '';
 var handler = function(o) {
   if (o['twitter']) {
-    twitterContent = o['twitter'];
+    content = o['twitter'];
   }
 };
 var hasContent = false;

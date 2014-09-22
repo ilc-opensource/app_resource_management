@@ -1,6 +1,6 @@
 {
-  "name": "weChat",
-  "package": "com.intel.smart_mug.weChat",
+  "name": "twitter",
+  "package": "com.intel.smart_mug.twitter",
   "version": "0.0.1",
   "icon": "icon16x12.jpg",
   "iconJSON": "media.json",
