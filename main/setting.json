@@ -34,5 +34,14 @@
     "iconJSON": "media.json",
     "start"  : "app.js",
     "description": "display touch trace"
+  },
+  "installUninstall": {
+    "name": "installUninstall",
+    "package": "com.intel.smart_mug.app_install_uninstall",
+    "version": "0.0.1",
+    "icon"   : "icon.bmp",
+    "iconJSON": "media.json",
+    "start"  : "index.js",
+    "description": "install and uninstall app"
   }
 }

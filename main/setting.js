@@ -10,10 +10,12 @@ var index = -1;
 var appKey = [];
 var appJSON = null;
 
-function disp_app() {
+function disp_app(force) {
   var data = fs.readFileSync(path.join(__dirname, 'setting.json'), 'utf8');
   if (data == '') {
-    setTimeout(disp_app, 100);
+    if (!force) {
+      setTimeout(disp_app, 100);
+    }
     return;
   }
   appJSON = JSON.parse(data);
@@ -42,7 +44,9 @@ function disp_app() {
   }
   //console.log(logPrefix+'app length='+appKey.length);
   disp();
-  setTimeout(disp_app, 100);
+  if (!force) {
+    setTimeout(disp_app, 100);
+  }
 }
 
 function disp() {
@@ -103,11 +107,11 @@ io.touchPanel.on('gesture', function(gesture) {
   if (gesture == 'MUG_SWIPE_LEFT') {
     index = (index+1)==appKey.length?0:(index+1);
     //console.log('after gesture:'+appJSON[appKey[index]].name);
-    //disp_app(false);
+    disp_app(true);
   } else if (gesture == 'MUG_SWIPE_RIGHT') {
     index = (index==0)?(appKey.length-1):(index-1);
     //console.log('after gesture:'+appJSON[appKey[index]].name);
-    //disp_app(false);
+    disp_app(true);
   }
 });
 
