@@ -17,7 +17,8 @@ var handler = function(o) {
     weChatContent = o['weChat'];
   }
 };
-var hasNewContent = false;
+var hasContent = false;
+var currentDispContent = null;
 
 // Animation display begin
 var isAnimationDispComplete = true;
@@ -26,28 +27,38 @@ var imageIter = -1;
 var imgs = null;
 function displayweChat() {
   if (!isAnimationDispComplete) {
-    setTimeout(displayweChat, 1000);
+    setTimeout(displayweChat, 500);
     return;
   }
   isAnimationDispComplete = false;
-  isPreviousImageDisComplete = true;
-  imageIter = -1;
-  var w = weChatContent;
-  if (w == '' || w == '\n') {
+  // The animation is only one image, don't need to refresh it
+  if (currentDispContent == weChatContent &&
+    JSON.parse(currentDispContent).numberOfImg == 1) {
+    isAnimationDispComplete = true;
+    setTimeout(displayweChat, 500);
+    return;
+  }
+  if (weChatContent == '' || weChatContent == '\n') {
     var w = fs.readFileSync(path.join(__dirname, './loading.json'), 'utf8');
     imgs = JSON.parse(w);
-    hasNewContent = false;
+    hasContent = false;
   } else {
     try {
-      imgs = JSON.parse(w);
-      hasNewContent = true;
+      imgs = JSON.parse(weChatContent);
+      hasContent = true;
+      currentDispContent = weChatContent
     } catch(ex) {
       imgs = null;
       isAnimationDispComplete = true;
       isPreviousImageDisComplete = false;
+      hasContent = false;
+      setTimeout(displayweChat, 500);
+      return;
     }
   }
-  setTimeout(displayweChat, 1000);
+  isPreviousImageDisComplete = true;
+  imageIter = -1;
+  setTimeout(displayweChat, 500);
 }
 function dispAnimation() {
   if (!isPreviousImageDisComplete) {
@@ -56,10 +67,20 @@ function dispAnimation() {
   }
   isPreviousImageDisComplete = false;
   imageIter++;
-  if (weChatContent != '' && !hasNewContent) {
+  if (weChatContent != '' && !hasContent) { // Terminate loading animation immediately
     isAnimationDispComplete = true;
     setTimeout(dispAnimation, 50);
     return;
+  }
+  if (currentDispContent != null &&
+    currentDispContent != weChatContent) {
+    for (var i=0; i<imgs.textEnd.length; i++) {
+      if ((imageIter-1) == imgs.textEnd[i]) {
+        isAnimationDispComplete = true;
+        setTimeout(dispAnimation, 50);
+        return;
+      }
+    }
   }
   if (imageIter>=imgs.numberOfImg) {
     isAnimationDispComplete = true;
@@ -79,6 +100,7 @@ var weChat = function() {
   getWeChatProcess = child_process.fork(path.join(__dirname, 'getWeChat.js'));
   getWeChatProcess.on('message', handler);
   displayweChat();
+  dispAnimation();
 };
 
 weChat();
