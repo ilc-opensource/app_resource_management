@@ -7,6 +7,8 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[app get_ip] '
 
+io.disp_raw_N([0,0,34,2,0,0,0,0,32,34,34,34,34,0,1,0,0,0,0,0,0,16,0,0,0,0,0,0,1,1,0,0,0,0,0,0,17,0,0,0,0,0,0,0,17,1,0,0,0,0,34,34,34,2,0,0,0,0,2,2,2,2,0,0,0,0,2,2,2,2,0,0,0,0,2,2,2,2,0,0,0,0,2,2,2,2,0,0,0,0,34,34,34,2,0,0], 1, 50);
+
 var appProcess = child_process.fork(path.join(__dirname, 'app.js'), {'cwd':__dirname});
 
 // Touch event handler begin
