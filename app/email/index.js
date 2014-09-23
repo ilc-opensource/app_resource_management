@@ -3,9 +3,11 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var fs = require('fs');
 var path = require('path');
-var notify = require('./pop3.js').notify;
 var config = require('./config.js');
 var disp = require('./disp.js');
+var pop3 = require('./pop3.js');
+
+var emitter = pop3.emitter;
 
 // Animation display begin
 var isAnimationDispComplete = true;
@@ -51,38 +53,34 @@ function dispSingle(data, number, interval) {
 // Animation display End
 
 var countSave = undefined;
-var statCallback = function(err, data) {
-  if(err) 
-    console.log('ERROR');
 
+emitter.on('error', function(data) {
   console.log(data);
- 
-  if(countSave == undefined) {
-    countSave = data.count
-	disp.disp_num(parseInt(countSave));
-  }
-  
-  if(countSave != data.count) {
-    console.log("***** New Mail Arrivaled *****");
+});
+
+
+emitter.on('stat', function(data) {
+  if(countSave == undefined) 
     countSave = data.count;
-    // display new email 
-    dispEmail();
+
+  console.log('email: ' + data.count);
+
+  if(countSave != data.count) {
+    consol.log('****** New Mail ******');
   }
-  runNotify();
-};
 
-var runNotify = function(){
-  setTimeout(function(){
-    notify({
-      'stat' : statCallback
-    });
-  }, config.delay);   
-};
+  countSave = data.count;
+  disp.disp_num(parseInt(countSave));
 
-disp.disp_num(0);
+});
 
-runNotify();
+pop3.init();
+
+setInterval(function(){
+  pop3.stat();
+}, 1000);
 
 // No new email
 dispSingle([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,17,17,17,17,1,0,0,17,0,0,0,0,17,0,0,1,0,0,0,0,16,0,0,1,0,0,0,0,16,0,0,1,0,0,0,0,16,0,0,1,0,0,0,0,16,0,0,17,0,0,0,0,17,0,0,16,17,17,17,17,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 1, 50);
+
 setInterval(function(){dispAnimation();}, 100);
