@@ -41,7 +41,6 @@ function dispAnimation() {
   imageIter++;
   if (imageIter>=imgs.numberOfImg) {
     isAnimationDispComplete = true; 
-	disp.disp_num(parseInt(countSave));
     return;
   }
   dispSingle(imgs['img'+imageIter], 1, 50);
@@ -60,17 +59,28 @@ emitter.on('error', function(data) {
 
 
 emitter.on('stat', function(data) {
+  
+  console.log('recv: ' + data.count);
+
+  if(data.count < 0) {
+    console.log('no valid count');
+    return;
+  }
+
   if(countSave == undefined) 
     countSave = data.count;
 
-  console.log('email: ' + data.count);
 
   if(countSave != data.count) {
-    consol.log('****** New Mail ******');
-  }
+    console.log('****** New Mail ******');
+    dispEmail();
+  } 
 
   countSave = data.count;
-  disp.disp_num(parseInt(countSave));
+
+  if(isAnimationDispComplete){
+    disp.disp_num(parseInt(countSave));
+  }
 
 });
 

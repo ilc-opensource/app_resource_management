@@ -8,6 +8,10 @@ var ready = false;
 var Emitter = require('events').EventEmitter;
 var emitter = new Emitter();
 
+var statSave = {
+  count: -1 
+}
+
 var init = function(option) {  
   ready = false;
   emitter.emit('init', 'initializing');
@@ -52,18 +56,12 @@ var init = function(option) {
 
   });
 
-  var cnt = 0;
 
   client.on("stat", function(status, data, rawdata) {
 
-    if(cnt > 5) {
-      client.quit();
-    }
-    cnt++;
-     
-
     if (status === true) {
       if (config.debug) console.log("Parsed data: " + JSON.stringify(data)); 
+      statSave.count = data.count;
       emitter.emit('stat', data);   
       ready = true;
     } else {
@@ -71,6 +69,8 @@ var init = function(option) {
       emitter.emit('error', 'STAT failed');
       err = "stat err";
     }
+
+    client.quit();
   });
 
   client.on("quit", function(status, rawdata) {
@@ -84,10 +84,14 @@ var init = function(option) {
 
 exports.stat = function(cb)
 {
+
   if(ready)
     client.stat();
-  else
+  else {
     console.log('client is not ready');
+    emitter.emit('stat', statSave);
+  }
+
 }
 
 exports.init = init;
