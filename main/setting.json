@@ -36,7 +36,7 @@
     "description": "display touch trace"
   },
   "installUninstall": {
-    "name": "installUninstall",
+    "name": "smart_mug_manager",
     "package": "com.intel.smart_mug.app_install_uninstall",
     "version": "0.0.1",
     "icon"   : "icon.bmp",
