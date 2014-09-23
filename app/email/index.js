@@ -94,3 +94,19 @@ setInterval(function(){
 dispSingle([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,17,17,17,17,1,0,0,17,0,0,0,0,17,0,0,1,0,0,0,0,16,0,0,1,0,0,0,0,16,0,0,1,0,0,0,0,16,0,0,1,0,0,0,0,16,0,0,17,0,0,0,0,17,0,0,16,17,17,17,17,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 1, 50);
 
 setInterval(function(){dispAnimation();}, 100);
+
+// Touch event handler begin
+// For none js app only
+io.touchPanel.appHandleEscape = true;
+io.touchPanel.on('touchEvent', function(e, x, y, id) {
+  if (e == 'TOUCH_HOLD') {
+    //console.log(logPrefix+'kill the main app pid='+appProcess.pid);
+    try {
+      process.kill(appProcess.pid);
+    } catch (ex) {
+    }
+    sys.escape();
+    process.exit();
+  }
+});
+
