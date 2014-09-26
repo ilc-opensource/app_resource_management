@@ -14,8 +14,10 @@ function action(msg) {
   if (lastMsg != msg) {
     lastMsg = msg;
     //console.log(msg);
-
-    process.send({'weChat':msg});
+    try {
+      process.send({'weChat':msg});
+    } catch (ex) {
+    }
 
     sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
 

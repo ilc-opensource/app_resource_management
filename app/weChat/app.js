@@ -72,8 +72,14 @@ function dispAnimation() {
     setTimeout(dispAnimation, 50);
     return;
   }
+  if (imageIter>=imgs.numberOfImg) {
+    isAnimationDispComplete = true;
+    setTimeout(dispAnimation, 50);
+    return;
+  }
   if (currentDispContent != null &&
-    currentDispContent != weChatContent) {
+    currentDispContent != weChatContent &&
+    imgs.textEnd != undefined) {
     for (var i=0; i<imgs.textEnd.length; i++) {
       if ((imageIter-1) == imgs.textEnd[i]) {
         isAnimationDispComplete = true;
@@ -81,11 +87,6 @@ function dispAnimation() {
         return;
       }
     }
-  }
-  if (imageIter>=imgs.numberOfImg) {
-    isAnimationDispComplete = true;
-    setTimeout(dispAnimation, 50);
-    return;
   }
   dispSingle(imgs['img'+imageIter], 1, 50);
   isPreviousImageDisComplete = true;

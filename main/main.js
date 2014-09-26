@@ -136,7 +136,10 @@ function launchApp(app) {
     // give display to the re-entered app procee
     enableAppDisp(appStack[i].process.pid);
     // push app to the stack head, and redirect touch event to it
-    appStack[i].process.send({'enableTouch': true});
+    try {
+      appStack[i].process.send({'enableTouch': true});
+    } catch (ex) {
+    }
     var curApp = appStack.splice(i, 1);
     appStack.push(curApp[0]);
     frontEndApp = appStack[appStack.length-1];
@@ -469,7 +472,10 @@ touchEmitter.on('touchEvent', function(e, x, y, id) {
     return;
   }
   //console.log(logPrefix+'send a touchEvent '+touchEvent+' to '+frontEndApp.app);
-  frontEndApp.process.send({'mug_touchevent_on':[touchEvent, x, y, id]});
+  try {
+    frontEndApp.process.send({'mug_touchevent_on':[touchEvent, x, y, id]});
+  } catch (ex) {
+  }
   // Notification will ignore HOLD because default app will send it,
   // but notification want to handle CLICK
   if (touchEvent == 'TOUCH_HOLD' && path.basename(frontEndApp.app) != 'notification') {
@@ -526,7 +532,10 @@ touchEmitter.on('gesture', function(g) {
     return;
   }
   //console.log(logPrefix+'send a gesture '+gesture+' to '+frontEndApp.app);
-  frontEndApp.process.send({'mug_gesture_on':gesture});
+  try {
+    frontEndApp.process.send({'mug_gesture_on':gesture});
+  } catch (ex) {
+  }
 });
 
 /* get gesture event through file
