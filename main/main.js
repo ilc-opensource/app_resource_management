@@ -1,5 +1,5 @@
 /*
- * mini OS for app runtime management
+ * app and resource runtime management for smart mug
  */
 var fs = require('fs');
 var path = require('path');
@@ -26,7 +26,6 @@ var pendingNotification = []; //{'icon':, 'app':, 'time':, 'dispCount':}
 var frontEndApp = null;
 
 function printAppStack() {
-  return;
   console.log(logPrefix+'Begin=================================');
   for (var i=0; i<appStack.length-1; i++) {
     console.log(logPrefix+'appStack['+i+']='+appStack[i].app+', '+appStack[i].process.pid+', '+appStack[i].context);
@@ -266,22 +265,6 @@ function checkNotificationPeriodically() {
   setTimeout(checkNotificationPeriodically, checkInterval);
 }
 checkNotificationPeriodically();
-
-/*var appNotificationFile = [];
-function appNotification(file) {
-  appNotificationFile.push(file);
-  var fsTimeout = null;
-  console.log(logPrefix+'notification file='+file);
-  fs.watch(file, function(e, filename) {
-    // write command to notification.json
-    //sys.registerNotification(path.join(__dirname, 'notification.js'));
-    if (!fsTimeout) {
-      addNotification(file+'.js', false);
-      fsTimeout = setTimeout(function(){fsTimeout=null;}, 100);
-    }
-  });
-}
-*/
 
 // file name must be aligned with NOTIFICATION_C and NOTIFICATION_JS definition in sdk_c/include/res_manager.h
 var notificationFileC = '/tmp/smart_mug_notification_c.json';
@@ -538,11 +521,53 @@ touchEmitter.on('gesture', function(g) {
   }
 });
 
+// Begin at this point
+launchApp(path.join(__dirname, './startup.js'));
+
+// Begin to get touch event
+var touchProcess = child_process.fork(path.join(__dirname, './highLevelAPI/getTouch.js'));
+touchProcess.on("message", function(o){
+  if (o["touchEvent"]) {
+    touchEmitter.emit("touchEvent", o['touchEvent'].e,  o['touchEvent'].x, o['touchEvent'].y, o['touchEvent'].id);
+  }
+  if (o["gesture"]) {
+    touchEmitter.emit("gesture", o["gesture"]);
+  }
+});
+
+// handle ctrl+c
+var signalHandler = function() {
+  child_process.exec('./highLevelAPI/C/setFrontEndApp '+'0', function(error, stdout, stderr){});
+  process.exit();
+};
+process.on('SIGINT', signalHandler);
+process.on('SIGTERM', signalHandler);
+
+// Emulate a touchPanel input
+/*process.stdin.setEncoding('utf8');
+process.stdin.on('readable', function() {
+  var chunk = process.stdin.read();
+  if (chunk !== null && chunk != '\n') {
+    //process.stdout.write('gesture: ' + chunk);
+    var e = JSON.parse(chunk);
+    if (e.touch) {
+      mug_touch_on(e.touch[0], e.touch[1], e.touch[2]);
+    } else if (e.gesture){
+      mug_gesture_on(e.gesture);
+    } else {
+      console.log("touchPanel error");
+    }
+  }
+});
+process.stdin.on('end', function() {
+  process.stdout.write('end');
+});*/
+
 /* get gesture event through file
  * TODO find another solution
  */
 // Clean file
-var fd = fs.openSync(path.join(__dirname, './touchEvent.json'), 'w');
+/*var fd = fs.openSync(path.join(__dirname, './touchEvent.json'), 'w');
 fs.closeSync(fd);
 // Read file to get touch event
 var position=0;
@@ -579,72 +604,4 @@ function readTouch() {
   });
 }
 setInterval(readTouch, 100);
-
-
-// Begin at this point
-launchApp(path.join(__dirname, './startup.js'));
-
-// Begin to get touch event
-var touchProcess = child_process.fork(path.join(__dirname, './highLevelAPI/getTouch.js'));
-
-//var io = require('./highLevelAPI/io.js');
-//var touchHandle = io.mug_touch_init();
-
-//var touchEventEmitter = require('../resManagerEventEmitter.js').touchEventEmitter;
-/*io.mug_touch_on(function(x, y, id) {
-  fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touch':[x, y, id]})+'\n');
-});
 */
-
-/*
-io.mug_touch_event_on(touchHandle, io.TOUCH_HOLD, function(e, x, y, id) {
-  //fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touchEvent':[e, x, y, id]})+'\n');
-  touchEmitter.emit("touchEvent", e, x, y, id);
-});
-
-io.mug_touch_event_on(touchHandle, io.TOUCH_CLICK, function(e, x, y, id) {
-  //fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'touchEvent':[e, x, y, id]})+'\n');
-  touchEmitter.emit("touchEvent", e, x, y, id);
-});
-
-io.mug_gesture_on(touchHandle, io.MUG_GESTURE, function(g, info) {
-  //fs.appendFileSync(path.join(__dirname, '../touchEvent.json'), JSON.stringify({'gesture':g})+'\n');
-  touchEmitter.emit("gesture", g);
-});
-
-io.mug_run_touch_thread(touchHandle);
-*/
-
-// handle ctrl+c
-var signalHandler = function() {
-  child_process.exec('./highLevelAPI/C/setFrontEndApp '+'0', function(error, stdout, stderr){
-    //console.log(logPrefix+'stdout: ' + stdout);
-    //console.log(logPrefix+'stderr: ' + stderr);
-    if (error !== null) {
-      //console.log(logPrefix+'exec error: ' + error);
-    }
-  });
-  process.exit();
-};
-process.on('SIGINT', signalHandler);
-process.on('SIGTERM', signalHandler);
-
-// Emulate a touchPanel input
-/*process.stdin.setEncoding('utf8');
-process.stdin.on('readable', function() {
-  var chunk = process.stdin.read();
-  if (chunk !== null && chunk != '\n') {
-    //process.stdout.write('gesture: ' + chunk);
-    var e = JSON.parse(chunk);
-    if (e.touch) {
-      mug_touch_on(e.touch[0], e.touch[1], e.touch[2]);
-    } else if (e.gesture){
-      mug_gesture_on(e.gesture);
-    } else {
-      console.log("touchPanel error");
-    }
-  }
-});
-process.stdin.on('end', function() {
-  process.stdout.write('end');
-});*/
