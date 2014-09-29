@@ -78,7 +78,7 @@ process.on('message', function(o) {
   if (o['mug_touchevent_on']) {
     //console.log(logPrefix+'o[mug_touchevent_on]='+o['mug_touchevent_on'][0]);
     // OS in app handle the escape
-    if (o['mug_touchevent_on'][0] == 'TOUCH_HOLD' && !tp.appHandleEscape) {
+    if (o['mug_touchevent_on'][0] == 'TOUCH_HOLD') {
       process.send({'escape':context});
       //escapeApp();
     } else {
