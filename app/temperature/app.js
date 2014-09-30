@@ -21,7 +21,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
       process.kill(appProcess.pid);
     } catch (ex) {
     }
-    sys.escape();
+    //sys.escape();
     process.exit();
   }
 });

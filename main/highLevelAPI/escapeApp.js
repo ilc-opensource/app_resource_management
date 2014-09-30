@@ -8,7 +8,7 @@ var sys = require('./sys.js');
 var logPrefix = '[sys escape] ';
 
 var escapeApp = function() {
-  //console.log(logPrefix+'app '+context.app+' escape');
+  console.log(logPrefix+'send a escape to OS');
   process.send({'escape':context});
 };
 

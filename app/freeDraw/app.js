@@ -77,5 +77,8 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
 
 io.touchPanel.on('gesture', function(gesture) {
   //console.log(logPrefix+'getsture='+gesture);
+  if (gesture == 'MUG_SWIPE_DOWN') {
+    getWeChatProcess.send({'InstantUpdata':true});
+  }
 });
 // Touch event handler end

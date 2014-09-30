@@ -117,6 +117,10 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
 });
 
 io.touchPanel.on('gesture', function(gesture) {
+  console.log(logPrefix+'receive a gesture '+gesture);
+  if (gesture == 'MUG_SWIPE_DOWN') {
+    getWeChatProcess.send({'InstantUpdate':true});
+  }
   //console.log(logPrefix+'getsture='+gesture);
 });
 // Touch event handler end

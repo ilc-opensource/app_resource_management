@@ -29,7 +29,6 @@ function action(msg) {
 }
 
 function queryweChat(cb) {
-  var mugID = 'MUG123456ILC';
   var app = 'freeDraw';
 
   var optionsProxy = {
@@ -83,4 +82,18 @@ fs.watch(path.join(__dirname, 'weChat.json'), function(e, filename) {
 var weChatContent = fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
 process.send({'weChat':weChatContent});
 
-setInterval(function(){queryweChat(action)}, 1000);
+try {
+  var mugID = fs.readFileSync('/etc/device_id', 'utf8');
+} catch (ex) {
+  console.log(logPrefix+'Cant get mug ID');
+  return;
+}
+
+setInterval(function(){queryweChat(action)}, 600000);
+
+process.on('message', function(o) {
+  if (o['InstantUpdata']) {
+    queryweChat(action);
+  }
+});
+

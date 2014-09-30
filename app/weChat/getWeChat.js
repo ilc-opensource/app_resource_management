@@ -34,7 +34,7 @@ function action(msg) {
 }
 
 function queryweChat(cb) {
-  var mugID = 'MUG123456ILC';
+  //var mugID = 'MUG123456ILC';
   var app = 'weChat';
 
   var optionsProxy = {
@@ -80,4 +80,18 @@ function queryweChat(cb) {
 //var weChatContent = fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
 //process.send({'weChat':weChatContent});
 
-setInterval(function(){queryweChat(action)}, 1000);
+try {
+  var mugID = fs.readFileSync('/etc/device_id', 'utf8');
+} catch (ex) {
+  console.log(logPrefix+'Cant get mug ID');
+  return;
+}
+
+setInterval(function(){queryweChat(action)}, 600000);
+
+process.on('message', function(o) {
+  if (o['InstantUpdate']) {
+    console.log(logPrefix+' instant update');
+    queryweChat(action);
+  }
+});

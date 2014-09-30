@@ -80,4 +80,18 @@ function queryTwitter(cb) {
 //var weChatContent = fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
 //process.send({'weChat':weChatContent});
 
-setInterval(function(){queryTwitter(action)}, 1000);
+try {
+  var mugID = fs.readFileSync('/etc/device_id', 'utf8');
+} catch (ex) {
+  console.log(logPrefix+'Cant get mug ID');
+  return;
+}
+
+setInterval(function(){queryTwitter(action)}, 600000);
+
+process.on('message', function(o) {
+  if (o['InstantUpdata']) {
+    queryweChat(action);
+  }
+});
+

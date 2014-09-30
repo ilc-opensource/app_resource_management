@@ -7,10 +7,10 @@ var io = require('./io.js');
 var logPrefix = '[sys new] ';
 
 var newApp = function(app) {
-  if (touchPanel.disableTouch) return;
+  //if (touchPanel.disableTouch) return;
 
   // Disable touch and gesture event after this point
-  touchPanel.disableTouch = true;
+  //touchPanel.disableTouch = true;
   //clean all emitted event 
   touchPanel.touchEventListener = touchPanel.listeners('touchEvent');
   touchPanel.gestureListener = touchPanel.listeners('gesture');
