@@ -1,5 +1,4 @@
 var fs = require('fs');
-var child_process = require('child_process');
 var path = require('path');
 var http = require('http');
 
@@ -13,7 +12,6 @@ function action(msg) {
   if (msg=='') return;
   if (lastMsg != msg) {
     lastMsg = msg;
-    //console.log(msg);
     try {
       process.send({'weChat':msg});
     } catch (ex) {
@@ -40,7 +38,7 @@ function queryweChat(cb) {
   var optionsProxy = {
     hostname: 'proxy-prc.intel.com',
     port: 911,
-    path: 'www.pia-edison.com/mug?mugID='+mugID+'&app='+app,
+    path: 'www.pia-edison.com/mug/?mugID='+mugID+'&app='+app,
     method: 'GET'
   };
 
@@ -87,11 +85,12 @@ try {
   return;
 }
 
+queryweChat(action);
 setInterval(function(){queryweChat(action)}, 600000);
 
 process.on('message', function(o) {
   if (o['InstantUpdate']) {
-    console.log(logPrefix+' instant update');
+    //console.log(logPrefix+' instant update');
     queryweChat(action);
   }
 });

@@ -9,27 +9,28 @@ var EventEmitter = require("events").EventEmitter
 var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
 
-// TODO: get these info from config file
-var defaultApp = path.join(__dirname, '../app/weather/app.js');
-var timeToLaunchDefaultApp = 3000000; // 5 minutes
-var intervalToShowNotification = 30000; // half minute
-var maxCountToShowNotification = 3;
 var timeIntervalEager = 1000;
 var timeIntervalLazy = 10000;
-var timerLastTouchEvent = (new Date()).getTime();
-
 var logPrefix = '[OS] ';
 
+// For default app
+var defaultApp = path.join(__dirname, '../app/weather/app.js');
+var timeToLaunchDefaultApp = 3000000; // 5 minutes
+var timerLastTouchEvent = (new Date()).getTime();
+
+// For app management
 var appPool = [];
 var appStack = []; //{'app':, 'process':, 'context'}
 var frontEndApp = null;
+var sysDisableTouch = true;
 
 // For notification
 var isNotificationOn = true;
 var pendingNotification = []; //{'icon':, 'app':, 'time':, 'dispCount':}
+var intervalToShowNotification = 30000; //30 secondes 
+var maxCountToShowNotification = 3;
 var mainAppOfNotification = null;
-
-var sysDisableTouch = true;
+var notificationApp = path.join(__dirname, 'notification.js');
 
 function printAppStack() {
   console.log(logPrefix+'Begin=================================');
@@ -52,8 +53,7 @@ function enableAppDisp(pid) {
 }
 
 function launchApp(app) {
-  if (app == path.join(__dirname, 'notification.js')) {
-    //console.log(logPrefix+'launch a notification');
+  if (app == notificationApp) {
     for (var i=0; i<pendingNotification.length; i++) {
       if (mainAppOfNotification == pendingNotification[i].app) {
         var childProcess = child_process.fork(app,
@@ -139,7 +139,6 @@ function launchApp(app) {
     var appInfo = {'app':app, 'process':childProcess};
     appStack.push(appInfo);
     frontEndApp = appInfo;
-    sysDisableTouch = false;
   } else {
     console.log(logPrefix+'restore a existing process for '+app);
     // restore context, give display to the os process
@@ -152,15 +151,9 @@ function launchApp(app) {
       // give display to the re-entered app procee
       enableAppDisp(appStack[index].process.pid);
       // push app to the stack head, and redirect touch event to it
-      /*try {
-        appStack[index].process.send({'enableTouch': true});
-      } catch (ex) {
-        console.log(logPrefix+'send msg to child process exception: ' + ex);
-      }*/
       var curApp = appStack.splice(index, 1);
       appStack.push(curApp[0]);
       frontEndApp = appStack[appStack.length-1];
-      //frontEndApp['disableTouch'] = false;
     } else {
       if (appPool[index].context != null) {
         io.disp_raw_N(appPool[index].context, 1, 0);
@@ -169,18 +162,12 @@ function launchApp(app) {
       // give display to the re-entered app procee
       enableAppDisp(appPool[index].process.pid);
       // push app to the stack head, and redirect touch event to it
-      /*try {
-        appPool[index].process.send({'enableTouch': true});
-      } catch (ex) {
-        console.log(logPrefix+'send msg to child process exception: ' + ex);
-      }*/
       appStack.push(appPool[index]);
       appPool.splice(index, 1);
       frontEndApp = appStack[appStack.length-1];
-      //frontEndApp['disableTouch'] = false;
     }
-    sysDisableTouch = false;
   }
+  sysDisableTouch = false;
 }
 
 function moveToBackground(savedContext, isNewAApp) {
@@ -215,7 +202,7 @@ function moveToBackground(savedContext, isNewAApp) {
 // 4: escape from default app
 function findNextApp(condition) {
   // Notification without touch; notification with touch will call launchApp directly
-  if (frontEndApp.app == path.join(__dirname, './notification.js')) {
+  if (frontEndApp.app == notificationApp) {
     launchApp(appStack[appStack.length-1].app);
     return;
   }
@@ -225,7 +212,7 @@ function findNextApp(condition) {
     return;
   }
 
-  // If has notification, and time is meet
+  // If has notification, and time is up.
   //console.log(logPrefix+"search for a timeout notification "+pendingNotification.length);
   for (var i=0; i<pendingNotification.length; i++) {
     var timer = (new Date()).getTime();

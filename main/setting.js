@@ -4,7 +4,7 @@ var path = require('path');
 var io = require('./highLevelAPI/io.js');
 var sys = require('./highLevelAPI/sys.js');
 
-var logPrefix = '[sys setting] ';
+var logPrefix = '[sys show setting] ';
 var appReady = false;
 var index = -1;
 var appKey = [];
@@ -14,7 +14,7 @@ function disp_app(force) {
   var data = fs.readFileSync(path.join(__dirname, 'setting.json'), 'utf8');
   if (data == '') {
     if (!force) {
-      setTimeout(disp_app, 100);
+      setTimeout(disp_app, 300);
     }
     return;
   }
@@ -45,7 +45,7 @@ function disp_app(force) {
   //console.log(logPrefix+'app length='+appKey.length);
   disp();
   if (!force) {
-    setTimeout(disp_app, 100);
+    setTimeout(disp_app, 300);
   }
 }
 
@@ -89,12 +89,9 @@ io.touchPanel.on('gesture', function(gesture) {
   }
   if (gesture == 'MUG_SWIPE_LEFT') {
     index = (index+1)==appKey.length?0:(index+1);
-    //console.log('after gesture:'+appJSON[appKey[index]].name);
     disp_app(true);
   } else if (gesture == 'MUG_SWIPE_RIGHT') {
     index = (index==0)?(appKey.length-1):(index-1);
-    //console.log('after gesture:'+appJSON[appKey[index]].name);
     disp_app(true);
   }
 });
-

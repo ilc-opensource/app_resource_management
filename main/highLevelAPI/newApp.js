@@ -1,4 +1,3 @@
-var child_process = require('child_process');
 var path = require('path');
 var context = require('./context.js');
 var touchPanel = require('./touchPanel.js');
