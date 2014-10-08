@@ -10,12 +10,14 @@ var logPrefix = '[user twitter getTwitter] ';
 
 var lastMsg = null;
 function action(msg) {
-  if (msg=='') return;
+  if (msg=='') {
+    return;
+  }
   if (lastMsg != msg) {
     lastMsg = msg;
     //console.log(msg);
     try {
-      process.send({'twitter':msg});
+      process.send({'content':msg});
     } catch (ex) {
       console.log(logPrefix+'send to main process error');
       return;
@@ -25,20 +27,20 @@ function action(msg) {
   }
 }
 
-function queryTwitter(cb) {
+function query(cb) {
   var app = 'twitter';
 
   var optionsProxy = {
     hostname: 'proxy-prc.intel.com',
     port: 911,
-    path: 'www.pia-edison.com/mug?mugID='+mugID+'&app='+app,
+    path: 'www.pia-edison.com/mug/?mugID='+mugID+'&app='+app,
     method: 'GET'
   };
 
   var options = {
     hostname: 'www.pia-edison.com',
     port: 80,
-    path: '/mug?mugID='+mugID+'&app='+app,
+    path: '/mug/?mugID='+mugID+'&app='+app,
     method: 'GET'
   };
 
@@ -75,14 +77,20 @@ try {
   return;
 }
 
-queryTwitter(action);
-// 10 minutes
-setInterval(function(){queryTwitter(action)}, 600000);
+var timeIntervalEager = 1000;
+var timeIntervalLazy = 600000;
+
+var timerInterval = setInterval(function(){query(action)}, timeIntervalEager);
 
 process.on('message', function(o) {
-  if (o['InstantUpdata']) {
+  if (o['InstantUpdate']) {
     //console.log(logPrefix+' instant update');
-    queryTwitter(action);
+    query(action);
+    clearInterval(timerInterval);
+    timerInterval = setInterval(function(){query(action)}, timeIntervalEager);
+  }
+  if (o['ToBackEnd']) {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(function(){query(action)}, timeIntervalLazy);
   }
 });
-

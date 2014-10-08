@@ -1,18 +1,18 @@
 var fs = require('fs');
-var child_process = require('child_process');
 var path = require('path');
 var http = require('http');
+var child_process = require('child_process');
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[userApp twitter] ';
 
-var getTwitterProcess = null;
+var getContentProcess = null;
 var content = '';
 var handler = function(o) {
-  if (o['twitter']) {
-    content = o['twitter'];
+  if (o['content']) {
+    content = o['content'];
   }
 };
 var hasContent = false;
@@ -96,29 +96,30 @@ function dispSingle(data, number, interval) {
 // Animation display End
 
 var twitter = function() {
-  getTwitterProcess = child_process.fork(path.join(__dirname, 'getTwitter.js'));
-  getTwitterProcess.on('message', handler);
+  getContentProcess = child_process.fork(path.join(__dirname, 'getTwitter.js'));
+  getContentProcess.on('message', handler);
   display();
   dispAnimation();
 };
 
 twitter();
 
-//setInterval(display, 100);
-//setInterval(function(){dispAnimation();}, 100);
-
 // Touch event handler begin
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
-  //if (e == 'TOUCH_HOLD') {
-  //  sys.escape();
-  //}
+  if (e == 'TOUCH_HOLD') {
+    try {
+      getContentProcess.send({'ToBackEnd':true});
+    } catch (ex) {
+      console.log(logPrefix+'send to child process error');
+    }
+  }
 });
 
 io.touchPanel.on('gesture', function(gesture) {
   //console.log(logPrefix+'getsture='+gesture);
   if (gesture == 'MUG_SWIPE_DOWN') {
     try {
-      getTwitterProcess.send({'InstantUpdata':true});
+      getContentProcess.send({'InstantUpdate':true});
     } catch (ex) {
       console.log(logPrefix+'send to child process error');
     }

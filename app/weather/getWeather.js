@@ -1,7 +1,7 @@
 var fs = require('fs');
-var child_process = require('child_process');
 var path = require('path');
 var http = require('http');
+var child_process = require('child_process');
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
@@ -17,16 +17,18 @@ function action(msg) {
     lastMsg = msg;
     //console.log(msg);
 
-    process.send({'weather':JSON.stringify({'weather':msg})});
+    process.send({'content':JSON.stringify({'weather':msg})});
 
-    fs.writeFile(path.join(__dirname, 'weather_from_baidu.json'),
+    sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
+
+    /*fs.writeFile(path.join(__dirname, 'weather_from_baidu.json'),
       JSON.stringify({"weather":msg}),
       function(err) {
         if(err)
           throw err;
         //console.log('It\'s saved!');
       }
-    );
+    );*/
   }
 }
 var queryWeather = function(city, cb) {
@@ -52,7 +54,7 @@ var queryWeather = function(city, cb) {
       if (typeof msg.results[0].weather_data == 'undefined') return;
       if (typeof msg.results[0].weather_data[0] == 'undefined') return;
       var weather = msg.results[0].weather_data[0].weather;
-      //console.log('weather='+weather);
+      console.log('weather='+weather);
       if (lastWeather[city] != weather) {
         lastWeather[city] = weather;
         var weatherKey = null;
@@ -83,6 +85,7 @@ var queryWeather = function(city, cb) {
 }
 // Query info from web end
 
+/*
 // Register notification begin
 fs.watch(path.join(__dirname, 'weather_from_baidu.json'), function(e, filename) {
   // write command to notification.json
@@ -104,3 +107,24 @@ process.on('message', function(o) {
     queryWeather('116.305145,39.982368', action);
   }
 });
+*/
+
+var timeIntervalEager = 1000;
+var timeIntervalLazy = 600000;
+
+queryWeather('116.305145,39.982368', action);
+var timerInterval = setInterval(function(){queryWeather('116.305145,39.982368', action)}, timeIntervalLazy);
+
+process.on('message', function(o) {
+  if (o['InstantUpdate']) {
+    //console.log(logPrefix+' instant update');
+    queryWeather('116.305145,39.982368', action);
+    //clearInterval(timerInterval);
+    //timerInterval = setInterval(function(){queryWeather('116.305145,39.982368', action)}, timeIntervalEager);
+  }
+  if (o['ToBackEnd']) {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(function(){queryWeather('116.305145,39.982368', action)}, timeIntervalLazy);
+  }
+});
+

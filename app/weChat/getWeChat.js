@@ -15,7 +15,7 @@ function action(msg) {
   if (lastMsg != msg) {
     lastMsg = msg;
     try {
-      process.send({'weChat':msg});
+      process.send({'content':msg});
     } catch (ex) {
       console.log(logPrefix+'send wechat message to main process error');
       return;
@@ -25,7 +25,7 @@ function action(msg) {
   }
 }
 
-function queryweChat(cb) {
+function query(cb) {
   var app = 'weChat';
 
   var optionsProxy = {
@@ -38,7 +38,7 @@ function queryweChat(cb) {
   var options = {
     hostname: 'www.pia-edison.com',
     port: 80,
-    path: '/mug?mugID='+mugID+'&app='+app,
+    path: '/mug/?mugID='+mugID+'&app='+app,
     method: 'GET'
   };
 
@@ -68,9 +68,6 @@ function queryweChat(cb) {
 }
 // Query info from web end
 
-//var weChatContent = fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
-//process.send({'weChat':weChatContent});
-
 try {
   var mugID = fs.readFileSync('/etc/device_id', 'utf8');
 } catch (ex) {
@@ -78,13 +75,21 @@ try {
   return;
 }
 
-queryweChat(action);
-// 10 minutes
-setInterval(function(){queryweChat(action)}, 600000);
+var timeIntervalEager = 1000;
+var timeIntervalLazy = 600000;
+
+var timerInterval = setInterval(function(){query(action)}, timeIntervalEager);
 
 process.on('message', function(o) {
   if (o['InstantUpdate']) {
     //console.log(logPrefix+' instant update');
-    queryweChat(action);
+    query(action);
+    clearInterval(timerInterval);
+    timerInterval = setInterval(function(){query(action)}, timeIntervalEager);
+  }
+  if (o['ToBackEnd']) {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(function(){query(action)}, timeIntervalLazy);
   }
 });
+

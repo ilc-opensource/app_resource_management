@@ -10,11 +10,11 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[userApp weChat] ';
 
-var getWeChatProcess = null;
-var weChatContent = '';
+var getContentProcess = null;
+var content = '';
 var handler = function(o) {
-  if (o['weChat']) {
-    weChatContent = o['weChat'];
+  if (o['content']) {
+    content = o['content'];
   }
 };
 var hasContent = false;
@@ -25,40 +25,40 @@ var isAnimationDispComplete = true;
 var isPreviousImageDisComplete = true;
 var imageIter = -1;
 var imgs = null;
-function displayweChat() {
+function display() {
   if (!isAnimationDispComplete) {
-    setTimeout(displayweChat, 500);
+    setTimeout(display, 500);
     return;
   }
   isAnimationDispComplete = false;
   // The animation is only one image, don't need to refresh it
-  if (currentDispContent == weChatContent &&
+  if (currentDispContent == content &&
     JSON.parse(currentDispContent).numberOfImg == 1) {
     isAnimationDispComplete = true;
-    setTimeout(displayweChat, 500);
+    setTimeout(display, 500);
     return;
   }
-  if (weChatContent == '' || weChatContent == '\n') {
+  if (content == '' || content == '\n') {
     var w = fs.readFileSync(path.join(__dirname, './loading.json'), 'utf8');
     imgs = JSON.parse(w);
     hasContent = false;
   } else {
     try {
-      imgs = JSON.parse(weChatContent);
+      imgs = JSON.parse(content);
       hasContent = true;
-      currentDispContent = weChatContent
+      currentDispContent = content
     } catch(ex) {
       imgs = null;
       isAnimationDispComplete = true;
       isPreviousImageDisComplete = false;
       hasContent = false;
-      setTimeout(displayweChat, 500);
+      setTimeout(display, 500);
       return;
     }
   }
   isPreviousImageDisComplete = true;
   imageIter = -1;
-  setTimeout(displayweChat, 500);
+  setTimeout(display, 500);
 }
 function dispAnimation() {
   if (!isPreviousImageDisComplete) {
@@ -67,7 +67,7 @@ function dispAnimation() {
   }
   isPreviousImageDisComplete = false;
   imageIter++;
-  if (weChatContent != '' && !hasContent) { // Terminate loading animation immediately
+  if (content != '' && !hasContent) { // Terminate loading animation immediately
     isAnimationDispComplete = true;
     setTimeout(dispAnimation, 50);
     return;
@@ -78,7 +78,7 @@ function dispAnimation() {
     return;
   }
   if (currentDispContent != null &&
-    currentDispContent != weChatContent &&
+    currentDispContent != content &&
     imgs.textEnd != undefined) {
     for (var i=0; i<imgs.textEnd.length; i++) {
       if ((imageIter-1) == imgs.textEnd[i]) {
@@ -98,29 +98,30 @@ function dispSingle(data, number, interval) {
 // Animation display End
 
 var weChat = function() {
-  getWeChatProcess = child_process.fork(path.join(__dirname, 'getWeChat.js'));
-  getWeChatProcess.on('message', handler);
-  displayweChat();
+  getContentProcess = child_process.fork(path.join(__dirname, 'getWeChat.js'));
+  getContentProcess.on('message', handler);
+  display();
   dispAnimation();
 };
 
 weChat();
 
-//setInterval(displayweChat, 100);
-//setInterval(function(){dispAnimation();}, 100);
-
 // Touch event handler begin
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
-  //if (e == 'TOUCH_HOLD') {
-  //  sys.escape();
-  //}
+  if (e == 'TOUCH_HOLD') {
+    try {
+      getContentProcess.send({'ToBackEnd':true});
+    } catch (ex) {
+      console.log(logPrefix+'send to child process error');
+    }
+  }
 });
 
 io.touchPanel.on('gesture', function(gesture) {
   console.log(logPrefix+'receive a gesture '+gesture);
   if (gesture == 'MUG_SWIPE_DOWN') {
     try {
-      getWeChatProcess.send({'InstantUpdate':true});
+      getContentProcess.send({'InstantUpdate':true});
     } catch (ex) {
       console.log(logPrefix+'send to child process error');
     }

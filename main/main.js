@@ -514,6 +514,7 @@ var activeRecover = function() {
     }
   }
 };
+activeRecover();
 
 if (isNotificationOn) {
   fs.watch(notificationFileC, function(e, filename) {
