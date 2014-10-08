@@ -65,4 +65,12 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
 });
 
 io.touchPanel.on('gesture', function(gesture) {
+  console.log(logPrefix+'receive a gesture '+gesture);
+  if (gesture == 'MUG_SWIPE_DOWN') {
+    try {
+      getWeatherProcess.send({'InstantUpdate':true});
+    } catch (ex) {
+      console.log(logPrefix+'send to child process error');
+    }
+  }
 });

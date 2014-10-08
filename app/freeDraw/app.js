@@ -1,3 +1,5 @@
+// seperate display and get content into different process, 
+// as 
 var fs = require('fs');
 var child_process = require('child_process');
 var path = require('path');
@@ -6,79 +8,115 @@ var http = require('http');
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
-var logPrefix = '[user freeDraw] ';
+var logPrefix = '[userApp freeDraw] ';
 
-var getWeChatProcess = null;
-var weChatContent = '';
+var getFreeDrawProcess = null;
+var freeDrawContent = '';
 var handler = function(o) {
-  if (o['weChat']) {
-    weChatContent = o['weChat'];
-    //displayweChat(o['weChat']);
+  if (o['freeDraw']) {
+    freeDrawContent = o['freeDraw'];
   }
 };
+var hasContent = false;
+var currentDispContent = null;
 
 // Animation display begin
 var isAnimationDispComplete = true;
 var isPreviousImageDisComplete = true;
 var imageIter = -1;
 var imgs = null;
-function displayweChat() {
-  if (!isAnimationDispComplete) {return;}
+function displayFreeDraw() {
+  if (!isAnimationDispComplete) {
+    setTimeout(displayFreeDraw, 500);
+    return;
+  }
   isAnimationDispComplete = false;
-  isPreviousImageDisComplete = true;
-  imageIter = -1;
-  var w = weChatContent; //fs.readFileSync(path.join(__dirname, './weChat.json'), 'utf8');
-//  console.log(logPrefix+'w='+w);
-  if (w == '' || w == '\n') {
-    var w = fs.readFileSync(path.join(__dirname, './media.json'), 'utf8');
+  // The animation is only one image, don't need to refresh it
+  if (currentDispContent == freeDrawContent &&
+    JSON.parse(currentDispContent).numberOfImg == 1) {
+    isAnimationDispComplete = true;
+    setTimeout(displayFreeDraw, 500);
+    return;
+  }
+  if (freeDrawContent == '' || freeDrawContent == '\n') {
+    var w = fs.readFileSync(path.join(__dirname, './loading.json'), 'utf8');
     imgs = JSON.parse(w);
+    hasContent = false;
   } else {
-    //console.log(logPrefix+'weChat file exist');
     try {
-    imgs = JSON.parse(w);
+      imgs = JSON.parse(freeDrawContent);
+      hasContent = true;
+      currentDispContent = freeDrawContent
     } catch(ex) {
       imgs = null;
       isAnimationDispComplete = true;
       isPreviousImageDisComplete = false;
+      hasContent = false;
+      setTimeout(displayFreeDraw, 500);
+      return;
     }
   }
+  isPreviousImageDisComplete = true;
+  imageIter = -1;
+  setTimeout(displayFreeDraw, 500);
 }
 function dispAnimation() {
-  if (!isPreviousImageDisComplete) {return;}
+  if (!isPreviousImageDisComplete) {
+    setTimeout(dispAnimation, 50);
+    return;
+  }
   isPreviousImageDisComplete = false;
   imageIter++;
-  if (imageIter>=imgs.numberOfImg) {isAnimationDispComplete = true; return;}
+  if (freeDrawContent != '' && !hasContent) { // Terminate loading animation immediately
+    isAnimationDispComplete = true;
+    setTimeout(dispAnimation, 50);
+    return;
+  }
+  if (imageIter>=imgs.numberOfImg) {
+    isAnimationDispComplete = true;
+    setTimeout(dispAnimation, 50);
+    return;
+  }
+  if (currentDispContent != null &&
+    currentDispContent != freeDrawContent &&
+    imgs.textEnd != undefined) {
+    for (var i=0; i<imgs.textEnd.length; i++) {
+      if ((imageIter-1) == imgs.textEnd[i]) {
+        isAnimationDispComplete = true;
+        setTimeout(dispAnimation, 50);
+        return;
+      }
+    }
+  }
   dispSingle(imgs['img'+imageIter], 1, 50);
   isPreviousImageDisComplete = true;
+  setTimeout(dispAnimation, 50);
 }
 function dispSingle(data, number, interval) {
   io.disp_raw_N(data, number, interval);
 }
 // Animation display End
 
-var weChat = function() {
-  getWeChatProcess = child_process.fork(path.join(__dirname, 'getWeChat.js'));
-  getWeChatProcess.on('message', handler);
-  //setInterval(function(){queryweChat(action)}, 1000);
-  displayweChat();
+var freeDraw = function() {
+  getFreeDrawProcess = child_process.fork(path.join(__dirname, 'getFreeDraw.js'));
+  getFreeDrawProcess.on('message', handler);
+  displayFreeDraw();
+  dispAnimation();
 };
 
-weChat();
-
-setInterval(displayweChat, 100);
-setInterval(function(){dispAnimation();}, 100);
+freeDraw();
 
 // Touch event handler begin
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
-  //if (e == 'TOUCH_HOLD') {
-  //  sys.escape();
-  //}
+  if (e == 'TOUCH_HOLD') {
+    try {
+      process.kill(getFreeDrawProcess.pid);
+    } catch (ex) {
+    }
+    process.exit();
+  }
 });
 
 io.touchPanel.on('gesture', function(gesture) {
-  //console.log(logPrefix+'getsture='+gesture);
-  if (gesture == 'MUG_SWIPE_DOWN') {
-    getWeChatProcess.send({'InstantUpdata':true});
-  }
 });
 // Touch event handler end

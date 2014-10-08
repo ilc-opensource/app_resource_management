@@ -97,7 +97,6 @@ setInterval(function(){dispAnimation();}, 100);
 
 // Touch event handler begin
 // For none js app only
-io.touchPanel.appHandleEscape = true;
 io.touchPanel.on('touchEvent', function(e, x, y, id) {
   if (e == 'TOUCH_HOLD') {
     //console.log(logPrefix+'kill the main app pid='+appProcess.pid);

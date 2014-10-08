@@ -89,11 +89,4 @@ try {
   return;
 }
 
-setInterval(function(){queryweChat(action)}, 600000);
-
-process.on('message', function(o) {
-  if (o['InstantUpdata']) {
-    queryweChat(action);
-  }
-});
-
+setInterval(function(){queryweChat(action)}, 100);

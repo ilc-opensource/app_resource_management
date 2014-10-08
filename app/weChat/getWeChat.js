@@ -9,30 +9,23 @@ var logPrefix = '[user weChat getWeChat] ';
 
 var lastMsg = null;
 function action(msg) {
-  if (msg=='') return;
+  if (msg=='') {
+    return;
+  }
   if (lastMsg != msg) {
     lastMsg = msg;
     try {
       process.send({'weChat':msg});
     } catch (ex) {
+      console.log(logPrefix+'send wechat message to main process error');
+      return;
     }
 
     sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
-
-/*    fs.writeFile(path.join(__dirname, 'weChat.json'),
-      msg,
-      function(err) {
-        if(err)
-          throw err;
-        //console.log('It\'s saved!');
-      }
-    );
-*/
   }
 }
 
 function queryweChat(cb) {
-  //var mugID = 'MUG123456ILC';
   var app = 'weChat';
 
   var optionsProxy = {
@@ -69,7 +62,7 @@ function queryweChat(cb) {
     });
   });
   req.on('error', function(e) {
-    //console.log('problem with request: ' + e.message);
+    console.log('problem with request: ' + e.message);
   });
   req.end();
 }
@@ -86,6 +79,7 @@ try {
 }
 
 queryweChat(action);
+// 10 minutes
 setInterval(function(){queryweChat(action)}, 600000);
 
 process.on('message', function(o) {

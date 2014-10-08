@@ -94,4 +94,13 @@ fs.watch(path.join(__dirname, 'weather_from_baidu.json'), function(e, filename) 
 var weatherContent = fs.readFileSync(path.join(__dirname, './weather_from_baidu.json'), 'utf8');
 process.send({'weather':weatherContent});
 
-setInterval(function(){queryWeather('116.305145,39.982368', action)}, 1000);
+queryWeather('116.305145,39.982368', action);
+// one hour
+setInterval(function(){queryWeather('116.305145,39.982368', action)}, 3600000);
+
+process.on('message', function(o) {
+  if (o['InstantUpdate']) {
+    //console.log(logPrefix+' instant update');
+    queryWeather('116.305145,39.982368', action);
+  }
+});

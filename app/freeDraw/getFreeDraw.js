@@ -1,23 +1,23 @@
 var fs = require('fs');
-var child_process = require('child_process');
 var path = require('path');
 var http = require('http');
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
-var logPrefix = '[user twitter getTwitter] ';
+var logPrefix = '[user freeDraw getFreeDraw] ';
 
 var lastMsg = null;
 function action(msg) {
-  if (msg=='') return;
+  if (msg=='') {
+    return;
+  }
   if (lastMsg != msg) {
     lastMsg = msg;
-    //console.log(msg);
     try {
-      process.send({'twitter':msg});
+      process.send({'freeDraw':msg});
     } catch (ex) {
-      console.log(logPrefix+'send to main process error');
+      console.log(logPrefix+'send freeDraw message to main process error');
       return;
     }
 
@@ -25,13 +25,13 @@ function action(msg) {
   }
 }
 
-function queryTwitter(cb) {
-  var app = 'twitter';
+function queryFreeDraw(cb) {
+  var app = 'freeDraw';
 
   var optionsProxy = {
     hostname: 'proxy-prc.intel.com',
     port: 911,
-    path: 'www.pia-edison.com/mug?mugID='+mugID+'&app='+app,
+    path: 'www.pia-edison.com/mug/?mugID='+mugID+'&app='+app,
     method: 'GET'
   };
 
@@ -62,7 +62,7 @@ function queryTwitter(cb) {
     });
   });
   req.on('error', function(e) {
-    //console.log('problem with request: ' + e.message);
+    console.log('problem with request: ' + e.message);
   });
   req.end();
 }
@@ -75,14 +75,4 @@ try {
   return;
 }
 
-queryTwitter(action);
-// 10 minutes
-setInterval(function(){queryTwitter(action)}, 600000);
-
-process.on('message', function(o) {
-  if (o['InstantUpdata']) {
-    //console.log(logPrefix+' instant update');
-    queryTwitter(action);
-  }
-});
-
+setInterval(function(){queryFreeDraw(action)}, 300);

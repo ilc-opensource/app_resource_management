@@ -117,7 +117,11 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
 io.touchPanel.on('gesture', function(gesture) {
   //console.log(logPrefix+'getsture='+gesture);
   if (gesture == 'MUG_SWIPE_DOWN') {
-    getWeChatProcess.send({'InstantUpdata':true});
+    try {
+      getTwitterProcess.send({'InstantUpdata':true});
+    } catch (ex) {
+      console.log(logPrefix+'send to child process error');
+    }
   }
 });
 // Touch event handler end
