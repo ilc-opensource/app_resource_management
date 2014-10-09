@@ -76,7 +76,8 @@ try {
 }
 
 var timeIntervalEager = 1000;
-var timeIntervalLazy = 600000;
+//var timeIntervalLazy = 600000;
+var timeIntervalLazy = 1000;
 
 var timerInterval = setInterval(function(){query(action)}, timeIntervalEager);
 
