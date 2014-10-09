@@ -58,7 +58,7 @@ var queryWeather = function(city, cb) {
       if (lastWeather[city] != weather) {
         lastWeather[city] = weather;
         var weatherKey = null;
-        if (weather.indexOf('云') != -1) {
+        if (weather.indexOf('云') != -1 || weather.indexOf('霾') != -1 || weather.indexOf('雾') != -1) {
           weatherKey = 'Cloudy';
         } else if(weather.indexOf('雨') != -1) {
           weatherKey = 'Rainy';

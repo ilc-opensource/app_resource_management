@@ -53,7 +53,10 @@ function disp() {
   if (index == -1) {
     var img = path.join(__dirname, './image/none_app.json');
   } else {
-    var img = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].iconJSON);
+    var img = path.join(__dirname,
+      '../app/',
+      appJSON[appKey[index]].name,
+      appJSON[appKey[index]].iconJSON);
   }
   //console.log(logPrefix+'show app:'+appJSON[appKey[index]].name);
   try {
@@ -75,7 +78,10 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
     io.touchPanel.listeners('touchEvent').splice(i, 1);
   }
   if (e == 'TOUCH_CLICK') {
-    var nextApp = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].start);
+    var nextApp = path.join(__dirname,
+      '../app/',
+      appJSON[appKey[index]].name,
+      appJSON[appKey[index]].start);
     //console.log(logPrefix+"Launch a new app"+nextApp+', '+process.pid);
     sys.newApp(nextApp);
   }
