@@ -75,15 +75,13 @@ try {
   return;
 }
 
-var timeIntervalEager = 1000;
-//var timeIntervalLazy = 600000;
-var timeIntervalLazy = 1000;
+var timeIntervalEager = 1000; // one second
+var timeIntervalLazy = 600000; // 10 minutes
 
 var timerInterval = setInterval(function(){query(action)}, timeIntervalEager);
 
 process.on('message', function(o) {
   if (o['InstantUpdate']) {
-    //console.log(logPrefix+' instant update');
     query(action);
     clearInterval(timerInterval);
     timerInterval = setInterval(function(){query(action)}, timeIntervalEager);

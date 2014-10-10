@@ -15,8 +15,7 @@ var logPrefix = '[OS] ';
 
 // For default app
 var defaultApp = path.join(__dirname, '../app/weather/app.js');
-//var timeToLaunchDefaultApp = 3000000; // 5 minutes
-var timeToLaunchDefaultApp = 60000; // 5 minutes
+var timeToLaunchDefaultApp = 6000000; // 10 minutes
 var timerLastTouchEvent = (new Date()).getTime();
 
 // For app management
