@@ -27,4 +27,12 @@ io.disp_raw_N = function(imgs, number, interval) {
   }
 };
 
+io.disp_N = function(files, number, interval) {
+  var imgs = [];
+  for (var i=0; i<files.length; i++) {
+    imgs.concat(fs.readFileSync(files[i]));
+  }
+  this.disp_raw_N(imgs, number, interval);
+};
+
 module.exports = io;
