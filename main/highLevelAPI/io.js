@@ -1,4 +1,5 @@
 var util = require("util");
+var PNG = require('png-js');
 var EventEmitter = require("events").EventEmitter;
 
 var context = require('./context.js');
@@ -30,7 +31,11 @@ io.disp_raw_N = function(imgs, number, interval) {
 io.disp_N = function(files, number, interval) {
   var imgs = [];
   for (var i=0; i<files.length; i++) {
-    imgs.concat(fs.readFileSync(files[i]));
+    if (files[i].match(/.png$/)) {
+      imgs.concat(PNG.load(files[i]));
+    } else {
+      imgs.concat(fs.readFileSync(files[i]));
+    }
   }
   this.disp_raw_N(imgs, number, interval);
 };
