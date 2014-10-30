@@ -1,14 +1,22 @@
 // seperate weChat display and getWeChat into different process, 
 // as 
 var fs = require('fs');
-var child_process = require('child_process');
 var path = require('path');
 var http = require('http');
+var child_process = require('child_process');
+var emitter = require('events').EventEmitter
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
 var ledDisp = require('./display.js');
+var ledDispEmitter = new emiter();
+// 1: disp loading
+var dispStatus = 1;
+ledDispEmitter.on('finish', function(){
+  
+});
+
 //ledDisp(w, 50, false, false, callback);
 
 var logPrefix = '[userApp weChat] ';
@@ -18,6 +26,12 @@ var content = '';
 var handler = function(o) {
   if (o['content']) {
     content = o['content'];
+
+    if (dispStatus == 1 && content is animation) {
+      ledDisp(dispContent, 50, false, true, ledDispEmitter);
+    } else if (content is audio file) {
+      ledDisp()
+    }
   }
 };
 
@@ -26,10 +40,8 @@ var weChat = function() {
   getContentProcess = child_process.fork(path.join(__dirname, 'getWeChat.js'));
   getContentProcess.on('message', handler);
 
-  dispContent = content;
-  ledDisp(dispContent, 50, false, true, function() {
-    dispContent = content;
-  });
+  var loading = fs.readFileSync(path.join(__dirname, './loading.json'), 'utf8');
+  ledDisp(loading, 50, false, true, ledDispEmitter);
 };
 
 weChat();

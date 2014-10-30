@@ -5,21 +5,8 @@ var io = require('../../main/highLevelAPI/io.js');
 var logPrefix = '[display] ';
 
 // Display content less or equal to once
-var disp = function(data, interval, isAtomic, dispWhole, cb, start) {
-  /*if (isAtomic) {
-    // Need to process the data, as the data contains real data, numberOfImg, textEnd
-    var imageData = JSON.parse(data);
-    var animation = [];
-    for (var i=0; i<imageData.numberOfImg; i++) {
-      animation.concat(imageData['img'+i]);
-    }
-    io.disp_raw_N(animation, imageData.numberOfImg, interval);
-    cb();
-  } else {
-    //console.log('start display');
-    content = {'data':data, 'interval':interval, 'isAtomic':isAtomic, 'dispWhole':dispWhole, 'cb':cb, 'start':start};
-  }*/
-  content = {'data':data, 'interval':interval, 'isAtomic':isAtomic, 'dispWhole':dispWhole, 'cb':cb, 'start':start};
+var disp = function(data, interval, isAtomic, dispWhole, e) {
+  content = {'data':data, 'interval':interval, 'isAtomic':isAtomic, 'dispWhole':dispWhole, 'e':e};
 };
 
 content = null;
@@ -50,6 +37,7 @@ var display = function() {
   // No content or no new content, display nothing
   try {
     currentDispContent = content;
+//    content = null;
     //console.log('animation is ready!')
     // Add atomic support at this point
     if (currentDispContent.isAtomic) {
@@ -60,8 +48,8 @@ var display = function() {
       }
       io.disp_raw_N(animation, imageData.numberOfImg, currentDispContent.interval);
       isAnimationDispComplete = true;
-      if (typeof currentDispContent.cb != undefined) {
-        currentDispContent.cb();
+      if (typeof currentDispContent.e != undefined) {
+        currentDispContent.e.emit('finish');
       }
       setTimeout(display, 500);
     } else {
@@ -87,16 +75,16 @@ var dispAnimation = function() {
   imageIter++;
   if (content != null && currentDispContent != content && !currentDispContent.dispWhole) { // Terminate loading animation immediately
     isAnimationDispComplete = true;
-    if (typeof currentDispContent.cb != undefined) {
-      currentDispContent.cb();
+    if (typeof currentDispContent.e != undefined) {
+      currentDispContent.e.emit('finish');
     }
     setTimeout(dispAnimation, 50);
     return;
   }
   if (currentDispContent != null && imageIter>=imgs.numberOfImg) {
     isAnimationDispComplete = true;
-    if (typeof currentDispContent.cb != undefined) {
-      currentDispContent.cb();
+    if (typeof currentDispContent.e != undefined) {
+      currentDispContent.e.emit('finish');
     }
     setTimeout(dispAnimation, 50);
     return;
@@ -107,8 +95,8 @@ var dispAnimation = function() {
     for (var i=0; i<imgs.textEnd.length; i++) {
       if ((imageIter-1) == imgs.textEnd[i]) {
         isAnimationDispComplete = true;
-        if (typeof currentDispContent.cb != undefined) {
-          currentDispContent.cb();
+        if (typeof currentDispContent.e != undefined) {
+          currentDispContent.e.emit('finish');
         }
         setTimeout(dispAnimation, 50);
         return;

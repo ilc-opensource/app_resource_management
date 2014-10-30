@@ -14,14 +14,26 @@ function action(msg) {
   }
   if (lastMsg != msg) {
     lastMsg = msg;
-    try {
-      process.send({'content':msg});
-    } catch (ex) {
-      console.log(logPrefix+'send wechat message to main process error');
-      return;
+    var data = JSON.parse(lastMsg);
+    if (data.isAudio) {
+      child_process.exec('curl -G "http://www.pia-edison.com/downloadFile/?fileName='+data.file+'" -o '+path.basename(data.file), function() {
+        try {
+          process.send({'content':msg});
+        } catch (ex) {
+          console.log(logPrefix+'send wechat message to main process error');
+          return;
+        }
+        sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
+      });
+    } else {
+      try {
+        process.send({'content':msg});
+      } catch (ex) {
+        console.log(logPrefix+'send wechat message to main process error');
+        return;
+      }
+      sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
     }
-
-    sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
   }
 }
 
