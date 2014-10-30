@@ -1,0 +1,9 @@
+{
+  "name": "test_case",
+  "package": "com.intel.smart_mug.test_case",
+  "version": "0.0.1",
+  "icon": "gift.jpg",
+  "iconJSON": "media.json",
+  "start": "app.js",
+  "description": "desc"
+}
