@@ -80,10 +80,14 @@ io.disp_N = function(files, number, interval) {
   var imgs = [];
   for (var i=0; i<files.length; i++) {
     if (files[i].match(/.jpg$/)) {
-      imgs.concat(compressImage(JPEG.decode(fs.readFileSync(files[i])).data));
+      var rawData = JPEG.decode(fs.readFileSync(files[i]));
+      var compressedData = compressImage(rawData);
+      for (var j=0; j<compressedData.length; j++) {
+        imgs.push(compressedData[j]);
+      }
+      //imgs.concat(compressedData);
     } else {
-      return
-
+      return;
       //imgs.concat(compressImage(PNG.load(files[i])));
     }
   }
