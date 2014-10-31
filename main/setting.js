@@ -50,7 +50,7 @@ function disp_app(force) {
 }
 
 function disp() {
-  if (index == -1) {
+/*  if (index == -1) {
     var img = path.join(__dirname, './image/none_app.json');
   } else {
     var img = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].iconJSON);
@@ -63,6 +63,14 @@ function disp() {
   }
   var msg=JSON.parse(data);
   io.disp_raw_N(msg.img0, 1, 0);
+  appReady = true;
+*/
+  if (index == -1) {
+    var img = path.join(__dirname, './image/none_app.jpg');
+  } else {
+    var img = path.join(__dirname, '../app/', appJSON[appKey[index]].name, appJSON[appKey[index]].icon);
+  }
+  io.disp_N([img], 1, 0);
   appReady = true;
 }
 

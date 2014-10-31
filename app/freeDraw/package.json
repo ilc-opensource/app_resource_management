@@ -2,7 +2,7 @@
   "name": "freeDraw",
   "package": "com.intel.smart_mug.freeDraw",
   "version": "0.0.1",
-  "icon": "icon16x12.jpg",
+  "icon": "icon.jpg",
   "iconJSON": "media.json",
   "start": "app.js",
   "description": "desc"

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "description": "a Sails application",
   "keywords": [],
+  "icon": "install_uninstall.jpg",
   "iconJSON": "media.json",
   "dependencies": {
     "sails": "~0.10.0-rc8",

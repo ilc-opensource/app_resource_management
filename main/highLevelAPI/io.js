@@ -2,6 +2,7 @@ var util = require("util");
 var fs = require("fs");
 var PNG = require('png-js');
 var JPEG = require('jpeg-js');
+var BMP = require('bmp-js');
 var EventEmitter = require("events").EventEmitter;
 
 var context = require('./context.js');
@@ -80,18 +81,22 @@ io.disp_N = function(files, number, interval) {
   var imgs = [];
   for (var i=0; i<files.length; i++) {
     if (files[i].match(/.jpg$/)) {
-      var rawData = JPEG.decode(fs.readFileSync(files[i]));
-      var compressedData = compressImage(rawData);
+      var compressedData = compressImage(JPEG.decode(fs.readFileSync(files[i])));
       for (var j=0; j<compressedData.length; j++) {
         imgs.push(compressedData[j]);
       }
       //imgs.concat(compressedData);
+    } else if (files[i].match(/.bmp$/)) {
+      var compressedData = compressImage(BMP.decode(fs.readFileSync(files[i])));
+      for (var j=0; j<compressedData.length; j++) {
+        imgs.push(compressedData[j]);
+      }
     } else {
       return;
       //imgs.concat(compressImage(PNG.load(files[i])));
     }
   }
-  this.disp_raw_N(imgs, number, interval);
+  this.disp_raw_N(imgs, files.length, interval);
 };
 
 module.exports = io;

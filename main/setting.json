@@ -39,18 +39,18 @@
     "name": "smart_mug_manager",
     "package": "com.intel.smart_mug.app_install_uninstall",
     "version": "0.0.1",
-    "icon"   : "icon.bmp",
+    "icon"   : "install_uninstall.jpg",
     "iconJSON": "media.json",
     "start"  : "index.js",
     "description": "install and uninstall app"
   },
   "test_case": {
-  "name": "test_case",
-  "package": "com.intel.smart_mug.test_case",
-  "version": "0.0.1",
-  "icon": "gift.jpg",
-  "iconJSON": "media.json",
-  "start": "app.js",
-  "description": "desc"
+    "name": "test_case",
+    "package": "com.intel.smart_mug.test_case",
+    "version": "0.0.1",
+    "icon": "gift.jpg",
+    "iconJSON": "media.json",
+    "start": "app.js",
+    "description": "desc"
   }
 }
