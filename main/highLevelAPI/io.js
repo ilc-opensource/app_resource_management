@@ -1,5 +1,7 @@
 var util = require("util");
+var fs = require("fs");
 var PNG = require('png-js');
+var JPEG = require('jpeg-js');
 var EventEmitter = require("events").EventEmitter;
 
 var context = require('./context.js');
@@ -17,6 +19,52 @@ var imageWidthCompressed = imageWidth/2;
 var imageHeightCompressed = imageHeight
 var singleImageSize = imageWidth*imageHeight;
 var singleImageSizeCompressed = imageWidthCompressed*imageHeightCompressed;
+/*
+function compressJPG(data) {
+  var image = [];
+  var img = new Image; // Create a new Image
+  img.src = data;
+
+  var canvas = new Canvas(16, 12);
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, img.width, img.height);
+  var p = ctx.getImageData(0, 0, 16, 12);
+  for (var x=0; x<p.data.length; x+=8) {
+    var pixels = 0;
+    var R = p.data[x]>128?1:0;
+    var G = p.data[x+1]>128?1:0;
+    var B = p.data[x+2]>128?1:0;
+    pixels += R+G*2+B*4;
+
+    R = p.data[x+4]>128?1:0;
+    G = p.data[x+5]>128?1:0;
+    B = p.data[x+6]>128?1:0;
+    pixels += (R+G*2+B*4)*16;
+
+    image.push(pixels);
+  }
+  return image;
+}
+*/
+function compressImage(p) {
+  var image = [];
+
+  for (var x=0; x<p.data.length; x+=8) {
+    var pixels = 0;
+    var R = p.data[x]>128?1:0;
+    var G = p.data[x+1]>128?1:0;
+    var B = p.data[x+2]>128?1:0;
+    pixels += R+G*2+B*4;
+
+    R = p.data[x+4]>128?1:0;
+    G = p.data[x+5]>128?1:0;
+    B = p.data[x+6]>128?1:0;
+    pixels += (R+G*2+B*4)*16;
+
+    image.push(pixels);
+  }
+  return image;
+}
 
 io.touchPanel = require('./touchPanel.js');
 
@@ -31,10 +79,12 @@ io.disp_raw_N = function(imgs, number, interval) {
 io.disp_N = function(files, number, interval) {
   var imgs = [];
   for (var i=0; i<files.length; i++) {
-    if (files[i].match(/.png$/)) {
-      imgs.concat(PNG.load(files[i]));
+    if (files[i].match(/.jpg$/)) {
+      imgs.concat(compressImage(JPEG.decode(fs.readFileSync(files[i])).data));
     } else {
-      imgs.concat(fs.readFileSync(files[i]));
+      return
+
+      //imgs.concat(compressImage(PNG.load(files[i])));
     }
   }
   this.disp_raw_N(imgs, number, interval);

@@ -1,6 +1,6 @@
 # Resource management
 Resource management for multi-apps running at the same time, mainly focus on Led screen, touch panel, and app switch.
-- Led Screen: Only the main process of the front end app can access led screen and display image, only PNG and JPG file is supported.
+- Led Screen: Only the main process of the front end app can access led screen and display image, only JPG file is supported now.
 - Touch Panel: Only the front end app can receive touch event.
 - App Switch: Determine which app is the front end app.
 
