@@ -56,6 +56,7 @@ var display = function() {
       imgs = JSON.parse(currentDispContent.data);
       imageIter = (typeof currentDispContent.start == 'undefined')?-1:(currentDispContent.start-1);
       isPreviousImageDisComplete = true;
+      setTimeout(display, 500);
     }
     return;
   } catch(ex) {

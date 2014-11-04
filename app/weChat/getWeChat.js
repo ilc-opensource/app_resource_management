@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var http = require('http');
+var child_process = require('child_process');
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
@@ -13,6 +14,7 @@ function action(msg) {
     return;
   }
   if (lastMsg != msg) {
+    console.log('weChat client receive a msg='+msg);
     lastMsg = msg;
     var data = JSON.parse(lastMsg);
     if (data.isAudio) {
@@ -48,7 +50,8 @@ function query(cb) {
   };
 
   var options = {
-    hostname: 'www.pia-edison.com',
+    //hostname: 'www.pia-edison.com',
+    hostname: '54.65.34.62',
     port: 80,
     path: '/mug/?mugID='+mugID+'&app='+app,
     method: 'GET'
