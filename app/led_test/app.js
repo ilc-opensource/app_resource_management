@@ -6,12 +6,14 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[Led test] ';
 var index = 0;
+var counter = 0;
 
 var images = [path.join(__dirname, 'red.json'),
   path.join(__dirname, 'green.json'),
   path.join(__dirname, 'blue.json'),
   path.join(__dirname, 'white.json'),
-  path.join(__dirname, 'greenBlack.json')];
+  path.join(__dirname, 'greenBlack.json'),
+  path.join(__dirname, 'twoGreenPoint.json')];
 
 function disp() {
   try {
@@ -20,14 +22,19 @@ function disp() {
     console.log(ex);
     return;
   }
-  index++;
-  if (index==images.length) {
-    index=0;
+  counter++;
+  if (counter==16) {
+    counter = 0;
+    index++;
+    if (index==images.length) {
+      index=0;
+    }
   }
   var msg=JSON.parse(data);
   io.disp_raw_N(msg.img0, 1, 0);
 
-  setTimeout(disp, 5000);
+  setTimeout(disp, 300);
+  //setTimeout(disp, 5000);
 }
 
 disp();
