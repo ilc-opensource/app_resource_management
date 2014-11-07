@@ -9,12 +9,9 @@ var io = require('../../main/highLevelAPI/io.js');
  * 
  */
 var disp = function(data, interval, isAtomic, dispWhole, e) {
-  //content = {'data':data, 'interval':interval, 'isAtomic':isAtomic, 'dispWhole':dispWhole, 'e':e};
-  contentBuffer.unshift({'data':data, 'interval':interval, 'isAtomic':isAtomic, 'dispWhole':dispWhole, 'e':e});
+  content = {'data':data, 'interval':interval, 'isAtomic':isAtomic, 'dispWhole':dispWhole, 'e':e};
 };
 
-var contentBuffer = [];
-var count = -1;
 var content = null;
 var currentDispContent = null;
 
@@ -24,35 +21,35 @@ var imageIter = -1;
 var imgs = null;
 var isFirstEnter = false;
 
-var intervalFindNextAnimation = 100;
-var intervalFindNextImage = 50;
+var intervalFindNextAnimation = 200;
+var intervalFindNextImage = 100;
 
 // Deal with isAtomic==false && dispWhole==false
 var timeout = null;
 var emitFinishEvent = function() {
   if (typeof currentDispContent.e != undefined) {
-    currentDispContent.e.emit('finish', count);
+    currentDispContent.e.emit('finish');
   }
-  timeout = setTimeout(emitFinishEvent, 100);
+  timeout = setTimeout(emitFinishEvent, 200);
 };
 
 var display = function() {
-  if (!isAnimationDispComplete || (contentBuffer.length == 0 && currentDispContent == null)) {
-    setTimeout(display, intervalFindNextAnimation);
+  if (content == null) {
+    setTimeout(display, 200);
     return;
   }
-  isAnimationDispComplete = false;
+  //isAnimationDispComplete = false;
   // One optimization. Animation is displayed once, and
   // there is no new content and
   // the animation is only one image, don't need to refresh it
   if (currentDispContent != null &&
-    contentBuffer.length == 0 &&
+    currentDispContent == content &&
     JSON.parse(currentDispContent.data).numberOfImg == 1) {
     isAnimationDispComplete = true;
     if (typeof currentDispContent.e != undefined) {
-      currentDispContent.e.emit('finish', count);
+      currentDispContent.e.emit('finish');
     }
-    setTimeout(display, intervalFindNextAnimation);
+    setTimeout(display, 200);
     return;
   }
   //Set interval when new animation comes, to main the previous animation
@@ -67,16 +64,12 @@ var display = function() {
   */
   // No content or no new content, display nothing
   try {
-    if (contentBuffer.length != 0) {
-      currentDispContent = contentBuffer.pop();
-      count++;
-    }
+    currentDispContent = content;
     if (currentDispContent != null &&
       currentDispContent.isAtomic == false &&
       currentDispContent.dispWhole == false) {
       emitFinishEvent();
-    } else if (timeout != null) {
-      //console.log('');
+    } else if (timeout != null){
       clearTimeout(timeout);
       timeout = null;
     }
@@ -91,48 +84,49 @@ var display = function() {
       io.disp_raw_N(animation, imageData.numberOfImg, currentDispContent.interval);
       isAnimationDispComplete = true;
       if (typeof currentDispContent.e != undefined) {
-        currentDispContent.e.emit('finish', count);
+        currentDispContent.e.emit('finish');
       }
-      setTimeout(display, intervalFindNextAnimation);
+      setTimeout(display, 200);
     } else {
       imgs = JSON.parse(currentDispContent.data);
       imageIter = (typeof currentDispContent.start == 'undefined')?-1:(currentDispContent.start-1);
       isPreviousImageDisComplete = true;
-      setTimeout(display, intervalFindNextAnimation);
+      //setTimeout(display, 200);
+      dispAnimation();
     }
-    return;
   } catch(ex) {
-    console.log('exception:'+ex);
     isAnimationDispComplete = true;
     if (typeof currentDispContent.e != undefined) {
-      currentDispContent.e.emit('finish', count);
+      currentDispContent.e.emit('finish');
     }
-    setTimeout(display, intervalFindNextAnimation);
+    setTimeout(display, 200);
     return;
   }
 }
 
 var dispAnimation = function() {
-  if (!isPreviousImageDisComplete || currentDispContent == null) {
-    setTimeout(dispAnimation, intervalFindNextImage);
+  /*if (!isPreviousImageDisComplete || currentDispContent == null) {
+    setTimeout(dispAnimation, 50);
     return;
   }
-  isPreviousImageDisComplete = false;
+  isPreviousImageDisComplete = false;*/
   imageIter++;
   if (content != null && currentDispContent != content && !currentDispContent.dispWhole) { // Terminate loading animation immediately
     isAnimationDispComplete = true;
     if (typeof currentDispContent.e != undefined) {
-      currentDispContent.e.emit('finish', count);
+      currentDispContent.e.emit('finish');
     }
-    setTimeout(dispAnimation, intervalFindNextImage);
+    //setTimeout(dispAnimation, 50);
+    display();
     return;
   }
   if (currentDispContent != null && imageIter>=imgs.numberOfImg) {
     isAnimationDispComplete = true;
     if (typeof currentDispContent.e != undefined) {
-      currentDispContent.e.emit('finish', count);
+      currentDispContent.e.emit('finish');
     }
-    setTimeout(dispAnimation, intervalFindNextImage);
+    //setTimeout(dispAnimation, 50);
+    display();
     return;
   }
   if (currentDispContent != null &&
@@ -142,9 +136,10 @@ var dispAnimation = function() {
       if ((imageIter-1) == imgs.textEnd[i]) {
         isAnimationDispComplete = true;
         if (typeof currentDispContent.e != undefined) {
-          currentDispContent.e.emit('finish', count);
+          currentDispContent.e.emit('finish');
         }
-        setTimeout(dispAnimation, intervalFindNextImage);
+        //setTimeout(dispAnimation, 50);
+        display();
         return;
       }
     }
@@ -155,18 +150,6 @@ var dispAnimation = function() {
 }
 
 display();
-dispAnimation();
+//dispAnimation();
 
-var LedDisp = {};
-LedDisp.disp = disp;
-LedDisp.forceTerminate = function (){
-  if (currentDispContent == null || (currentDispContent != null &&
-    currentDispContent.isAtomic == false)) {
-    var ret = {'data':currentDispContent.data, 'interval':currentDispContent.interval, 'isAtomic':currentDispContent.isAtomic, 'dispWhole':currentDispContent.dispWhole, 'e':currentDispContent.e};
-    currentDispContent.dispWhole = false;
-    return ret;
-  }
-  return null;
-};
-
-module.exports = LedDisp;
+module.exports = disp;

@@ -2,59 +2,12 @@ var fs = require('fs');
 var Canvas = require('canvas');
 var Image = Canvas.Image;
 var path = require('path');
-var JPEG = require('jpeg-js');
-var BMP = require('bmp-js');
 
 var mediaJSON = {};
 var count = -1;
 var isReady = true;
 
-function compressImage(p) {
-  var image = [];
-
-  for (var x=0; x<p.data.length; x+=8) {
-    var pixels = 0;
-    var R = p.data[x]>128?1:0;
-    var G = p.data[x+1]>128?1:0;
-    var B = p.data[x+2]>128?1:0;
-    pixels += R+G*2+B*4;
-
-    R = p.data[x+4]>128?1:0;
-    G = p.data[x+5]>128?1:0;
-    B = p.data[x+6]>128?1:0;
-    pixels += (R+G*2+B*4)*16;
-
-    image.push(pixels);
-  }
-  return image;
-}
-
-function writeFile() {
-  mediaJSON.numberOfImg = process.argv.length-2;
-  for (var i=2; i<process.argv.length; i++) {
-    var imgs = [];
-    var file = process.argv[i];
-    if (file.match(/.jpg$/)) {
-      var compressedData = compressImage(JPEG.decode(fs.readFileSync(file)));
-      for (var j=0; j<compressedData.length; j++) {
-        imgs.push(compressedData[j]);
-      }
-    } else if (file.match(/.bmp$/)) {
-      var compressedData = compressImage(BMP.decode(fs.readFileSync(file)));
-      for (var j=0; j<compressedData.length; j++) {
-        imgs.push(compressedData[j]);
-      }
-    } else {
-      return;
-    }
-    mediaJSON['img'+(i-2)] = imgs;
-  }
-
-  //this.disp_raw_N(imgs, files.length, interval);
-  fs.writeFile(path.join('media.json'), JSON.stringify(mediaJSON), function (err) {if (err) throw err; console.log('It\'s saved!');});
-};
-
-/*function createJSON() {
+function createJSON() {
   if (isReady) {
     isReady = false;
     count++;
@@ -113,6 +66,4 @@ function writeFile() {
   fs.writeFile(path.join('media.json'), JSON.stringify(mediaJSON), function (err) {if (err) throw err; console.log('It\'s saved!');});
 }
 createJSON();
-*/
-
 writeFile();

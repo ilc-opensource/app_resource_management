@@ -14,7 +14,7 @@ function action(msg) {
     return;
   }
   if (lastMsg != msg) {
-    console.log('weChat client receive a msg='+msg);
+    //console.log('weChat client receive a msg='+msg);
     lastMsg = msg;
     var data = JSON.parse(lastMsg);
     if (data.isAudio) {
