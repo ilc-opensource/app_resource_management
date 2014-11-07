@@ -1,6 +1,6 @@
 {
-  "name": "weather",
-  "package": "com.intel.smart_mug.weather",
+  "name": "led_test",
+  "package": "com.intel.smart_mug.led_test",
   "version": "0.0.1",
   "icon": "icon16x12.jpg",
   "iconJSON": "media.json",
