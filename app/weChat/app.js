@@ -34,9 +34,13 @@ var dispStatus = Status.invalid;
 var ledDispEmitter = new emitter();
 
 var getContentProcess = null;
+var audioPlayProcess = null;
+var audioRecordProcess = null;
+var needUpload = true;
 var content = '';
 var audioFile = '';
 var contentBuffer = [];
+
 var handler = function(o) {
   if (o['content']) {
     contentBuffer.unshift(o['content']);
@@ -46,10 +50,9 @@ var handler = function(o) {
 var animationCount = -1;
 ledDispEmitter.on('finish', function(count) {
   if (count != animationCount) {
-    console.log('Ignore the event'+count+', '+animationCount);
+    //console.log('Ignore the event'+count+', '+animationCount);
     return;
   }
-  //console.log('In findNextAnimation');
   if (contentBuffer.length != 0) {
     content = contentBuffer.pop();
     console.log('Pop an animation'+content);
@@ -147,8 +150,9 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
       animationCount++;
       dispStatus = Status.playAudio;
       console.log('Playing audio file '+audioFile);
-      //child_process.exec('amixer -c 1 cset numid=6 99%; '+'gst-launch-0.10 filesrc location='+audioFile+' ! flump3dec ! alsasink device=plughw:1,0', function(err, stdout, stderr) {
-      child_process.exec('time '+path.join(__dirname, 'a.out'), function(err, stdout, stderr) {
+      child_process.exec('amixer -c 1 cset numid=6 99%', function(err, stdout, stderr){});
+      audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink', 'device=plughw:1,0'], function(err, stdout, stderr) {
+      //child_process.exec('time '+path.join(__dirname, 'a.out'), function(err, stdout, stderr) {
         console.log('gstreamer stdout='+stdout);
         var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
         ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
@@ -156,12 +160,36 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
         console.log('EndPlay:'+animationCount);
         dispStatus = Status.endPlay;
       });
+    } else if (dispStatus == Status.readyForRecordAudio) {
+      // playing and recording is the same animation
+      var record = fs.readFileSync(path.join(__dirname, 'play.json'), 'utf8');
+      ledDisp(record, 150, false, false, ledDispEmitter);
+      animationCount++;
+      dispStatus = Status.recordAudio;
+      console.log('Recording an audio file output.mp3');
+      audioRecordProcess = child_process.execFile('arecord', ['-f', 'dat', '-r', '48000', '-D', 'hw:1,0', '-t', 'wav', 'output.wav'], function(err, stdout, stderr) {
+      //child_process.exec('time '+path.join(__dirname, 'a.out'), function(err, stdout, stderr) {
+        console.log('audio record stdout='+stdout);
+        if (!needUpload) {
+          console.log('audio record do not need to upload');
+          return;
+        }
+        child_process.exec('lame -V9 output.wav output.mp3; curl -F mugID='+mugID+' -F app=talk -F isVideo=true -F media=@'+path.join(__dirname, 'output.mp3')+' "http://www.pia-edison.com/uploadImage"', function(err, stdout, stderr) {
+          console.log('upload audio file, stdout='+stdout);
+        });
+      });
+      //arecord -f dat -r 48000 -D hw:1,0 -t wav | lame - test.mp3
+    } else if (dispStatus == Status.recordAudio) {
+      try {
+        needUpload = true;
+        process.kill(audioRecordProcess.pid);
+        var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
+        ledDisp(readyForRecord, 150, false, true, ledDispEmitter);
+        animationCount++;
+        dispStatus = Status.readyForRecordAudio;
+      } catch (ex) {
+      }
     }
-  } else if (dispStatus == Status.readyForRecordAudio) {
-    // TODO: 
-    //arecord -f dat -r 48000 -D hw:1,0 -t wav | lame - test.mp3
-  } else if (dispStatus == Status.recordAudio) {
-    // TODO:
   }
 });
 
@@ -194,7 +222,7 @@ io.touchPanel.on('gesture', function(gesture) {
         break;
       case Status.playAudio:
         // TODO: Kill audio play process
-        
+        process.kill(audioPlayProcess.pid);
         savedContext = forceTerminate();
         if (savedContext != null) {
           var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
@@ -220,6 +248,8 @@ io.touchPanel.on('gesture', function(gesture) {
         }
         break;
       case Status.recordAudio:
+        needUpload = false;
+        process.kill(audioRecordProcess.pid);
         // TODO: stop record audio and upload
         if (typeof savedContext.status == Status.playAudio) {
           var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
@@ -233,6 +263,7 @@ io.touchPanel.on('gesture', function(gesture) {
           animationCount++;
           //audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
           dispStatus = savedContext.status;
+          console.log('dispStatus='+dispStatus);
         }
         break;
       default:
@@ -247,3 +278,11 @@ io.touchPanel.on('gesture', function(gesture) {
     dispStatus = Status.readyForRecordAudio;
   }
 });
+
+try {
+  var mugID = fs.readFileSync('/etc/device_id', 'utf8');
+} catch (ex) {
+  console.log(logPrefix+'Cant get mug ID');
+  return;
+}
+
