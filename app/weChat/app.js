@@ -174,7 +174,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
           console.log('audio record do not need to upload');
           return;
         }
-        child_process.exec('lame -V9 output.wav output.mp3; curl -F mugID='+mugID+' -F app=talk -F isVideo=true -F media=@'+path.join(__dirname, 'output.mp3')+' "http://www.pia-edison.com/uploadImage"', function(err, stdout, stderr) {
+        child_process.exec('lame -V9 output.wav output.mp3; curl -F mugID='+mugID+' -F app=talk -F isAudio=true -F media=@'+path.join(__dirname, 'output.mp3')+' "http://www.pia-edison.com/uploadImage"', function(err, stdout, stderr) {
           console.log('upload audio file, stdout='+stdout);
         });
       });
