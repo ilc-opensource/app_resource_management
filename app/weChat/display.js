@@ -119,7 +119,8 @@ var dispAnimation = function() {
   }
   isPreviousImageDisComplete = false;
   imageIter++;
-  if (content != null && currentDispContent != content && !currentDispContent.dispWhole) { // Terminate loading animation immediately
+  //if (content != null && currentDispContent != content && !currentDispContent.dispWhole) { // Terminate loading animation immediately
+  if (contentBuffer.length != 0 && currentDispContent != null && !currentDispContent.dispWhole) { // Terminate loading animation immediately
     isAnimationDispComplete = true;
     if (typeof currentDispContent.e != undefined) {
       currentDispContent.e.emit('finish', count);
@@ -136,7 +137,8 @@ var dispAnimation = function() {
     return;
   }
   if (currentDispContent != null &&
-    currentDispContent != content &&
+    //currentDispContent != content &&
+    contentBuffer.length != 0 &&
     imgs.textEnd != undefined) {
     for (var i=0; i<imgs.textEnd.length; i++) {
       if ((imageIter-1) == imgs.textEnd[i]) {

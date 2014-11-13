@@ -36,10 +36,20 @@ var ledDispEmitter = new emitter();
 var getContentProcess = null;
 var audioPlayProcess = null;
 var audioRecordProcess = null;
-var needUpload = true;
+var needUploadAfterRecord = true;
+var forceStopPlay = false;
 var content = '';
 var audioFile = '';
 var contentBuffer = [];
+var savedContext = {};
+
+// Preload fix images
+var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
+var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
+var play = fs.readFileSync(path.join(__dirname, 'play.json'), 'utf8');
+var record = fs.readFileSync(path.join(__dirname, 'play.json'), 'utf8');
+// Set volume to highest
+child_process.exec('amixer -c 1 cset numid=6 99%', function(err, stdout, stderr){});
 
 var handler = function(o) {
   if (o['content']) {
@@ -47,10 +57,11 @@ var handler = function(o) {
   }
 }
 
-var animationCount = -1;
-ledDispEmitter.on('finish', function(count) {
-  if (count != animationCount) {
-    //console.log('Ignore the event'+count+', '+animationCount);
+var animationID = -1;
+ledDispEmitter.on('finish', function(id) {
+  // Filter finish event emitted by led display except the first one
+  if (id != animationID) {
+    //console.log('Ignore the event'+id+', '+animationID);
     return;
   }
   if (contentBuffer.length != 0) {
@@ -60,12 +71,12 @@ ledDispEmitter.on('finish', function(count) {
       case Status.dispLoading:
         if (!JSON.parse(content).isAudio && !JSON.parse(content).isVideo) {
           ledDisp(content, 150, false, true, ledDispEmitter);
-          animationCount++;
+          animationID++;
           dispStatus = Status.dispAnimation;
         } else if (JSON.parse(content).isAudio) {
-          var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
+          //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
           ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
-          animationCount++;
+          animationID++;
           audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
           dispStatus = Status.readyForPlayAudio;
         } else if (JSON.parse(content).isVideo) {
@@ -74,12 +85,12 @@ ledDispEmitter.on('finish', function(count) {
       case Status.dispAnimation:
         if (!JSON.parse(content).isAudio && !JSON.parse(content).isVideo) {
           ledDisp(content, 150, false, true, ledDispEmitter);
-          animationCount++;
+          animationID++;
           dispStatus = Status.dispAnimation;
         } else if (JSON.parse(content).isAudio) {
-          var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
+          //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
           ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
-          animationCount++;
+          animationID++;
           audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
           dispStatus = Status.readyForPlayAudio;
         } else if (JSON.parse(content).isVideo) {
@@ -96,12 +107,12 @@ ledDispEmitter.on('finish', function(count) {
       case Status.endPlay:
         if (!JSON.parse(content).isAudio && !JSON.parse(content).isVideo) {
           ledDisp(content, 150, false, true, ledDispEmitter);
-          animationCount++;
+          animationID++;
           dispStatus = Status.dispAnimation;
         } else if (JSON.parse(content).isAudio) {
-          var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
+          //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
           ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
-          animationCount++;
+          animationID++;
           audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
           dispStatus = Status.readyForPlayAudio;
         } else if (JSON.parse(content).isVideo) {
@@ -129,7 +140,7 @@ var weChat = function() {
 
   var loading = fs.readFileSync(path.join(__dirname, './loading.json'), 'utf8');
   ledDisp(loading, 150, false, false, ledDispEmitter);
-  animationCount++;
+  animationID++;
   dispStatus = Status.dispLoading;
 };
 
@@ -142,35 +153,67 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
     } catch (ex) {
       console.log(logPrefix+'send to child process error');
     }
+    switch (dispStatus) {
+      case Status.dispLoading:
+      case Status.dispAnimation:
+      case Status.readyForPlayAudio:
+      case Status.endPlay:
+      case Status.readyForRecordAudio:
+        break;
+      case Status.playAudio:
+        forceStopPlay = true;
+        process.kill(audioPlayProcess.pid, 'SIGINT');
+        savedContext = forceTerminate();
+        //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
+        ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
+        animationID++;
+        dispStatus = Status.readyForPlayAudio;
+        break;
+      case Status.recordAudio:
+        needUploadAfterRecord = false;
+        try {
+          process.kill(audioRecordProcess.pid);
+        } catch (ex) {
+        }
+        //var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
+        ledDisp(readyForRecord, 150, false, true, ledDispEmitter);
+        animationID++;
+        dispStatus = Status.readyForRecordAudio;
+        break;
+      default:
+        break;
+    }
   }
   if (e == 'TOUCH_CLICK') {
     if (dispStatus == Status.readyForPlayAudio || dispStatus == Status.endPlay) {
-      var play = fs.readFileSync(path.join(__dirname, 'play.json'), 'utf8');
+      //var play = fs.readFileSync(path.join(__dirname, 'play.json'), 'utf8');
       ledDisp(play, 150, false, false, ledDispEmitter);
-      animationCount++;
+      animationID++;
       dispStatus = Status.playAudio;
       console.log('Playing audio file '+audioFile);
       child_process.exec('amixer -c 1 cset numid=6 99%', function(err, stdout, stderr){});
       audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink', 'device=plughw:1,0'], function(err, stdout, stderr) {
-      //child_process.exec('time '+path.join(__dirname, 'a.out'), function(err, stdout, stderr) {
-        console.log('gstreamer stdout='+stdout);
-        var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
-        ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
-        animationCount++;
-        console.log('EndPlay:'+animationCount);
-        dispStatus = Status.endPlay;
+        if (forceStopPlay) {
+          forceStopPlay = false;
+        } else {
+          console.log('gstreamer stdout='+stdout);
+          //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
+          ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
+          animationID++;
+          console.log('EndPlay:'+animationID);
+          dispStatus = Status.endPlay;
+        }
       });
     } else if (dispStatus == Status.readyForRecordAudio) {
       // playing and recording is the same animation
-      var record = fs.readFileSync(path.join(__dirname, 'play.json'), 'utf8');
+      //var record = fs.readFileSync(path.join(__dirname, 'play.json'), 'utf8');
       ledDisp(record, 150, false, false, ledDispEmitter);
-      animationCount++;
+      animationID++;
       dispStatus = Status.recordAudio;
       console.log('Recording an audio file output.mp3');
       audioRecordProcess = child_process.execFile('arecord', ['-f', 'dat', '-r', '48000', '-D', 'hw:1,0', '-t', 'wav', 'output.wav'], function(err, stdout, stderr) {
-      //child_process.exec('time '+path.join(__dirname, 'a.out'), function(err, stdout, stderr) {
         console.log('audio record stdout='+stdout);
-        if (!needUpload) {
+        if (!needUploadAfterRecord) {
           console.log('audio record do not need to upload');
           return;
         }
@@ -181,11 +224,12 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
       //arecord -f dat -r 48000 -D hw:1,0 -t wav | lame - test.mp3
     } else if (dispStatus == Status.recordAudio) {
       try {
-        needUpload = true;
-        process.kill(audioRecordProcess.pid);
-        var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
+        needUploadAfterRecord = true;
+        //var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
         ledDisp(readyForRecord, 150, false, true, ledDispEmitter);
-        animationCount++;
+        console.log('send stop record animation');
+        animationID++;
+        process.kill(audioRecordProcess.pid);
         dispStatus = Status.readyForRecordAudio;
       } catch (ex) {
       }
@@ -193,7 +237,6 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
   }
 });
 
-var savedContext = {};
 
 io.touchPanel.on('gesture', function(gesture) {
   console.log(logPrefix+'receive a gesture '+gesture);
@@ -213,54 +256,56 @@ io.touchPanel.on('gesture', function(gesture) {
       case Status.endPlay:
         savedContext = forceTerminate();
         if (savedContext != null) {
-          var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
+          savedContext.status = dispStatus;
+          //var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
           ledDisp(readyForRecord, 150, false, true, ledDispEmitter);
-          animationCount++;
+          animationID++;
           dispStatus = Status.readyForRecordAudio;
         }
-        savedContext.status = dispStatus;
         break;
       case Status.playAudio:
         // TODO: Kill audio play process
-        process.kill(audioPlayProcess.pid);
+        forceStopPlay = true;
+        process.kill(audioPlayProcess.pid, 'SIGINT');
         savedContext = forceTerminate();
         if (savedContext != null) {
-          var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
+          savedContext.status = dispStatus;
+          //var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
           ledDisp(readyForRecord, 150, false, true, ledDispEmitter);
-          animationCount++;
+          animationID++;
           dispStatus = Status.readyForRecordAudio;
         }
-        savedContext.status = dispStatus;
         break;
       case Status.readyForRecordAudio:
         if (typeof savedContext.status == Status.playAudio) {
-          var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
+          //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
           ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
-          animationCount++;
+          animationID++;
           //audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
           dispStatus = Status.readyForPlayAudio;
         } else {
           //ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
           ledDisp(savedContext.data, savedContext.interval, savedContext.isAtomic, savedContext.dispWhole, savedContext.e);
-          animationCount++;
+          animationID++;
           //audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
           dispStatus = savedContext.status;
+          console.log('dispStatus='+dispStatus);
         }
         break;
       case Status.recordAudio:
-        needUpload = false;
+        needUploadAfterRecord = false;
         process.kill(audioRecordProcess.pid);
         // TODO: stop record audio and upload
         if (typeof savedContext.status == Status.playAudio) {
-          var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
+          //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
           ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
-          animationCount++;
+          animationID++;
           //audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
           dispStatus = Status.readyForPlayAudio;
         } else {
           //ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
           ledDisp(savedContext.data, savedContext.interval, savedContext.isAtomic, savedContext.dispWhole, savedContext.e);
-          animationCount++;
+          animationID++;
           //audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
           dispStatus = savedContext.status;
           console.log('dispStatus='+dispStatus);
@@ -271,18 +316,13 @@ io.touchPanel.on('gesture', function(gesture) {
         contentBuffer.push(content);
         break;
     }
-
-    var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
-    ledDisp(readyForRecord, 150, false, true, ledDispEmitter);
-    animationCount++;
-    dispStatus = Status.readyForRecordAudio;
   }
 });
 
 try {
   var mugID = fs.readFileSync('/etc/device_id', 'utf8');
 } catch (ex) {
-  console.log(logPrefix+'Cant get mug ID');
+  console.log(logPrefix+'Can not get mug ID');
   return;
 }
 

@@ -8,6 +8,7 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[user weChat getWeChat] ';
 
+var unsyncMsg = [];
 var lastMsg = null;
 function action(msg) {
   if (msg=='') {
@@ -16,9 +17,22 @@ function action(msg) {
   if (lastMsg != msg) {
     //console.log('weChat client receive a msg='+msg);
     lastMsg = msg;
-    var data = JSON.parse(lastMsg);
-    if (data.isAudio) {
-      child_process.exec('curl -G "http://www.pia-edison.com/downloadFile/?fileName='+data.file+'" -o '+path.basename(data.file), function() {
+    try {
+      var data = JSON.parse(lastMsg);
+      if (data.isAudio) {
+        unsyncMsg.unshift(msg);
+        child_process.exec('curl -G "http://www.pia-edison.com/downloadFile/?fileName='+data.file+'" -o '+path.basename(data.file)+'; echo '+data.file, function(err, stdout, stderr) {
+          console.log('stdout='+stdout);
+          try {
+            //TODO: find the name and pop the corresponding msg
+            process.send({'content':unsyncMsg.pop()});
+          } catch (ex) {
+            console.log(logPrefix+'send wechat message to main process error');
+            return;
+          }
+          sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
+        });
+      } else {
         try {
           process.send({'content':msg});
         } catch (ex) {
@@ -26,15 +40,8 @@ function action(msg) {
           return;
         }
         sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
-      });
-    } else {
-      try {
-        process.send({'content':msg});
-      } catch (ex) {
-        console.log(logPrefix+'send wechat message to main process error');
-        return;
       }
-      sys.registerNotification(path.join(__dirname, 'media.json'), path.join(__dirname, 'app.js'));
+    } catch (ex) {
     }
   }
 }
@@ -50,8 +57,8 @@ function query(cb) {
   };
 
   var options = {
-    //hostname: 'www.pia-edison.com',
-    hostname: '54.65.34.62',
+    hostname: 'www.pia-edison.com',
+//    hostname: '54.65.34.62',
     port: 80,
     path: '/mug/?mugID='+mugID+'&app='+app,
     method: 'GET'

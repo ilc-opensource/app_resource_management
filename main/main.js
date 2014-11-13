@@ -14,7 +14,8 @@ var timeIntervalLazy = 10000;
 var logPrefix = '[OS] ';
 
 // For default app
-var defaultApp = path.join(__dirname, '../app/weather/app.js');
+var defaultApp = null;
+//var defaultApp = path.join(__dirname, '../app/weather/app.js');
 var timeToLaunchDefaultApp = 6000000; // 10 minutes
 var timerLastTouchEvent = (new Date()).getTime();
 
@@ -25,7 +26,8 @@ var frontEndApp = null;
 var sysDisableTouch = true;
 
 // For notification
-var isNotificationOn = true;
+var isNotificationOn = false;
+//var isNotificationOn = true;
 var pendingNotification = []; //{'icon':, 'app':, 'time':, 'dispCount':}
 var intervalToShowNotification = 30000; //30 secondes 
 var maxCountToShowNotification = 3;
