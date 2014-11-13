@@ -59,5 +59,14 @@
     "icon"   : "icon.bmp",
     "iconJSON": "media.json",
     "start": "app.js"
+  },
+  "player": {
+    "name"   : "player",
+    "package": "com.intel.smart_mug.player",
+    "version": "0.0.1",
+    "icon"   : "icon.bmp",
+    "iconJSON": "media.json",
+    "start"  : "app.js",
+    "description": "mp3 player"
   }
 }
