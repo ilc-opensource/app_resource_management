@@ -294,7 +294,11 @@ io.touchPanel.on('gesture', function(gesture) {
         break;
       case Status.recordAudio:
         needUploadAfterRecord = false;
-        process.kill(audioRecordProcess.pid);
+        try {
+          process.kill(audioRecordProcess.pid);
+        } catch (ex) {
+          console.log('Exception:'+ex);
+        }
         // TODO: stop record audio and upload
         if (typeof savedContext.status == Status.playAudio) {
           //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
