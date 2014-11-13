@@ -162,7 +162,8 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
         break;
       case Status.playAudio:
         forceStopPlay = true;
-        process.kill(audioPlayProcess.pid, 'SIGINT');
+        process.exec("killall -SIGINT gst-launch-0.10");
+        //process.kill(audioPlayProcess.pid, 'SIGINT');
         savedContext = forceTerminate();
         //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
         ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
@@ -266,7 +267,8 @@ io.touchPanel.on('gesture', function(gesture) {
       case Status.playAudio:
         // TODO: Kill audio play process
         forceStopPlay = true;
-        process.kill(audioPlayProcess.pid, 'SIGINT');
+        //process.kill(audioPlayProcess.pid, 'SIGINT');
+        process.exec("killall -SIGINT gst-launch-0.10");
         savedContext = forceTerminate();
         if (savedContext != null) {
           savedContext.status = dispStatus;
