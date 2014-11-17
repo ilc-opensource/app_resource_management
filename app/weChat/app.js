@@ -46,6 +46,7 @@ var savedContext = {};
 // Preload fix images
 var readyForRecord = fs.readFileSync(path.join(__dirname, 'readyForRecord.json'), 'utf8');
 var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
+var endPlay = fs.readFileSync(path.join(__dirname, 'endPlay.json'), 'utf8');
 var play = fs.readFileSync(path.join(__dirname, 'play.json'), 'utf8');
 var record = fs.readFileSync(path.join(__dirname, 'play.json'), 'utf8');
 // Set volume to highest
@@ -162,13 +163,14 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
         break;
       case Status.playAudio:
         forceStopPlay = true;
-        process.exec("killall -SIGINT gst-launch-0.10");
+        child_process.exec("killall -SIGINT gst-launch-0.10");
         //process.kill(audioPlayProcess.pid, 'SIGINT');
         savedContext = forceTerminate();
         //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
-        ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
+        ledDisp(endPlay, 150, false, true, ledDispEmitter);
         animationID++;
-        dispStatus = Status.readyForPlayAudio;
+        //dispStatus = Status.readyForPlayAudio;
+        dispStatus = Status.endPlay;
         break;
       case Status.recordAudio:
         needUploadAfterRecord = false;
@@ -199,7 +201,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
         } else {
           console.log('gstreamer stdout='+stdout);
           //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
-          ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
+          ledDisp(endPlay, 150, false, true, ledDispEmitter);
           animationID++;
           console.log('EndPlay:'+animationID);
           dispStatus = Status.endPlay;
@@ -268,7 +270,7 @@ io.touchPanel.on('gesture', function(gesture) {
         // TODO: Kill audio play process
         forceStopPlay = true;
         //process.kill(audioPlayProcess.pid, 'SIGINT');
-        process.exec("killall -SIGINT gst-launch-0.10");
+        child_process.exec("killall -SIGINT gst-launch-0.10");
         savedContext = forceTerminate();
         if (savedContext != null) {
           savedContext.status = dispStatus;
@@ -279,12 +281,13 @@ io.touchPanel.on('gesture', function(gesture) {
         }
         break;
       case Status.readyForRecordAudio:
-        if (typeof savedContext.status == Status.playAudio) {
+        if (savedContext.status == Status.playAudio) {
           //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
-          ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
+          ledDisp(endPlay, 150, false, true, ledDispEmitter);
           animationID++;
           //audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
-          dispStatus = Status.readyForPlayAudio;
+          //dispStatus = Status.readyForPlayAudio;
+          dispStatus = Status.endPlay;
         } else {
           //ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
           ledDisp(savedContext.data, savedContext.interval, savedContext.isAtomic, savedContext.dispWhole, savedContext.e);
@@ -302,12 +305,13 @@ io.touchPanel.on('gesture', function(gesture) {
           console.log('Exception:'+ex);
         }
         // TODO: stop record audio and upload
-        if (typeof savedContext.status == Status.playAudio) {
+        if (savedContext.status == Status.playAudio) {
           //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
-          ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
+          ledDisp(endPlay, 150, false, true, ledDispEmitter);
           animationID++;
           //audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
-          dispStatus = Status.readyForPlayAudio;
+          //dispStatus = Status.readyForPlayAudio;
+          dispStatus = Status.endPlay;
         } else {
           //ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
           ledDisp(savedContext.data, savedContext.interval, savedContext.isAtomic, savedContext.dispWhole, savedContext.e);
