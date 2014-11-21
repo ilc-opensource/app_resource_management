@@ -26,8 +26,8 @@ var frontEndApp = null;
 var sysDisableTouch = true;
 
 // For notification
-var isNotificationOn = false;
-//var isNotificationOn = true;
+//var isNotificationOn = false;
+var isNotificationOn = true;
 var pendingNotification = []; //{'icon':, 'app':, 'time':, 'dispCount':}
 var intervalToShowNotification = 30000; //30 secondes 
 var maxCountToShowNotification = 3;
