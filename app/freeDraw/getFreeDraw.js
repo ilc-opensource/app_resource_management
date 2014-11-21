@@ -1,6 +1,8 @@
 var fs = require('fs');
 var path = require('path');
 var http = require('http');
+var cloudServer = require('../appconfig/cloudserver.js').server;
+var cloudPort = require('../appconfig/cloudserver.js').port;
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
@@ -28,16 +30,9 @@ function action(msg) {
 function queryFreeDraw(cb) {
   var app = 'freeDraw';
 
-  var optionsProxy = {
-    hostname: 'proxy-prc.intel.com',
-    port: 911,
-    path: 'www.pia-edison.com/mug/?mugID='+mugID+'&app='+app,
-    method: 'GET'
-  };
-
   var options = {
-    hostname: 'www.pia-edison.com',
-    port: 80,
+    hostname: cloudServer,
+    port: cloudPort,
     path: '/mug?mugID='+mugID+'&app='+app,
     method: 'GET'
   };

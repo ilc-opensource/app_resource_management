@@ -5,6 +5,8 @@ var path = require('path');
 var http = require('http');
 var child_process = require('child_process');
 var emitter = require('events').EventEmitter
+var cloudServer = require('../appconfig/cloudserver.js').server;
+var cloudPort = require('../appconfig/cloudserver.js').port;
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
@@ -220,7 +222,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
           console.log('audio record do not need to upload');
           return;
         }
-        child_process.exec('lame -V9 output.wav output.mp3; curl -F mugID='+mugID+' -F app=talk -F isAudio=true -F media=@'+path.join(__dirname, 'output.mp3')+' "http://www.pia-edison.com/uploadImage"', function(err, stdout, stderr) {
+        child_process.exec('lame -V9 output.wav output.mp3; curl -F mugID='+mugID+' -F app=talk -F isAudio=true -F media=@'+path.join(__dirname, 'output.mp3')+' "http://'+cloudServer+':'+cloudPort+'/uploadImage"', function(err, stdout, stderr) {
           console.log('upload audio file, stdout='+stdout);
         });
       });

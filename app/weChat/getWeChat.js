@@ -2,6 +2,8 @@ var fs = require('fs');
 var path = require('path');
 var http = require('http');
 var child_process = require('child_process');
+var cloudServer = require('../appconfig/cloudserver.js').server;
+var cloudPort = require('../appconfig/cloudserver.js').port;
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
@@ -21,7 +23,7 @@ function action(msg) {
       var data = JSON.parse(lastMsg);
       if (data.isAudio) {
         unsyncMsg.unshift(msg);
-        child_process.exec('curl -G "http://www.pia-edison.com/downloadFile/?fileName='+data.file+'" -o '+path.basename(data.file)+'; echo '+data.file, function(err, stdout, stderr) {
+        child_process.exec('curl -G "http://'+cloudServer+':'+cloudPort+'/downloadFile/?fileName='+data.file+'" -o '+path.basename(data.file)+'; echo '+data.file, function(err, stdout, stderr) {
           console.log('stdout='+stdout);
           try {
             //TODO: find the name and pop the corresponding msg
@@ -49,17 +51,9 @@ function action(msg) {
 function query(cb) {
   var app = 'weChat';
 
-  var optionsProxy = {
-    hostname: 'proxy-prc.intel.com',
-    port: 911,
-    path: 'www.pia-edison.com/mug/?mugID='+mugID+'&app='+app,
-    method: 'GET'
-  };
-
   var options = {
-    hostname: 'www.pia-edison.com',
-//    hostname: '54.65.34.62',
-    port: 80,
+    hostname: cloudServer,
+    port: cloudPort,
     path: '/mug/?mugID='+mugID+'&app='+app,
     method: 'GET'
   };
