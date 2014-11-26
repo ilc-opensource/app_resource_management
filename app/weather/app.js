@@ -8,6 +8,7 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[userApp weather] ';
 
+var timeOut = null;
 var getContentProcess = null;
 var content = '';
 var handler = function(o) {
@@ -63,6 +64,7 @@ function display() {
   setTimeout(display, 500);
 }
 function dispAnimation() {
+  //console.log('In dispAnimation');
   if (!isPreviousImageDisComplete) {
     setTimeout(dispAnimation, 50);
     return;
@@ -90,9 +92,20 @@ function dispAnimation() {
       }
     }
   }
+  var timer = (new Date()).getTime();
+//  console.log('image'+imageIter);
   dispSingle(imgs['img'+imageIter], 1, 50);
+  //console.log('image end');
   isPreviousImageDisComplete = true;
-  setTimeout(dispAnimation, 50);
+  if (((new Date()).getTime()-timer)>1000) {
+    if (timeOut != null) {
+      clearTimeout(timeOut);
+      timeOut = null;
+    }
+    dispAnimation();
+  } else {
+    timeOut = setTimeout(dispAnimation, 50);
+  }
 }
 function dispSingle(data, number, interval) {
   io.disp_raw_N(data, number, interval);
@@ -103,6 +116,7 @@ var weather = function() {
   getContentProcess = child_process.fork(path.join(__dirname, 'getWeather.js'));
   getContentProcess.on('message', handler);
   display();
+//  setInterval(dispAnimation, 100);
   dispAnimation();
 };
 

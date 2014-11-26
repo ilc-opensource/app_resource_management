@@ -4,6 +4,7 @@ var PNG = require('png-js');
 var JPEG = require('jpeg-js');
 var BMP = require('bmp-js');
 var EventEmitter = require("events").EventEmitter;
+var path=require('path');
 
 var context = require('./context.js');
 
@@ -13,6 +14,8 @@ var io = new IOLIB.IO({
   quickInit: false
 });
 var handle = io.mug_disp_init();
+
+//io.mug_init_font(path.join(__dirname, '../../../font/msyh.ttf'));
 
 var imageWidth = 16;
 var imageHeight = 12;
@@ -97,6 +100,11 @@ io.disp_N = function(files, number, interval) {
     }
   }
   this.disp_raw_N(imgs, files.length, interval);
+};
+
+io.disp_text_marquee_async = function(text, interval) {
+  //io.mug_disp_text_marquee_async(handle, text, io.RED, interval, 1);
+  io.mug_disp_text_marquee_async(handle, text, "red", interval, -1);
 };
 
 module.exports = io;

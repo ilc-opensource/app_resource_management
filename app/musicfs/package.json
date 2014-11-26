@@ -1,0 +1,9 @@
+{
+  "name": "musicfs",
+  "package": "com.intel.smart_mug.musicfs",
+  "version": "0.0.1",
+  "icon": "fs.jpg",
+  "iconJSON": "media.json",
+  "start": "app.js",
+  "description": "desc"
+}

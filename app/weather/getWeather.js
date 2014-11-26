@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var http = require('http');
 var child_process = require('child_process');
+var locationCity = require('./city.js');
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
@@ -97,14 +98,14 @@ fs.watch(path.join(__dirname, 'weather_from_baidu.json'), function(e, filename) 
 var weatherContent = fs.readFileSync(path.join(__dirname, './weather_from_baidu.json'), 'utf8');
 process.send({'weather':weatherContent});
 
-queryWeather('116.305145,39.982368', action);
+queryWeather(locationCity, action);
 // one hour
-setInterval(function(){queryWeather('116.305145,39.982368', action)}, 3600000);
+setInterval(function(){queryWeather(locationCity, action)}, 3600000);
 
 process.on('message', function(o) {
   if (o['InstantUpdate']) {
     //console.log(logPrefix+' instant update');
-    queryWeather('116.305145,39.982368', action);
+    queryWeather(locationCity, action);
   }
 });
 */
@@ -112,19 +113,19 @@ process.on('message', function(o) {
 var timeIntervalEager = 1000;
 var timeIntervalLazy = 600000;
 
-queryWeather('116.305145,39.982368', action);
-var timerInterval = setInterval(function(){queryWeather('116.305145,39.982368', action)}, timeIntervalLazy);
+queryWeather(locationCity, action);
+var timerInterval = setInterval(function(){queryWeather(locationCity, action)}, timeIntervalLazy);
 
 process.on('message', function(o) {
   if (o['InstantUpdate']) {
     //console.log(logPrefix+' instant update');
-    queryWeather('116.305145,39.982368', action);
+    queryWeather(locationCity, action);
     //clearInterval(timerInterval);
-    //timerInterval = setInterval(function(){queryWeather('116.305145,39.982368', action)}, timeIntervalEager);
+    //timerInterval = setInterval(function(){queryWeather(locationCity, action)}, timeIntervalEager);
   }
   if (o['ToBackEnd']) {
     clearInterval(timerInterval);
-    timerInterval = setInterval(function(){queryWeather('116.305145,39.982368', action)}, timeIntervalLazy);
+    timerInterval = setInterval(function(){queryWeather(locationCity, action)}, timeIntervalLazy);
   }
 });
 

@@ -1,0 +1,9 @@
+{
+  "name": "recorder",
+  "package": "com.intel.smart_mug.audio_recorder",
+  "version": "0.0.1",
+  "icon": "rrr.bmp",
+  "iconJSON": "media.json",
+  "start": "app.js",
+  "description": "desc"
+}

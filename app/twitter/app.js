@@ -18,6 +18,8 @@ var handler = function(o) {
 var hasContent = false;
 var currentDispContent = null;
 
+var timeOut = null;
+
 // Animation display begin
 var isAnimationDispComplete = true;
 var isPreviousImageDisComplete = true;
@@ -86,9 +88,22 @@ function dispAnimation() {
       }
     }
   }
+  var timer = (new Date()).getTime();
+
   dispSingle(imgs['img'+imageIter], 1, 50);
   isPreviousImageDisComplete = true;
-  setTimeout(dispAnimation, 50);
+
+  if (((new Date()).getTime()-timer)>1000) {
+    if (timeOut != null) {
+      clearTimeout(timeOut);
+      timeOut = null;
+    }
+    dispAnimation();
+  } else {
+    timeOut = setTimeout(dispAnimation, 50);
+  }
+
+//  setTimeout(dispAnimation, 50);
 }
 function dispSingle(data, number, interval) {
   io.disp_raw_N(data, number, interval);

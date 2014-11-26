@@ -13,6 +13,7 @@ var disp = function(data, interval, isAtomic, dispWhole, e) {
   contentBuffer.unshift({'data':data, 'interval':interval, 'isAtomic':isAtomic, 'dispWhole':dispWhole, 'e':e});
 };
 
+var timeOut = null;
 var contentBuffer = [];
 var count = -1;
 var content = null;
@@ -151,9 +152,23 @@ var dispAnimation = function() {
       }
     }
   }
+
+  var timer = (new Date()).getTime();
+
   io.disp_raw_N(imgs['img'+imageIter], 1, 0);
   isPreviousImageDisComplete = true;
-  setTimeout(dispAnimation, currentDispContent.interval);
+
+  if (((new Date()).getTime()-timer)>500) {
+    if (timeOut != null) {
+      clearTimeout(timeOut);
+      timeOut = null;
+    }
+    dispAnimation();
+  } else {
+    timeOut = setTimeout(dispAnimation, currentDispContent.interval);
+  }
+
+  //setTimeout(dispAnimation, currentDispContent.interval);
 }
 
 display();
