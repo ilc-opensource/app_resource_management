@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="APP">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Mug File Management</title>
+</head>
+
+<body>
+
+  <% for(idx in mug_config) { %>
+    <a href=<%= idx %>>Browse <%= mug_config[idx].desc%></a>       
+    <p></p>
+
+    <form method='post' action=<%= mug_config[idx].action%> enctype="multipart/form-data"> 
+    <input type='file' name='fileUploaded'>
+    <input type='submit'>
+    </form>
+    <p></p>
+  <% } %>
+
+</body>
+</html>

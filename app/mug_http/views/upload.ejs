@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="APP">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Mug File Management</title>
+  <% var query = false; %>
+  <% if(upload_info.return.status != "Done") { %>
+  <%   query = true; %>
+  <script type="text/javascript" src="jquery.js"></script>  
+  <% } %> 
+</head>
+
+<body>
+  
+ 
+  <% if(query) { %>  
+
+  <p id="output">Please wait...</p>
+  <table border="1" id="output_table">
+    <tr>
+      <td >info</td>
+      <td id="ret_info">unkown</td>
+    </tr>
+    <tr>
+      <td >error</td>
+      <td id="ret_error">unkown</td>
+    </tr>
+    <tr>
+      <td >stdout</td>
+      <td id="ret_stdout">unkown</td>
+    </tr>
+    <tr>
+      <td >stderr</td>
+      <td id="ret_stderr">unkown</td>
+    </tr>
+  </table>
+
+  <% } else { %>
+  <p> Done </p>
+  <% } %>
+  <% for(info in upload_info) {  %>
+
+  <p><%= info %></p>
+  <table border="1">
+
+    <% content = upload_info[info] %>
+    <% for(idx in content) { %>
+    <tr>
+      <td> <%= idx %></td>
+      <td> <%= content[idx] %></td>
+    </tr>   
+    <% } %>
+  </table>
+  <% } %>
+
+  <% if(query) {%>
+  <script type="text/javascript"> 
+
+    var queryStat = function() {
+      var url = "/query?stat=<%= upload_info.config.action %>";
+      $.get(url, function(data, status) {
+        var newData = data.replace(/\\n/g, '<br/>');
+        var ret = JSON.parse(newData);
+        if(ret.status == "Done") {
+          $("#output").html("Done");  
+          $("#ret_info").html(ret["info"]); 
+          $("#ret_error").html(ret["error"]); 
+          $("#ret_stdout").html(ret["stdout"]); 
+          $("#ret_stderr").html(ret["stderr"]); 
+        } else {
+          $("#ret_info").html(ret["info"]); 
+          setTimeout(function() {
+            console.log("retry " + url);
+            queryStat();
+          }, 1000);
+        }
+      });
+    };
+
+    queryStat();
+
+  </script>
+  <% }%>
+</body>
+</html>

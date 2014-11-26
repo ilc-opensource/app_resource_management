@@ -8,6 +8,15 @@
     "start"  : "app.js",
     "description": "get ip address of wlan0"
   },
+  "show_id" : {
+    "name"   : "show_id",
+    "package": "com.intel.smart_mug.show_id",
+    "version": "0.0.1",
+    "icon"   : "icon.bmp",
+    "start"  : "app.js",
+    "description": "show /etc/device_id"
+  },
+
   "temperature": {
     "name"   : "temperature",
     "package": "com.intel.smart_mug.temprature",
@@ -43,5 +52,47 @@
     "iconJSON": "media.json",
     "start"  : "index.js",
     "description": "install and uninstall app"
+  },
+
+  "mug_http" : {
+    "name": "mug_http",
+    "version": "0.0.0",
+    "icon": "icon.bmp",
+    "start": "run.js",
+    "package": "com.intel.smart_mug.mug_http",
+    "description": "smart mug http service"
+  },
+
+  "battery" : {
+    "name"   : "battery",
+    "package": "com.intel.smart_mug.battery",
+    "version": "0.0.1",
+    "icon"   : "icon.bmp",
+    "start"  : "app.js",
+    "description": "display battery of board"
+  },
+  "tile" : {
+    "name"   : "tile",
+    "package": "com.intel.smart_mug.tile",
+    "version": "0.0.1",
+    "icon"   : "icon.bmp",
+    "start"  : "app.js",
+    "description": "display z-axis tile of board"
+  },
+  "toggle_bt": {
+    "name": "toggle_bt",
+    "version": "0.0.1",
+    "icon": "icon.bmp",
+    "start": "run.js",
+    "package": "com.intel.smart_mug.toggle_bt",
+    "description": "toggle bt"
+  },
+  "mug_shut_down": {
+    "name"   : "mug_shut_down",
+    "package": "com.intel.smart_mug.mug_shut_down",
+    "version": "0.0.1",
+    "icon"   : "icon.bmp",
+    "start"  : "app.js",
+    "description": "shut down system"
   }
 }

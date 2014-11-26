@@ -7,7 +7,7 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[app player] '
 
-var appProcess = child_process.execFile(path.join(__dirname, 'player'), ['music'], {'cwd':__dirname});
+var appProcess = child_process.execFile(path.join(__dirname, 'player'), ['../../../audio'], {'cwd':__dirname});
 
 // Touch event handler begin
 // For none js app only
@@ -16,7 +16,6 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
     //console.log(logPrefix+'kill the main app pid='+appProcess.pid);
     try {
       process.kill(appProcess.pid);
-      process.exec("killall -SIGINT gst-launch-0.10");
     } catch (ex) {
     }
     process.exit();
