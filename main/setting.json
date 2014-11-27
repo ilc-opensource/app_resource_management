@@ -103,5 +103,14 @@
 	"iconJSON": "media.json",
 	"start": "app.js",
 	"description": "desc"
+  },
+
+  "wifi": {
+    "name": "toggle_wifi",
+    "version": "0.0.1",
+    "icon": "icon.bmp",
+    "start": "run.js",
+    "package": "com.intel.smart_mug.toggle_wifi",
+    "description": "toggle wifi"
   }
 }
