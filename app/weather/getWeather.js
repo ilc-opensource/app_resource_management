@@ -59,9 +59,9 @@ var queryWeather = function(city, cb) {
       if (lastWeather[city] != weather) {
         lastWeather[city] = weather;
         var weatherKey = null;
-        if (weather.indexOf('云') != -1 || weather.indexOf('霾') != -1 || weather.indexOf('雾') != -1) {
+        if (weather.indexOf('云') != -1 || weather.indexOf('霾') != -1 || weather.indexOf('雾') != -1 || weather.indexOf('\u9634') != -1) {
           weatherKey = 'Cloudy';
-        } else if(weather.indexOf('雨') != -1) {
+        } else if(weather.indexOf('雨') != -1 || weather.indexOf('\u51BB') != -1) {
           weatherKey = 'Rainy';
         } else if(weather.indexOf('风') != -1) {
           weatherKey = 'Windy';
@@ -69,7 +69,7 @@ var queryWeather = function(city, cb) {
           weatherKey = 'Thundery';
         } else if(weather.indexOf('晴') != -1) {
           weatherKey = 'Sunny';
-        } else if(weather.indexOf('雪') != -1) {
+        } else if(weather.indexOf('雪') != -1 || weather.indexOf('\u96F9') != -1 || weather.indexOf('\u971C') != -1) {
           weatherKey = 'Snowy';
         }
         //console.log('weatherKey='+weatherKey);

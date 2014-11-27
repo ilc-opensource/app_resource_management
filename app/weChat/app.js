@@ -197,7 +197,8 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
       dispStatus = Status.playAudio;
       console.log('Playing audio file '+audioFile);
       child_process.exec('amixer -c 1 cset numid=6 99%', function(err, stdout, stderr){});
-      audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink', 'device=plughw:1,0'], function(err, stdout, stderr) {
+      //audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink', 'device=plughw:1,0'], function(err, stdout, stderr) {
+      audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink'], function(err, stdout, stderr) {
         if (forceStopPlay) {
           forceStopPlay = false;
         } else {
@@ -216,7 +217,8 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
       animationID++;
       dispStatus = Status.recordAudio;
       console.log('Recording an audio file output.mp3');
-      audioRecordProcess = child_process.execFile('arecord', ['-f', 'dat', '-r', '48000', '-D', 'hw:1,0', '-t', 'wav', 'output.wav'], function(err, stdout, stderr) {
+      //audioRecordProcess = child_process.execFile('arecord', ['-f', 'dat', '-r', '48000', '-D', 'hw:1,0', '-t', 'wav', 'output.wav'], function(err, stdout, stderr) {
+      audioRecordProcess = child_process.execFile('arecord', ['-f', 'dat', '-r', '48000', '-t', 'wav', 'output.wav'], function(err, stdout, stderr) {
         console.log('audio record stdout='+stdout);
         if (!needUploadAfterRecord) {
           console.log('audio record do not need to upload');
