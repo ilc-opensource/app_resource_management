@@ -72,14 +72,10 @@ var stopService = function() {
   });
 };
 
-io.mug_touch_event_on(touch, io.TOUCH_EVENT_ALL, function(e, x, y, id) {
-  if(e == io.TOUCH_HOLD) {
-    process.exit();
-    return;
-  }
 
-  if(e == io.TOUCH_CLICK) {
-    console.log('clicked');
+io.mug_gesture_on(touch, io.MUG_GESTURE, function(g, info) {
+  if(g == io.MUG_SWIPE_UP || g == io.MUG_SWIPE_DOWN) {
+    console.log('toggle wifi');
     if(isOn)
       stopService();
     else

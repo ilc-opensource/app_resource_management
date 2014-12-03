@@ -12,8 +12,10 @@ io.mug_disp_img(disp, __dirname + "/bt_on.bmp");
 child_process.execFile("hciconfig", ["hci0", "up"], {'cwd':__dirname});
 
 ui.touchPanel.on('touchEvent', function(e, x, y, id) {
-  child_process.execFile("hciconfig", ["hci0", "down"], {'cwd':__dirname}, function(err, stdout, stderr) {
-    process.exit();
-  });
+  if (e == 'TOUCH_HOLD') {
+    child_process.execFile("hciconfig", ["hci0", "down"], {'cwd':__dirname}, function(err, stdout, stderr) {
+      process.exit();
+    });
+  }
 });
 
