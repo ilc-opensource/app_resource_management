@@ -9,16 +9,24 @@ var io = new IOLIB.IO({
 
 var handle = io.mug_disp_init();
 
+var init = function() {
+  io.mug_disp_text_marquee_async(handle, "loading", "red", 100, -1);
+};
+
 var disp_num = function(num) {
-  var cimg = io.mug_load_cimg_handle('bmp/email_1.bmp');
-  io.mug_draw_number_cimg_handle(cimg, 0, 0, num, io.CYAN);
-  io.mug_disp_cimg_handle(handle, cimg);
-  io.mug_destroy_cimg_handle(cimg);
-}
+
+  io.mug_disp_text_marquee(handle, "new mail", "magenta", 100, 1);
+
+  var cimg = io.mug_load_pic_cimg('bmp/email_1.bmp');
+  io.mug_draw_number_str_cimg(cimg, 0, 0, ""+num, "cyan");
+  io.mug_disp_cimg(handle, cimg);
+  io.mug_destroy_cimg(cimg);
+};
 
 var disp = function() {
   io.mug_disp_img_N(handle, imgs, 100);
-}
+};
 
+exports.init = init;
 exports.disp = disp;
 exports.disp_num = disp_num;

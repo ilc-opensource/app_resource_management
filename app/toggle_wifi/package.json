@@ -1,0 +1,8 @@
+{
+  "name": "toggle_wifi",
+  "version": "0.0.1",
+  "icon": "icon.bmp",
+  "start": "app.js",
+  "package": "com.intel.smart_mug.toggle_wifi",
+  "description": "toggle wifi" 
+}

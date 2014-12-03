@@ -5,15 +5,9 @@ var child_process = require('child_process');
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
-var logPrefix = '[app mug_shut_down] '
+var logPrefix = '[app toggle_wifi] '
 
-//var appProcess = child_process.execFile(path.join(__dirname, 'mug_shut_down'));
-var shutdown = child_process.spawn(path.join(__dirname, 'mug_shut_down'), []);
-
-shutdown.on('exit', function() {
-  console.log('exit');
-  process.exit();
-});
+var appProcess = child_process.execFile('node', ['run.js'], {'cwd':__dirname});
 
 // Touch event handler begin
 // For none js app only
