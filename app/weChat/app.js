@@ -196,19 +196,20 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
       animationID++;
       dispStatus = Status.playAudio;
       console.log('Playing audio file '+audioFile);
-      child_process.exec('amixer -c 1 cset numid=6 99%', function(err, stdout, stderr){});
-      //audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink', 'device=plughw:1,0'], function(err, stdout, stderr) {
-      audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink'], function(err, stdout, stderr) {
-        if (forceStopPlay) {
-          forceStopPlay = false;
-        } else {
-          console.log('gstreamer stdout='+stdout);
-          //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
-          ledDisp(endPlay, 150, false, true, ledDispEmitter);
-          animationID++;
-          console.log('EndPlay:'+animationID);
-          dispStatus = Status.endPlay;
-        }
+      child_process.exec('amixer -c 1 cset numid=6 99%', function(err, stdout, stderr){
+        //audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink', 'device=plughw:1,0'], function(err, stdout, stderr) {
+        audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink'], function(err, stdout, stderr) {
+          if (forceStopPlay) {
+            forceStopPlay = false;
+          } else {
+            console.log('gstreamer stdout='+stdout);
+            //var readyForPlay = fs.readFileSync(path.join(__dirname, 'readyForPlay.json'), 'utf8');
+            ledDisp(endPlay, 150, false, true, ledDispEmitter);
+            animationID++;
+            console.log('EndPlay:'+animationID);
+            dispStatus = Status.endPlay;
+          }
+        });
       });
     } else if (dispStatus == Status.readyForRecordAudio) {
       // playing and recording is the same animation

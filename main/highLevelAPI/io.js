@@ -13,9 +13,6 @@ var io = new IOLIB.IO({
   log: true,
   quickInit: false
 });
-var handle = io.mug_disp_init();
-
-//io.mug_init_font(path.join(__dirname, '../../../font/msyh.ttf'));
 
 var imageWidth = 16;
 var imageHeight = 12;
@@ -23,33 +20,11 @@ var imageWidthCompressed = imageWidth/2;
 var imageHeightCompressed = imageHeight
 var singleImageSize = imageWidth*imageHeight;
 var singleImageSizeCompressed = imageWidthCompressed*imageHeightCompressed;
-/*
-function compressJPG(data) {
-  var image = [];
-  var img = new Image; // Create a new Image
-  img.src = data;
 
-  var canvas = new Canvas(16, 12);
-  var ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0, img.width, img.height);
-  var p = ctx.getImageData(0, 0, 16, 12);
-  for (var x=0; x<p.data.length; x+=8) {
-    var pixels = 0;
-    var R = p.data[x]>128?1:0;
-    var G = p.data[x+1]>128?1:0;
-    var B = p.data[x+2]>128?1:0;
-    pixels += R+G*2+B*4;
+// Touch panel
+io.touchPanel = require('./touchPanel.js');
 
-    R = p.data[x+4]>128?1:0;
-    G = p.data[x+5]>128?1:0;
-    B = p.data[x+6]>128?1:0;
-    pixels += (R+G*2+B*4)*16;
-
-    image.push(pixels);
-  }
-  return image;
-}
-*/
+// Display
 function compressImage(p) {
   var image = [];
 
@@ -70,10 +45,10 @@ function compressImage(p) {
   return image;
 }
 
-io.touchPanel = require('./touchPanel.js');
+var dispHandle = io.mug_disp_init();
 
 io.disp_raw_N = function(imgs, number, interval) {
-  io.mug_disp_raw_N(handle, imgs, number, interval);
+  io.mug_disp_raw_N(dispHandle, imgs, number, interval);
   context.lastImg = [];
   for (var i=0; i<singleImageSizeCompressed; i++) {
     context.lastImg[i] = imgs[singleImageSizeCompressed*(number-1)+i];
@@ -102,9 +77,22 @@ io.disp_N = function(files, number, interval) {
   this.disp_raw_N(imgs, files.length, interval);
 };
 
-io.disp_text_marquee_async = function(text, interval) {
-  //io.mug_disp_text_marquee_async(handle, text, io.RED, interval, 1);
-  io.mug_disp_text_marquee_async(handle, text, "red", interval, -1);
+io.disp_text_marquee_async = function(text, color, interval, repeat) {
+  io.mug_disp_text_marquee_async(dispHandle, text, color, interval, repeat);
 };
+
+// All bellow APIs are readonly APIs and can be accessed by multi-apps at the same time, call low-level API directly
+
+// Motion sensor
+//var motionHandle = io.mug_motion_init();
+
+// Adc
+//var adcHandle = io.mug_adc_init();
+
+// Temperature
+//var temperatureHandle = io.mug_temp_init();
+
+// Battery
+//var batteryHandle = io.mug_battery_init();
 
 module.exports = io;
