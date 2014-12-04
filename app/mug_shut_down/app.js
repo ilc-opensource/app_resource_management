@@ -12,6 +12,7 @@ var shutdown = child_process.spawn(path.join(__dirname, 'mug_shut_down'), []);
 
 shutdown.on('exit', function() {
   console.log('exit');
+  io.disp_N(["icon.bmp"], 1, 100);
   process.exit();
 });
 

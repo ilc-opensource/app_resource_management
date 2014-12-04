@@ -502,17 +502,17 @@ var firstFail = false;
 var activeRecover = function() {
   try {
     process.kill(frontEndApp.process.pid, 0);
-    setTimeout(activeRecover, 5000);
+    setTimeout(activeRecover, 1000);
   } catch (ex) {
     if (firstFail == true) {
       // Recover
       firstFail = false;
       appStack.pop();
       findNextApp();
-      setTimeout(activeRecover, 5000);
+      setTimeout(activeRecover, 1000);
     } else {
       firstFail = true;
-      setTimeout(activeRecover, 2000);
+      setTimeout(activeRecover, 1000);
     }
   }
 };
@@ -527,6 +527,25 @@ if (isNotificationOn) {
   });
   checkNotificationPeriodically();
 }
+
+// handle command from yocto system
+var cmdFile = path.join(__dirname, 'yoctoCmd');
+fs.watch(cmdFile, function(e, filename) {
+  if (fs.statSync(cmdFile).size == 0) {
+    return;
+  }
+
+  try {
+    var cmd = JSON.parse(fs.readFileSync(cmdFile, 'utf8'));
+    console.log(logPrefix+'yoctoCmd app implicitly sends a touchEvent '+'TOUCH_HOLD'+' to '+frontEndApp.app);
+    touchEmitter.emit("touchEvent", -100, cmd.app, 0, 0);
+  } catch (ex) {
+    console.log(ex);
+  }
+  // Clean file
+  var fd = fs.openSync(cmdFile, 'w');
+  fs.closeSync(fd);
+});
 
 launchDefaultApp();
 
