@@ -13,15 +13,26 @@ var musicFile = [];
 var audioDir = '/home/root/audio/'
 
 function audioFS () {
+  console.log('aa');
   var rawMusicFile = fs.readdirSync(audioDir);
   for (var i=0; i<rawMusicFile.length; i++) {
-    musicFile.push(utf8.encode(rawMusicFile[i]));
+    if (rawMusicFile[i].match(/.mp3$/)) {
+      // Chmod
+      fs.chmodSync(path.join(audioDir, rawMusicFile[i]), 0600);
+      // Put into array
+      musicFile.push(utf8.encode(rawMusicFile[i]));
+    }
   }
-  for (var i=0; i<musicFile.length; i++) {
+  /*for (var i=0; i<musicFile.length; i++) {
     if (!musicFile[i].match(/.mp3$/)) {
       musicFile.splice(i, 1);
     }
   }
+  //Chmod +w
+  for (var i=0; i<musicFile.length; i++) {
+    fs.chmodSync(path.join(audioDir, musicFile[i]), 600);
+  }*/
+
   if (musicFile.length==0) {
     io.disp_text_marquee_async('No music file', 'red', 100, -1);
   } else {
