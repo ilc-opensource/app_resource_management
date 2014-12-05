@@ -71,6 +71,8 @@ var queryWeather = function(city, cb) {
           weatherKey = 'Sunny';
         } else if(weather.indexOf('雪') != -1 || weather.indexOf('\u96F9') != -1 || weather.indexOf('\u971C') != -1) {
           weatherKey = 'Snowy';
+        } else {
+          weatherKey = 'Cloudy';
         }
         //console.log('weatherKey='+weatherKey);
         if (weatherKey != null) {

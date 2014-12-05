@@ -2,122 +2,75 @@ var fs = require('fs');
 var path = require('path');
 var http = require('http');
 var child_process = require('child_process');
+var emitter = require('events').EventEmitter;
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[userApp weather] ';
 
-var timeOut = null;
-var getContentProcess = null;
+var ledDisp = require('../weChat/display.js').disp;
+var forceTerminate = require('../weChat/display.js').forceTerminate;
+
+var Status = {invalid:'invalid',
+              dispLoading:'dispLoading',
+              dispAnimation:'dispAnimation'};
+var dispStatus = Status.invalid;
+
+var ledDispEmitter = new emitter();
+var contentBuffer = [];
 var content = '';
+
 var handler = function(o) {
   if (o['content']) {
     try {
-      var weather = fs.readFileSync(path.join(__dirname, JSON.parse(o['content']).weather, 'media.json'), 'utf8');
-      content = weather;
+      JSON.parse(o['content']);
+      contentBuffer.unshift(fs.readFileSync(path.join(__dirname, JSON.parse(o['content']).weather, 'media.json'), 'utf8'));
     } catch(ex) {
+      console.log(ex);
     }
   }
-};
-var hasContent = false;
-var currentDispContent = null;
+}
 
-// Animation display begin
-var isAnimationDispComplete = true;
-var isPreviousImageDisComplete = true;
-var imageIter = -1;
-var imgs = null;
-function display() {
-  if (!isAnimationDispComplete) {
-    setTimeout(display, 500);
+var animationID = -1;
+ledDispEmitter.on('finish', function(id) {
+  // Filter finish event emitted by led display except the first one
+  if (id != animationID) {
+    //console.log('Ignore the event'+id+', '+animationID);
     return;
   }
-  isAnimationDispComplete = false;
-  // The animation is only one image, don't need to refresh it
-  if (currentDispContent == content &&
-    JSON.parse(currentDispContent).numberOfImg == 1) {
-    isAnimationDispComplete = true;
-    setTimeout(display, 500);
-    return;
-  }
-  if (content == '' || content == '\n') {
-    var w = fs.readFileSync(path.join(__dirname, './loading.json'), 'utf8');
-    imgs = JSON.parse(w);
-    hasContent = false;
-  } else {
-    try {
-      imgs = JSON.parse(content);
-      hasContent = true;
-      currentDispContent = content
-    } catch(ex) {
-      imgs = null;
-      isAnimationDispComplete = true;
-      isPreviousImageDisComplete = false;
-      hasContent = false;
-      setTimeout(display, 500);
-      return;
+  if (contentBuffer.length != 0) {
+    content = contentBuffer.pop();
+    console.log('Pop an animation'+content);
+    switch (dispStatus) {
+      case Status.dispLoading:
+        if (!JSON.parse(content).isAudio && !JSON.parse(content).isVideo) {
+          ledDisp(content, 150, false, true, ledDispEmitter);
+          animationID++;
+          dispStatus = Status.dispAnimation;
+        }
+        break;
+      case Status.dispAnimation:
+        if (!JSON.parse(content).isAudio && !JSON.parse(content).isVideo) {
+          ledDisp(content, 150, false, true, ledDispEmitter);
+          animationID++;
+          dispStatus = Status.dispAnimation;
+        }
+        break;
     }
   }
-  isPreviousImageDisComplete = true;
-  imageIter = -1;
-  setTimeout(display, 500);
-}
-function dispAnimation() {
-  //console.log('In dispAnimation');
-  if (!isPreviousImageDisComplete) {
-    setTimeout(dispAnimation, 50);
-    return;
-  }
-  isPreviousImageDisComplete = false;
-  imageIter++;
-  if (content != '' && !hasContent) { // Terminate loading animation immediately
-    isAnimationDispComplete = true;
-    setTimeout(dispAnimation, 50);
-    return;
-  }
-  if (imageIter>=imgs.numberOfImg) {
-    isAnimationDispComplete = true;
-    setTimeout(dispAnimation, 50);
-    return;
-  }
-  if (currentDispContent != null &&
-    currentDispContent != content &&
-    imgs.textEnd != undefined) {
-    for (var i=0; i<imgs.textEnd.length; i++) {
-      if ((imageIter-1) == imgs.textEnd[i]) {
-        isAnimationDispComplete = true;
-        setTimeout(dispAnimation, 50);
-        return;
-      }
-    }
-  }
-  var timer = (new Date()).getTime();
-//  console.log('image'+imageIter);
-  dispSingle(imgs['img'+imageIter], 1, 50);
-  //console.log('image end');
-  isPreviousImageDisComplete = true;
-  if (((new Date()).getTime()-timer)>1000) {
-    if (timeOut != null) {
-      clearTimeout(timeOut);
-      timeOut = null;
-    }
-    dispAnimation();
-  } else {
-    timeOut = setTimeout(dispAnimation, 50);
-  }
-}
-function dispSingle(data, number, interval) {
-  io.disp_raw_N(data, number, interval);
-}
-// Animation display End
+});
+
+var getContentProcess = null;
 
 var weather = function() {
   getContentProcess = child_process.fork(path.join(__dirname, 'getWeather.js'));
   getContentProcess.on('message', handler);
-  display();
-//  setInterval(dispAnimation, 100);
-  dispAnimation();
+
+  var loading = fs.readFileSync(path.join(__dirname, './loading.json'), 'utf8');
+  ledDisp(loading, 150, false, false, ledDispEmitter);
+  animationID++;
+  dispStatus = Status.dispLoading;
 };
 
 weather();
