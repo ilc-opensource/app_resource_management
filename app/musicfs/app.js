@@ -23,9 +23,9 @@ function audioFS () {
     }
   }
   if (musicFile.length==0) {
-    io.disp_text_marquee_async('No music file', 100);
+    io.disp_text_marquee_async('No music file', 'red', 100, -1);
   } else {
-    io.disp_text_marquee_async(musicFile[index], 100);
+    io.disp_text_marquee_async(musicFile[index], 'blue', 100, -1);
   }
 }
 
@@ -45,16 +45,16 @@ io.touchPanel.on('gesture', function(gesture) {
 
       index = 0;
       if (musicFile.length==0) {
-        io.disp_text_marquee_async('No music file', 100);
+        io.disp_text_marquee_async('No music file', 'red', 100, -1);
       } else {
-        io.disp_text_marquee_async(musicFile[index], 100);
+        io.disp_text_marquee_async(musicFile[index], 'blue', 100, -1);
       }
     }
   } else if (gesture == 'MUG_SWIPE_RIGHT') {
     index = (index==0)?(musicFile.length-1):(index-1);
-    io.disp_text_marquee_async(musicFile[index], 100);
+    io.disp_text_marquee_async(musicFile[index], 'blue', 100, -1);
   } else if (gesture == 'MUG_SWIPE_LEFT') {
     index = (index+1)==musicFile.length?0:(index+1);
-    io.disp_text_marquee_async(musicFile[index], 100);
+    io.disp_text_marquee_async(musicFile[index], 'blue', 100, -1);
   }
 });
