@@ -14,18 +14,20 @@ var forceTerminate = require('../weChat/display.js').forceTerminate;
 
 var Status = {invalid:'invalid',
               dispLoading:'dispLoading',
-              dispAnimation:'dispAnimation'};
+              dispAnimation:'dispAnimation',
+              dispDetails:'dispDetails'};
 var dispStatus = Status.invalid;
 
 var ledDispEmitter = new emitter();
 var contentBuffer = [];
 var content = '';
 
+var weatherCondition = null;
 var handler = function(o) {
   if (o['content']) {
     try {
-      JSON.parse(o['content']);
-      contentBuffer.unshift(fs.readFileSync(path.join(__dirname, JSON.parse(o['content']).weather, 'media.json'), 'utf8'));
+      weatherCondition = JSON.parse(o['content']).weather;
+      contentBuffer.unshift(fs.readFileSync(path.join(__dirname, weatherCondition.weatherKey, 'media.json'), 'utf8'));
     } catch(ex) {
       console.log(ex);
     }
@@ -93,6 +95,21 @@ io.touchPanel.on('gesture', function(gesture) {
       getContentProcess.send({'InstantUpdate':true});
     } catch (ex) {
       console.log(logPrefix+'send to child process error');
+    }
+  } else if (gesture == 'MUG_SWIPE_LEFT' || gesture == 'MUG_SWIPE_RIGHT') {
+    switch (dispStatus) {
+      case Status.dispLoading:
+        break;
+      case Status.dispAnimation:
+        forceTerminate();
+        io.disp_text_marquee_async('PM25:'+weatherCondition.pm25+'  Current Temperature:'+weatherCondition.temperature, 'red', 100, -1);
+        break;
+      case Status.dispDetails:
+        //forceTerminate();
+        ledDisp(content, 150, false, true, ledDispEmitter);
+        animationID++;
+        dispStatus = Status.dispAnimation;
+        break;
     }
   }
 });

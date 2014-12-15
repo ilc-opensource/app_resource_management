@@ -11,11 +11,11 @@ var logPrefix = '[user weather getWeather] ';
 
 // Query info from web begin
 var lastWeather = {};
-var lastMsg = null;
+var lastMsg = {};
 function action(msg) {
   if (msg=='') return;
-  if (lastMsg != msg) {
-    lastMsg = msg;
+  if (lastMsg[locationCity] != JSON.stringify(msg)) {
+    lastMsg[locationCity] = JSON.stringify(msg);
     //console.log(msg);
 
     process.send({'content':JSON.stringify({'weather':msg})});
@@ -54,31 +54,34 @@ var queryWeather = function(city, cb) {
       if (typeof msg.results[0] == 'undefined') return;
       if (typeof msg.results[0].weather_data == 'undefined') return;
       if (typeof msg.results[0].weather_data[0] == 'undefined') return;
+      if (lastWeather[city] == body) return;
+
+      lastWeather[city] = body;
+
       var weather = msg.results[0].weather_data[0].weather;
       console.log('weather='+weather);
-      if (lastWeather[city] != weather) {
-        lastWeather[city] = weather;
-        var weatherKey = null;
-        if (weather.indexOf('云') != -1 || weather.indexOf('霾') != -1 || weather.indexOf('雾') != -1 || weather.indexOf('\u9634') != -1) {
-          weatherKey = 'Cloudy';
-        } else if(weather.indexOf('雨') != -1 || weather.indexOf('\u51BB') != -1) {
-          weatherKey = 'Rainy';
-        } else if(weather.indexOf('风') != -1) {
-          weatherKey = 'Windy';
-        } else if(weather.indexOf('雷') != -1 || weather.indexOf('电') != -1) {
-          weatherKey = 'Thundery';
-        } else if(weather.indexOf('晴') != -1) {
-          weatherKey = 'Sunny';
-        } else if(weather.indexOf('雪') != -1 || weather.indexOf('\u96F9') != -1 || weather.indexOf('\u971C') != -1) {
-          weatherKey = 'Snowy';
-        } else {
-          weatherKey = 'Cloudy';
-        }
-        //console.log('weatherKey='+weatherKey);
-        if (weatherKey != null) {
-          
-          cb({"weatherKey":weatherKey, "pm25":msg.results[0].pm25, "temperture":msg.results[0].weather_data[0].date});
-        }
+      var weatherKey = null;
+      if (weather.indexOf('云') != -1 || weather.indexOf('霾') != -1 || weather.indexOf('雾') != -1 || weather.indexOf('\u9634') != -1) {
+        weatherKey = 'Cloudy';
+      } else if(weather.indexOf('雨') != -1 || weather.indexOf('\u51BB') != -1) {
+        weatherKey = 'Rainy';
+      } else if(weather.indexOf('风') != -1) {
+        weatherKey = 'Windy';
+      } else if(weather.indexOf('雷') != -1 || weather.indexOf('电') != -1) {
+        weatherKey = 'Thundery';
+      } else if(weather.indexOf('晴') != -1) {
+        weatherKey = 'Sunny';
+      } else if(weather.indexOf('雪') != -1 || weather.indexOf('\u96F9') != -1 || weather.indexOf('\u971C') != -1) {
+        weatherKey = 'Snowy';
+      } else {
+        weatherKey = 'Cloudy';
+      }
+      //console.log('weatherKey='+weatherKey);
+      if (weatherKey != null) {
+        console.log(msg.results[0].weather_data[0].date);
+        var temperature = msg.results[0].weather_data[0].date.match(/.*实时：(\d+)/);
+        console.log(temperature);
+        cb({"weatherKey":weatherKey, "pm25":msg.results[0].pm25, "temperature":temperature[1]});
       }
     });
   });
@@ -130,5 +133,13 @@ process.on('message', function(o) {
     clearInterval(timerInterval);
     timerInterval = setInterval(function(){queryWeather(locationCity, action)}, timeIntervalLazy);
   }
+});
+
+fs.watch(path.join(__dirname, 'city.js'), function(e, filename) {
+  locationCity = require('./city.js');
+  queryWeather(locationCity, action);
+  console.log('Change to a new location');
+  clearInterval(timerInterval);
+  timerInterval = setInterval(function(){queryWeather(locationCity, action)}, timeIntervalEager);
 });
 

@@ -8,9 +8,9 @@ var io = require('../../main/highLevelAPI/io.js');
 /*
  * 
  */
-var disp = function(data, interval, isAtomic, dispWhole, e) {
+var disp = function(data, interval, isAtomic, dispWhole, e, start) {
   //content = {'data':data, 'interval':interval, 'isAtomic':isAtomic, 'dispWhole':dispWhole, 'e':e};
-  contentBuffer.unshift({'data':data, 'interval':interval, 'isAtomic':isAtomic, 'dispWhole':dispWhole, 'e':e});
+  contentBuffer.unshift({'data':data, 'interval':interval, 'isAtomic':isAtomic, 'dispWhole':dispWhole, 'e':e, 'start':start});
 };
 
 var timeOut = null;
@@ -103,6 +103,7 @@ var display = function() {
     } else {
       imgs = JSON.parse(currentDispContent.data);
       imageIter = (typeof currentDispContent.start == 'undefined')?-1:(currentDispContent.start-1);
+      delete currentDispContent.start;
       isPreviousImageDisComplete = true;
       setTimeout(display, intervalFindNextAnimation);
     }
@@ -160,6 +161,8 @@ var dispAnimation = function() {
 
   var timer = (new Date()).getTime();
 
+  //console.log('imageIter='imageIterimageIter);
+
   io.disp_raw_N(imgs['img'+imageIter], 1, 0);
   isPreviousImageDisComplete = true;
 
@@ -192,7 +195,7 @@ LedDisp.disp = disp;
 LedDisp.forceTerminate = function (){
   if (currentDispContent == null || (currentDispContent != null &&
     currentDispContent.isAtomic == false)) {
-    var ret = {'data':currentDispContent.data, 'interval':currentDispContent.interval, 'isAtomic':currentDispContent.isAtomic, 'dispWhole':currentDispContent.dispWhole, 'e':currentDispContent.e};
+    var ret = {'data':currentDispContent.data, 'interval':currentDispContent.interval, 'isAtomic':currentDispContent.isAtomic, 'dispWhole':currentDispContent.dispWhole, 'e':currentDispContent.e, 'start':imageIter};
     currentDispContent.dispWhole = false;
     return ret;
   }

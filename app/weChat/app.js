@@ -295,7 +295,7 @@ io.touchPanel.on('gesture', function(gesture) {
           dispStatus = Status.endPlay;
         } else {
           //ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
-          ledDisp(savedContext.data, savedContext.interval, savedContext.isAtomic, savedContext.dispWhole, savedContext.e);
+          ledDisp(savedContext.data, savedContext.interval, savedContext.isAtomic, savedContext.dispWhole, savedContext.e, savedContext.start);
           animationID++;
           //audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
           dispStatus = savedContext.status;
@@ -319,7 +319,7 @@ io.touchPanel.on('gesture', function(gesture) {
           dispStatus = Status.endPlay;
         } else {
           //ledDisp(readyForPlay, 150, false, true, ledDispEmitter);
-          ledDisp(savedContext.data, savedContext.interval, savedContext.isAtomic, savedContext.dispWhole, savedContext.e);
+          ledDisp(savedContext.data, savedContext.interval, savedContext.isAtomic, savedContext.dispWhole, savedContext.e, savedContext.start);
           animationID++;
           //audioFile = path.join(__dirname, path.basename(JSON.parse(content).file));
           dispStatus = savedContext.status;
