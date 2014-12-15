@@ -76,7 +76,8 @@ var queryWeather = function(city, cb) {
         }
         //console.log('weatherKey='+weatherKey);
         if (weatherKey != null) {
-          cb(weatherKey);
+          
+          cb({"weatherKey":weatherKey, "pm25":msg.results[0].pm25, "temperture":msg.results[0].weather_data[0].date});
         }
       }
     });

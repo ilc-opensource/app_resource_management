@@ -14,6 +14,11 @@ var disp = function(data, interval, isAtomic, dispWhole, e) {
 };
 
 var timeOut = null;
+var dispAnimation_timeout_1 = null;
+var dispAnimation_timeout_2 = null;
+var dispAnimation_timeout_3 = null;
+var dispAnimation_timeout_4 = null;
+
 var contentBuffer = [];
 var count = -1;
 var content = null;
@@ -115,7 +120,7 @@ var display = function() {
 
 var dispAnimation = function() {
   if (!isPreviousImageDisComplete || currentDispContent == null) {
-    setTimeout(dispAnimation, intervalFindNextImage);
+    dispAnimation_timeout_1 = setTimeout(dispAnimation, intervalFindNextImage);
     return;
   }
   isPreviousImageDisComplete = false;
@@ -126,7 +131,7 @@ var dispAnimation = function() {
     if (typeof currentDispContent.e != undefined) {
       currentDispContent.e.emit('finish', count);
     }
-    setTimeout(dispAnimation, intervalFindNextImage);
+    dispAnimation_timeout_2 = setTimeout(dispAnimation, intervalFindNextImage);
     return;
   }
   if (currentDispContent != null && imageIter>=imgs.numberOfImg) {
@@ -134,7 +139,7 @@ var dispAnimation = function() {
     if (typeof currentDispContent.e != undefined) {
       currentDispContent.e.emit('finish', count);
     }
-    setTimeout(dispAnimation, intervalFindNextImage);
+    dispAnimation_timeout_3 = setTimeout(dispAnimation, intervalFindNextImage);
     return;
   }
   if (currentDispContent != null &&
@@ -147,7 +152,7 @@ var dispAnimation = function() {
         if (typeof currentDispContent.e != undefined) {
           currentDispContent.e.emit('finish', count);
         }
-        setTimeout(dispAnimation, intervalFindNextImage);
+        dispAnimation_timeout_4 = setTimeout(dispAnimation, intervalFindNextImage);
         return;
       }
     }
@@ -162,6 +167,14 @@ var dispAnimation = function() {
     if (timeOut != null) {
       clearTimeout(timeOut);
       timeOut = null;
+      clearTimeout(dispAnimation_timeout_1);
+      dispAnimation_timeout_1 = null;
+      clearTimeout(dispAnimation_timeout_2);
+      dispAnimation_timeout_2 = null;
+      clearTimeout(dispAnimation_timeout_3);
+      dispAnimation_timeout_3 = null;
+      clearTimeout(dispAnimation_timeout_4);
+      dispAnimation_timeout_4 = null;
     }
     dispAnimation();
   } else {

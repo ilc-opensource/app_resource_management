@@ -13,8 +13,8 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[userApp weChat] ';
 
-var ledDisp = require('./display.js').disp;
-var forceTerminate = require('./display.js').forceTerminate;
+var ledDisp = require('../weChat/display.js').disp;
+var forceTerminate = require('../weChat/display.js').forceTerminate;
 
 // 1: disp loading
 // 2: disp animation
@@ -192,7 +192,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
       animationID++;
       dispStatus = Status.playAudio;
       console.log('Playing audio file '+audioFile);
-      child_process.exec('amixer -c 1 cset numid=6 99%', function(err, stdout, stderr){});
+      child_process.exec('amixer -c 1 cset numid=6 99%', function(err, stdout, stderr){
       //audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink', 'device=plughw:1,0'], function(err, stdout, stderr) {
       audioPlayProcess = child_process.execFile('gst-launch-0.10', ['filesrc', 'location='+audioFile, '!', 'flump3dec', '!', 'alsasink'], function(err, stdout, stderr) {
         if (forceStopPlay) {
@@ -206,6 +206,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
           dispStatus = Status.endPlay;
         }
       });
+      });
     } else if (dispStatus == Status.readyForRecordAudio) {
       // playing and recording is the same animation
       //var record = fs.readFileSync(path.join(__dirname, 'play.json'), 'utf8');
@@ -216,13 +217,13 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
       audioRecordProcess = child_process.execFile('arecord', ['-f', 'dat', '-r', '48000', '-t', 'wav', 'output.wav'], function(err, stdout, stderr) {
         console.log('audio record stdout='+stdout);
         if (!needUploadAfterRecord) {
-          console.log('audio record do not need to upload');
+          console.log('audio record do not need to save');
           return;
         }
         var timer = (new Date()).getTime();
         //child_process.exec('lame -V9 output.wav output.mp3; mv output.mp3 '+path.join(__dirname, '../player/music/', 'audio'+timer+'.mp3'), function(err, stdout, stderr) {
         child_process.exec('lame -V9 output.wav output.mp3; mv output.mp3 /home/root/audio/audio'+timer+'.mp3', function(err, stdout, stderr) {
-          console.log('upload audio file, stdout='+stdout);
+          console.log('save audio file, stdout='+stdout);
         });
       });
       //arecord -f dat -r 48000 -D hw:1,0 -t wav | lame - test.mp3
