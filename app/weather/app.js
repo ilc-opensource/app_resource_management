@@ -12,6 +12,8 @@ var logPrefix = '[userApp weather] ';
 var ledDisp = require('../weChat/display.js').disp;
 var forceTerminate = require('../weChat/display.js').forceTerminate;
 
+var blank = fs.readFileSync(path.join(__dirname, 'blank.json'), 'utf8');
+
 var Status = {invalid:'invalid',
               dispLoading:'dispLoading',
               dispAnimation:'dispAnimation',
@@ -27,6 +29,10 @@ var handler = function(o) {
   if (o['content']) {
     try {
       weatherCondition = JSON.parse(o['content']).weather;
+      if (dispStatus == Status.dispDetails) {
+          process.kill(dispDetailsProcess.pid);
+          dispDetailsProcess = child_process.fork(path.join(__dirname, "dispDetails.js"), ["PM25:"+weatherCondition.pm25+"  Temperature:"+weatherCondition.temperature], function(error, stdout, stderr){console.log(error+stdout+stderr);});
+      }
       contentBuffer.unshift(fs.readFileSync(path.join(__dirname, weatherCondition.weatherKey, 'media.json'), 'utf8'));
     } catch(ex) {
       console.log(ex);
@@ -59,6 +65,10 @@ ledDispEmitter.on('finish', function(id) {
           dispStatus = Status.dispAnimation;
         }
         break;
+      case Status.dispDetails:
+        // In this case, next animation is not allowed to display
+        contentBuffer.push(content);
+        break;
     }
   }
 });
@@ -88,6 +98,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
   }
 });
 
+var dispDetailsProcess = null;
 io.touchPanel.on('gesture', function(gesture) {
   //console.log(logPrefix+'getsture='+gesture);
   if (gesture == 'MUG_SWIPE_DOWN') {
@@ -102,9 +113,20 @@ io.touchPanel.on('gesture', function(gesture) {
         break;
       case Status.dispAnimation:
         forceTerminate();
-        io.disp_text_marquee_async('PM25:'+weatherCondition.pm25+'  Current Temperature:'+weatherCondition.temperature, 'red', 100, -1);
+        ledDisp(blank, 150, false, true, ledDispEmitter);
+        var cmd = '/usr/bin/node '+path.join(__dirname, "dispDetails.js")+' "'+'PM25:'+weatherCondition.pm25+'  Current Temperature:'+weatherCondition.temperature+'"';
+        console.log('cmd='+cmd);
+        dispDetailsProcess = child_process.fork(path.join(__dirname, "dispDetails.js"), ["PM25:"+weatherCondition.pm25+"  Temperature:"+weatherCondition.temperature], function(error, stdout, stderr){console.log(error+stdout+stderr);});
+        //dispDetailsProcess = child_process.exec(cmd, function(error, stdout, stderr){console.log(error+stdout+stderr);});
+        //io.disp_text_marquee_async('PM25:'+weatherCondition.pm25+'  Current Temperature:'+weatherCondition.temperature, 'red', 100, -1);
+        dispStatus = Status.dispDetails;
         break;
       case Status.dispDetails:
+        try {
+          process.kill(dispDetailsProcess.pid);
+        } catch (ex) {
+        }
+
         //forceTerminate();
         ledDisp(content, 150, false, true, ledDispEmitter);
         animationID++;

@@ -2,7 +2,8 @@ var fs = require('fs');
 var path = require('path');
 var http = require('http');
 var child_process = require('child_process');
-var locationCity = require('./city.js');
+var locationCity = JSON.parse(fs.readFileSync(path.join(__dirname, './city.js'), 'utf8')).city;
+//var locationCity = require('./city.js');
 
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
@@ -78,10 +79,17 @@ var queryWeather = function(city, cb) {
       }
       //console.log('weatherKey='+weatherKey);
       if (weatherKey != null) {
+        var temp = null;
         console.log(msg.results[0].weather_data[0].date);
         var temperature = msg.results[0].weather_data[0].date.match(/.*实时：(\d+)/);
+        if (temperature == null) {
+          var temperature = msg.results[0].weather_data[0].date.match(/.*实时：-(\d+)/);
+          temp = -temperature[1];
+        } else {
+          temp = temperature[1];
+        }
         console.log(temperature);
-        cb({"weatherKey":weatherKey, "pm25":msg.results[0].pm25, "temperature":temperature[1]});
+        cb({"weatherKey":weatherKey, "pm25":msg.results[0].pm25, "temperature":temp});
       }
     });
   });
@@ -136,10 +144,13 @@ process.on('message', function(o) {
 });
 
 fs.watch(path.join(__dirname, 'city.js'), function(e, filename) {
-  locationCity = require('./city.js');
-  queryWeather(locationCity, action);
-  console.log('Change to a new location');
+  locationCity = JSON.parse(fs.readFileSync(path.join(__dirname, './city.js'), 'utf8')).city;
+  //locationCity = require('./city.js');
+  delete lastWeather[locationCity];
+  delete lastMsg[locationCity];
+  console.log('Change to a new location'+locationCity+typeof(locationCity));
   clearInterval(timerInterval);
   timerInterval = setInterval(function(){queryWeather(locationCity, action)}, timeIntervalEager);
+  queryWeather(locationCity, action);
 });
 
