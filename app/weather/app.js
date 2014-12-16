@@ -95,6 +95,16 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
     } catch (ex) {
       console.log(logPrefix+'send to child process error');
     }
+
+    try {
+      process.kill(dispDetailsProcess.pid);
+    } catch (ex) {
+    }
+
+    //forceTerminate();
+    ledDisp(content, 150, false, true, ledDispEmitter);
+    animationID++;
+    dispStatus = Status.dispAnimation;
   }
 });
 
