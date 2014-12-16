@@ -126,7 +126,7 @@ io.touchPanel.on('gesture', function(gesture) {
         ledDisp(blank, 150, false, true, ledDispEmitter);
         var cmd = '/usr/bin/node '+path.join(__dirname, "dispDetails.js")+' "'+'PM25:'+weatherCondition.pm25+'  Current Temperature:'+weatherCondition.temperature+'"';
         console.log('cmd='+cmd);
-        dispDetailsProcess = child_process.fork(path.join(__dirname, "dispDetails.js"), ["PM25:"+weatherCondition.pm25+"  Temperature:"+weatherCondition.temperature], function(error, stdout, stderr){console.log(error+stdout+stderr);});
+        dispDetailsProcess = child_process.fork(path.join(__dirname, "dispDetails.js"), ["PM25:"+weatherCondition.pm25+"  当前温度:"+weatherCondition.temperature], function(error, stdout, stderr){console.log(error+stdout+stderr);});
         //dispDetailsProcess = child_process.exec(cmd, function(error, stdout, stderr){console.log(error+stdout+stderr);});
         //io.disp_text_marquee_async('PM25:'+weatherCondition.pm25+'  Current Temperature:'+weatherCondition.temperature, 'red', 100, -1);
         dispStatus = Status.dispDetails;

@@ -8,5 +8,5 @@ var sys = require('../../main/highLevelAPI/sys.js');
 
 var logPrefix = '[sys show app] ';
 
-console.log('args='+process.argv[2]);
-io.disp_text_marquee_async(process.argv[2], 'red', 100, -1);
+console.log('args='+utf8.encode(process.argv[2]));
+io.disp_text_marquee_async(utf8.encode(process.argv[2]), 'red', 100, -1);
