@@ -13,7 +13,6 @@ var musicFile = [];
 var audioDir = '/home/root/audio/'
 
 function audioFS () {
-  console.log('aa');
   var rawMusicFile = fs.readdirSync(audioDir);
   for (var i=0; i<rawMusicFile.length; i++) {
     if (rawMusicFile[i].match(/.mp3$/)) {
@@ -51,7 +50,8 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
 io.touchPanel.on('gesture', function(gesture) {
   if (gesture == 'MUG_SWIPE_UP') {
     if(musicFile.length != 0) {
-      child_process.exec('rm '+path.join(audioDir, musicFile[index]));
+      //child_process.exec('rm '+path.join(audioDir, musicFile[index]));
+      child_process.exec('rm '+audioDir+'"'+musicFile[index]+'"', function(e, o, s){console.log(e+o+s);});
       musicFile.splice(index, 1);
 
       index = 0;
