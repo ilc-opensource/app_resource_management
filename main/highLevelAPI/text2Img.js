@@ -2,11 +2,10 @@ var Canvas = require('canvas');
 var Image = Canvas.Image;
 var fs = require('fs');
 var path = require('path');
+var http = require('http');
 var child_process = require('child_process');
 var cloudServer = require('../../app/appconfig/cloudserver.js').server;
 var cloudPort = require('../../app/appconfig/cloudserver.js').port;
-
-var io = require('./io.js');
 
 defaultStep = 2;
 defaultColor = 1; //RED
@@ -215,10 +214,11 @@ var text2Img = function(text, color, callback) {
   return;
 };
 
+module.exports = text2Img;
 
-text2Img("asdfg实时", 1, function(img) {
+/*text2Img("asdfg实时", 1, function(img) {
   console.log(img);
   for (var i=0; i<img.numberOfImg; i++) {
     io.disp_raw_N(img['img'+i], 1, 100);
   }
-});
+});*/

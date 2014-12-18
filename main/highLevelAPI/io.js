@@ -81,6 +81,8 @@ io.disp_text_marquee_async = function(text, color, interval, repeat) {
   io.mug_disp_text_marquee_async(dispHandle, text, color, interval, repeat);
 };
 
+io.text2Img = require('./text2Img.js'); // text, color (1), callback
+
 // All bellow APIs are readonly APIs and can be accessed by multi-apps at the same time, call low-level API directly
 
 // Motion sensor

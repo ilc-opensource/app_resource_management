@@ -9,4 +9,4 @@ var cloudServer = {
   }
 };
 
-module.exports = cloudServer.THD;
+module.exports = cloudServer.intel;
