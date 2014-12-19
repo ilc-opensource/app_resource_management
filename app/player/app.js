@@ -15,7 +15,7 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
   if (e == 'TOUCH_HOLD') {
     //console.log(logPrefix+'kill the main app pid='+appProcess.pid);
     try {
-      process.kill(appProcess.pid);
+      process.kill(appProcess.pid, 'SIGINT');
     } catch (ex) {
     }
     process.exit();
