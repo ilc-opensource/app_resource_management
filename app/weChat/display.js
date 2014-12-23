@@ -102,7 +102,7 @@ var display = function() {
       setTimeout(display, intervalFindNextAnimation);
     } else {
       imgs = JSON.parse(currentDispContent.data);
-      imageIter = (typeof currentDispContent.start == 'undefined')?-1:(currentDispContent.start-1);
+      imageIter = (typeof currentDispContent.start == 'undefined')?-1:(currentDispContent.start-2);
       delete currentDispContent.start;
       isPreviousImageDisComplete = true;
       setTimeout(display, intervalFindNextAnimation);
