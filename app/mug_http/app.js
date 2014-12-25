@@ -31,6 +31,8 @@ app.get('/', function(req, res) {
   res.render('index', {"mug_config": mug_config});
 });
 
+app.get('/delete', mug.delete);
+
 app.use(mug.upload);
 
 for(idx in mug_config) {

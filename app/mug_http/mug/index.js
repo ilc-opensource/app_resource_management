@@ -15,6 +15,44 @@ var checkType = function(t, types) {
   return false;
 };
 
+module.exports["delete"] = function(req, res, next) {
+
+  var item = req.param('target');
+  if(item == undefined) {
+    res.send("please specify delete target, likes delete?target=abc");
+    return;
+  }
+
+  var sep = item.split("/");
+  if(sep[0] == "") {
+    sep.splice(0, 1);
+  }
+
+  var thisConfig = config["/" + sep[0]];
+
+  if(thisConfig == undefined) {
+    res.send('unkown category ' + sep[0]);
+    return;
+  }
+
+  sep.splice(0, 1, thisConfig.path);
+  var target = sep.join('/');
+ 
+  if(!fs.existsSync(target)) {
+    res.send('no such file ' + item);
+    return;
+  }
+
+  fs.unlink(target, function(err) {
+    if(err) {
+      res.send("Error: " + err);
+      return;
+    }
+
+    res.send("Succcesfully delete " + item);
+  })
+}
+
 module.exports["query"] = function(req, res, next) {
   var query = req.param('stat');
   if( query == undefined) {
