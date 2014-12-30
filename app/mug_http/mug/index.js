@@ -39,13 +39,13 @@ module.exports["delete"] = function(req, res, next) {
   var target = sep.join('/');
  
   if(!fs.existsSync(target)) {
-    res.send('no such file ' + item);
+    res.status(400).send('no such file ' + item);
     return;
   }
 
   fs.unlink(target, function(err) {
     if(err) {
-      res.send("Error: " + err);
+      res.status(400).send("Error: " + err);
       return;
     }
 
@@ -63,11 +63,83 @@ module.exports["query"] = function(req, res, next) {
   var stat = statTable[query];
 
   if(stat == undefined) {
-    res.send("no status of " + query);  
+    res.status(400).send("no status of " + query);  
     return;
   }
 
   res.send(JSON.stringify(stat));
+};
+
+module.exports["drink"] = function(req, res, next) {
+  var ret = {};
+
+  var query = req.param("query");
+  var drinkPath = __dirname + "/../../drink/";
+
+  var configPath = drinkPath + "drink_config.json";
+
+  console.log(configPath);
+
+  var drinkConfFile = fs.readFileSync(configPath);
+
+  if(drinkConfFile == undefined) {
+    res.status(400).send("can not find drink config file " + configPath);
+    return;
+  }
+
+  var drinkConfig = JSON.parse(drinkConfFile);
+  var traceFile = drinkConfig["trace"];
+  
+  if(!traceFile) {
+    res.status(400).send("no trace file");
+    return;
+  }
+
+  var traceFile = drinkPath + traceFile;
+
+  var data;
+
+  try {
+    data = fs.readFileSync(traceFile).toString().split('\n');
+  } catch(e) {
+    res.status(404).send("trace file is not accessible, try again later");
+    return;
+  }
+
+  var trace = [];
+
+  for (idx in data ) {
+
+    if(data[idx] == "") 
+      continue;
+
+    var val = parseInt(data[idx]);
+    trace.push(val)
+  }
+
+  if(query == "config") {
+    res.send(JSON.stringify(drinkConfig));
+
+  } else if(query == "all") {
+
+    ret["query"] = "all";
+    ret.data = trace;
+    res.send(JSON.stringify(ret));
+
+  } else if(query == "last") {
+
+    ret["query"] = "last";
+
+    if(trace.length == 0) {
+      res.status(400).send("no data");
+    } else {
+      ret["data"] = trace.pop();
+      res.send(JSON.stringify(ret));
+    }
+  } else {
+    res.status(400).send("unkown query");
+  }
+
 };
 
 module.exports["upload"] = function(req, res, next) {
