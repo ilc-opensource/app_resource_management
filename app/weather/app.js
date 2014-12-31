@@ -30,9 +30,9 @@ var handler = function(o) {
     try {
       weatherCondition = JSON.parse(o['content']).weather;
       if (dispStatus == Status.dispDetails) {
-        console.log("PM2.5:"+weatherCondition.pm25+"  当前温度:"+weatherCondition.temperature+"度");
-        io.text2Img("PM2.5:"+weatherCondition.pm25+"  当前温度:"+weatherCondition.temperature+"度", 1, function(image) {
-          ledDisp(image, 150, false, false, ledDispEmitter);
+        io.text2Img("pm2.5:"+weatherCondition.pm25+" 当前温度:"+weatherCondition.temperature+"度 ", 1, function(image) {
+          console.log(JSON.stringify(image));
+          ledDisp(JSON.stringify(image), 150, false, false, ledDispEmitter);
         });
           //process.kill(dispDetailsProcess.pid);
           //dispDetailsProcess = child_process.fork(path.join(__dirname, "dispDetails.js"), ["PM2.5:"+weatherCondition.pm25+"  当前温度:"+weatherCondition.temperature+"C"], function(error, stdout, stderr){console.log(error+stdout+stderr);});
@@ -127,12 +127,13 @@ io.touchPanel.on('gesture', function(gesture) {
         break;
       case Status.dispAnimation:
         forceTerminate();
-        ledDisp(blank, 150, false, true, ledDispEmitter);
+        //ledDisp(blank, 150, false, true, ledDispEmitter);
+
         //var cmd = '/usr/bin/node '+path.join(__dirname, "dispDetails.js")+' "'+'PM2.5:'+weatherCondition.pm25+'  Current Temperature:'+weatherCondition.temperature+'"';
         //console.log('cmd='+cmd);
         //dispDetailsProcess = child_process.fork(path.join(__dirname, "dispDetails.js"), ["PM2.5:"+weatherCondition.pm25+"  当前温度:"+weatherCondition.temperature+"C"], function(error, stdout, stderr){console.log(error+stdout+stderr);});
-        io.text2Img("PM2.5:"+weatherCondition.pm25+"  当前温度:"+weatherCondition.temperature+"度", 1, function(image) {
-          ledDisp(image, 150, false, false, ledDispEmitter);
+        io.text2Img("pm2.5:"+weatherCondition.pm25+" 当前温度:"+weatherCondition.temperature+"度 ", 1, function(image) {
+          ledDisp(JSON.stringify(image), 150, false, false, ledDispEmitter);
         });
         dispStatus = Status.dispDetails;
         break;

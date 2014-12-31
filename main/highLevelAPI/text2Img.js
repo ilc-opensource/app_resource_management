@@ -4,6 +4,7 @@ var fs = require('fs');
 var path = require('path');
 var http = require('http');
 var child_process = require('child_process');
+var urlencode = require('urlencode');
 var cloudServer = require('../../app/appconfig/cloudserver.js').server;
 var cloudPort = require('../../app/appconfig/cloudserver.js').port;
 
@@ -27,10 +28,11 @@ var decodeBase64Image = function(dataString) {
 };
 
 var getChineseImgFromCloud = function(text) {
+  console.log(text);
   var options = {
     hostname: cloudServer,
     port: cloudPort,
-    path: '/getChineseImg/?text='+text,
+    path: '/getChineseImg?text='+urlencode(text),
     method: 'GET'
   };
 
@@ -42,6 +44,7 @@ var getChineseImgFromCloud = function(text) {
     });
     res.on('end', function () {
       if (!body.match(/^</)) {
+        //cb(body);
       }
     });
   });
@@ -60,6 +63,7 @@ var getChineseImgFromCloud = function(text) {
 var preProcessChinese = function(text) {
   var stringText = String(text);
   var isChineseImgExist = true;
+  var hasSend = false;
   for (var i=0; i<stringText.length; i++) {
     var c = stringText[i];
     if (c.match(/[\u4E00-\u9FA5]/)) {
@@ -67,14 +71,21 @@ var preProcessChinese = function(text) {
         //var cmd = path.join(__dirname, './linux-convert/convert')+' -page 16x12 -size 16x12 xc:black -font "'+path.join(__dirname, 'fontBitmap_9pt.bdf')+'" -fill white -draw "text 0,10 \''+c+'\'" '+path.join(__dirname, 'Chinese', c+'.jpg');
         //console.log('trying to create jpg file cmd='+cmd);
         //child_process.exec(cmd, function(error, stdout, stderr) {console.log(error+stdout+stderr); });
-        getChineseImgFromCloud(text);
+        if (!hasSend) {
+          getChineseImgFromCloud(stringText);
+          hasSend = true;
+        }
         child_process.exec('curl -G "http://'+cloudServer+':'+cloudPort+'/downloadFile/?fileName=/Chinese/'+c+'.jpg" -o '+path.join(__dirname, './Chinese/'+c+'.jpg; echo '+c+'.jpg'), function(err, stdout, stderr) {
           console.log('stdout='+stdout);
           stdout = stdout.slice(0, -1);
-          var tmp = fs.readFileSync(path.join(__dirname, './Chinese/'+stdout), 'utf8');
-          if (tmp.match('Error')!=null) {
-            fs.renameSync(path.join(__dirname, './Chinese/'+stdout), path.join(__dirname, './Chinese/error'));
-            //child_process.exec('rm '+path.join(__dirname, './Chinese/'+stdout), function(err, stdout, stderr){console.log(err+stdout+stderr);});
+          try {
+            var tmp = fs.readFileSync(path.join(__dirname, './Chinese/'+stdout), 'utf8');
+            if (tmp.match('Error')!=null) {
+              fs.renameSync(path.join(__dirname, './Chinese/'+stdout), path.join(__dirname, './Chinese/error'));
+              //child_process.exec('rm '+path.join(__dirname, './Chinese/'+stdout), function(err, stdout, stderr){console.log(err+stdout+stderr);});
+            }
+          } catch (ex) {
+            console.log(ex);
           }
         });
         isChineseImgExist = false;
@@ -88,7 +99,7 @@ var text2Img = function(text, color, callback) {
   text = text.replace(/\n/, ' ');
   var ret = preProcessChinese(text);
   if (!ret) {
-    setTimeout(function(){text2Img(text, color, callback);}, 200);
+    setTimeout(function(){text2Img(text, color, callback);}, 500);
     return;
   }
 
