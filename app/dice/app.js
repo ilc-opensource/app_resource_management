@@ -5,9 +5,9 @@ var child_process = require('child_process');
 var io = require('../../main/highLevelAPI/io.js');
 var sys = require('../../main/highLevelAPI/sys.js');
 
-var logPrefix = '[app drink] '
+var logPrefix = '[app dice] '
 
-var appProcess = child_process.execFile(path.join(__dirname, 'start_drink.sh'));
+var appProcess = child_process.execFile(path.join(__dirname, 'dice'));
 
 // Touch event handler begin
 // For none js app only
@@ -18,7 +18,6 @@ io.touchPanel.on('touchEvent', function(e, x, y, id) {
       process.kill(appProcess.pid);
     } catch (ex) {
     }
-    child_process.execFile(path.join(__dirname, 'post_drink.sh'));
     process.exit();
   }
 });

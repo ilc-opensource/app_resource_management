@@ -30,34 +30,96 @@ var getIP = function() {
 };
 
 var disp = io.mug_disp_init();
+var touch = io.mug_touch_init();
+
 var ip = getIP();
+
+io.mug_set_text_marquee_style(io.MQ_PROLOG);
+
 if(ip == undefined) {
-  io.mug_disp_text_marquee_async(disp, "No IP, abort!", "red", 100, -1);
-
-  ui.touchPanel.on('touchEvent', function(e, x, y, id) {
-  if (e == 'TOUCH_HOLD') {
-      process.exit();
-    }
-  });
-
+  console.log("no ip, abort!");
+  io.mug_disp_text_marquee(disp, "No IP!", "red", 100, 1);
+  process.exit();
 } else {
-  //io.mug_disp_text_marquee_async(disp, "http://" + ip, "cyan", 100, -1);
+  io.mug_disp_text_marquee(disp, "search", "yellow", 100, 1);
+}
+
+ui.touchPanel.on('touchEvent', function(e, x, y, id) {
+  if (e == 'TOUCH_HOLD') {
+    //console.log(logPrefix+'kill the main app pid='+appProcess.pid);
+    process.exit();
+  }
+});
+
+var isOn = false;
+
+var checkHttp = function(cb) {
+  child_process.execFile(__dirname + "/check_http.sh", {"cwd": __dirname}, function(err, stdout, stderr){
+    if(err) {
+      console.log("check_http.sh error: " + err);
+    } else {
+      isOn = stdout.match("OK");
+ 
+      if(isOn) {
+        io.mug_disp_img(disp, "http_on.bmp");
+        console.log("http is ON");
+      } else {
+        io.mug_disp_img(disp, "http_off.bmp");
+        console.log("http is OFF");
+      }
+    }
+
+    if(cb)
+      cb(isOn);
+  });
+};
+
+var startHttp = function() {
+  console.log("try to start http");
   io.mug_disp_img(disp, "http_on.bmp");
 
-  var appProcess = child_process.execFile(path.join(__dirname, 'bin/www'), [], {'cwd':__dirname});
+  child_process.execFile(__dirname + "/start_http.sh", {"cwd": __dirname}, function(error) {
+    var info = "start http";
 
-  // Touch event handler begin
-  // For none js app only
-  ui.touchPanel.on('touchEvent', function(e, x, y, id) {
-    if (e == 'TOUCH_HOLD') {
-      //console.log(logPrefix+'kill the main app pid='+appProcess.pid);
-      try {
-        process.kill(appProcess.pid);
-      } catch (ex) {
-      }
-      process.exit();
-    }
+    if(error)
+      console.log(info + " FAILED!");
+    else
+      console.log(info + " DONE!");
+  
+    checkHttp();
   });
-}
+
+};
+
+var stopHttp = function() {
+  console.log("try to stop http");
+  io.mug_disp_img(disp, "http_off.bmp");
+  child_process.execFile(__dirname + "/stop_http.sh", {"cwd": __dirname}, function(error) {
+    var info = "stop http";
+    
+    if(error)
+      console.log(info + " FAILED!");
+    else
+      console.log(info + " DONE!");
+    
+    checkHttp();
+  });
+
+};
+
+
+checkHttp();
+
+io.mug_gesture_on(touch, io.MUG_GESTURE, function(g, info) {
+  if(g == io.MUG_SWIPE_UP || g == io.MUG_SWIPE_DOWN) {
+    console.log('toggle http');
+    checkHttp(function(on) {
+      if(on)
+        stopHttp();
+      else
+        startHttp();
+    });
+  }
+});
 
 
