@@ -68,8 +68,14 @@ var preProcessChinese = function(text) {
         //console.log('trying to create jpg file cmd='+cmd);
         //child_process.exec(cmd, function(error, stdout, stderr) {console.log(error+stdout+stderr); });
         getChineseImgFromCloud(text);
-        child_process.exec('curl -G "http://'+cloudServer+':'+cloudPort+'/downloadFile/?fileName=/Chinese/'+c+'.jpg" -o '+path.join(__dirname, './Chinese/'+c+'.jpg'), function(err, stdout, stderr) {
+        child_process.exec('curl -G "http://'+cloudServer+':'+cloudPort+'/downloadFile/?fileName=/Chinese/'+c+'.jpg" -o '+path.join(__dirname, './Chinese/'+c+'.jpg; echo '+c+'.jpg'), function(err, stdout, stderr) {
           console.log('stdout='+stdout);
+          stdout = stdout.slice(0, -1);
+          var tmp = fs.readFileSync(path.join(__dirname, './Chinese/'+stdout), 'utf8');
+          if (tmp.match('Error')!=null) {
+            fs.renameSync(path.join(__dirname, './Chinese/'+stdout), path.join(__dirname, './Chinese/error'));
+            //child_process.exec('rm '+path.join(__dirname, './Chinese/'+stdout), function(err, stdout, stderr){console.log(err+stdout+stderr);});
+          }
         });
         isChineseImgExist = false;
       }
