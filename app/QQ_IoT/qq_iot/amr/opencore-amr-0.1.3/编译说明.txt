@@ -1,0 +1,11 @@
+解压 opencore-amr-0.1.3.tar.gz 到当前目录： opencore-amr-0.1.3
+
+先进入源码目录（下面configure配置按照自己的路径来设置）：
+
+make clean -w
+
+./configure --host=arm-none-linux-gnueabi --prefix='/home/realingzhou/new_project/ubiq_proj/amr/opencore-amr-0.1.3/hp'
+
+make
+
+make install
