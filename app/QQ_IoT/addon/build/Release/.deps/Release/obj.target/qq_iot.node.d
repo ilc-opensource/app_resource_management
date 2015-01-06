@@ -1,1 +1,0 @@
-cmd_Release/obj.target/qq_iot.node := flock ./Release/linker.lock g++ -shared -pthread -rdynamic -m64  -Wl,-soname=qq_iot.node -o Release/obj.target/qq_iot.node -Wl,--start-group Release/obj.target/qq_iot/qq_iot.o -Wl,--end-group 

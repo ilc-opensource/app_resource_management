@@ -2,7 +2,7 @@
   "targets": [
     {
       "target_name": "qq_iot",
-      "sources": [ "qq_iot.cc" ],
+      "sources": [ "addon.cc" ],
       "include_dirs": [
         "<!(node -e \"require('nan')\")"
       ]
