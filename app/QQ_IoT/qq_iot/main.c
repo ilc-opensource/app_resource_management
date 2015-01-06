@@ -383,7 +383,7 @@ void* thread_func_initdevice(void * arg)
     info.product_id         = 1000000347;
     info.product_secret     = (unsigned char*)"01ecc3acf4e9b1fbee8c1849791c69ac";
     info.product_secret_len = strlen((char*)info.product_secret);
-
+/*
     unsigned char license[256] = {0};
     int nLicenseSize = 0;
     if (!readBufferFromFile("./licence.sign.file.txt", license, sizeof(license), &nLicenseSize))
@@ -399,11 +399,11 @@ void* thread_func_initdevice(void * arg)
         printf(c_CharColor_Red"[error]get guid from file failed..."c_Print_Ctrl_Off"\n");
         return NULL;
     }
-
-    info.device_license        = license;
-    info.device_license_len    = nLicenseSize;
-    info.device_serial_number  = (unsigned char*) guid;
-    info.device_serial_number_len = nGUIDSize;
+*/
+    info.device_license        = "3046022100F2B96E0D8A2A6DC368A7A4891CB210EB986F5B5CF3B250028310A2441CB625EE022100C2579FEB535ACFE5AE38E078E83B3DEB96D3FF95C51AFE7B695374C5B2A9A8F9czhan25"; //license;
+    info.device_license_len    = 144; //nLicenseSize;
+    info.device_serial_number  = "9b711b6d-1fde-47"; //(unsigned char*) guid;
+    info.device_serial_number_len = 16; //nGUIDSize;
 
     tx_device_notify notify = {0};
     notify.on_login_complete       = on_login_complete;

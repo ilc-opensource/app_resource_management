@@ -97,4 +97,15 @@ io.text2Img = require('./text2Img.js'); // text, color (1), callback
 // Battery
 //var batteryHandle = io.mug_battery_init();
 
+io.setFrontEndApp =function(pid) {
+  child_process.exec(
+    path.join(__dirname, './C/setFrontEndApp')+' '+pid,
+    function(error, stdout, stderr) {
+      if (error !== null) {
+        console.log(logPrefix+'setFrontEndApp exec error: ' + error);
+      }
+    }
+  );
+};
+
 module.exports = io;
