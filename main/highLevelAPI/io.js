@@ -5,6 +5,7 @@ var JPEG = require('jpeg-js');
 var BMP = require('bmp-js');
 var EventEmitter = require("events").EventEmitter;
 var path=require('path');
+var child_process = require('child_process');
 
 var context = require('./context.js');
 
