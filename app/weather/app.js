@@ -30,7 +30,7 @@ var handler = function(o) {
     try {
       weatherCondition = JSON.parse(o['content']).weather;
       if (dispStatus == Status.dispDetails) {
-        io.text2Img("pm2.5:"+weatherCondition.pm25+" 当前温度:"+weatherCondition.temperature+"度 ", 1, function(image) {
+        io.text2Img(" PM2.5:"+weatherCondition.pm25+" 当前温度:"+weatherCondition.temperature+"度 ", 1, function(image) {
           console.log(JSON.stringify(image));
           ledDisp(JSON.stringify(image), 150, false, false, ledDispEmitter);
         });
@@ -132,18 +132,18 @@ io.touchPanel.on('gesture', function(gesture) {
         //var cmd = '/usr/bin/node '+path.join(__dirname, "dispDetails.js")+' "'+'PM2.5:'+weatherCondition.pm25+'  Current Temperature:'+weatherCondition.temperature+'"';
         //console.log('cmd='+cmd);
         //dispDetailsProcess = child_process.fork(path.join(__dirname, "dispDetails.js"), ["PM2.5:"+weatherCondition.pm25+"  当前温度:"+weatherCondition.temperature+"C"], function(error, stdout, stderr){console.log(error+stdout+stderr);});
-        io.text2Img("pm2.5:"+weatherCondition.pm25+" 当前温度:"+weatherCondition.temperature+"度 ", 1, function(image) {
+        io.text2Img(" PM2.5:"+weatherCondition.pm25+" 当前温度:"+weatherCondition.temperature+"度 ", 1, function(image) {
           ledDisp(JSON.stringify(image), 150, false, false, ledDispEmitter);
         });
         dispStatus = Status.dispDetails;
         break;
       case Status.dispDetails:
-        try {
+        /*try {
           process.kill(dispDetailsProcess.pid);
         } catch (ex) {
-        }
+        }*/
 
-        //forceTerminate();
+        forceTerminate();
         ledDisp(content, 150, false, true, ledDispEmitter);
         animationID++;
         dispStatus = Status.dispAnimation;
