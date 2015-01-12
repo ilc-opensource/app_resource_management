@@ -25,15 +25,6 @@
     "iconJSON": "media.json",
     "start": "app.js"
   },
-  "twitter": {
-    "name": "twitter",
-    "package": "com.intel.smart_mug.twitter",
-    "version": "0.0.1",
-    "icon": "twitter.jpg",
-    "iconJSON": "media.json",
-    "start": "app.js",
-    "description": "desc"
-  },
   "fish": {
     "name"   : "fish",
     "package": "com.intel.smart_mug.fish-for-health",

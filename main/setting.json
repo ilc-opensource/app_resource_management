@@ -44,25 +44,6 @@
     "start"  : "app.js",
     "description": "display touch trace"
   },
-  "installUninstall": {
-    "name": "smart_mug_manager",
-    "package": "com.intel.smart_mug.app_install_uninstall",
-    "version": "0.0.1",
-    "icon"   : "install_uninstall.jpg",
-    "iconJSON": "media.json",
-    "start"  : "index.js",
-    "description": "install and uninstall app"
-  },
-
-  "mug_http" : {
-    "name": "mug_http",
-    "version": "0.0.0",
-    "icon": "icon.bmp",
-    "start": "run.js",
-    "package": "com.intel.smart_mug.mug_http",
-    "description": "smart mug http service"
-  },
-
   "battery" : {
     "name"   : "battery",
     "package": "com.intel.smart_mug.battery",
@@ -103,13 +84,5 @@
     "iconJSON": "media.json",
     "start": "app.js",
     "description": "desc"
-  },
-  "wifi": {
-    "name": "toggle_wifi",
-    "version": "0.0.1",
-    "icon": "icon.bmp",
-    "start": "app.js",
-    "package": "com.intel.smart_mug.toggle_wifi",
-    "description": "toggle wifi"
   }
 }
