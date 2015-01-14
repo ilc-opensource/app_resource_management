@@ -1,30 +1,4 @@
 {
-  "weChat": {
-    "name": "weChat",
-    "package": "com.intel.smart_mug.weChat",
-    "version": "0.0.1",
-    "icon": "icon16x12.jpg",
-    "iconJSON": "media.json",
-    "start": "app.js",
-    "description": "desc"
-  },
-  "freeDraw": {
-    "name": "freeDraw",
-    "package": "com.intel.smart_mug.freeDraw",
-    "version": "0.0.1",
-    "icon": "icon.jpg",
-    "iconJSON": "media.json",
-    "start": "app.js",
-    "description": "desc"
-  },
-  "weather": {
-    "name": "weather",
-    "package": "com.intel.smart_mug.weather",
-    "version": "0.0.1",
-    "icon": "icon16x12.jpg",
-    "iconJSON": "media.json",
-    "start": "app.js"
-  },
   "fish": {
     "name"   : "fish",
     "package": "com.intel.smart_mug.fish-for-health",
@@ -34,20 +8,28 @@
     "start"  : "app.js",
     "description": "a digital pet for monitoring user water drinking behavior"
   },
-  "email": {
-    "name": "email",
-    "package": "com.intel.smart_mug.email",
+  "drink": {
+    "name"   : "drink",
+    "package": "com.intel.smart_mug.drink",
+    "version": "0.0.1",
+    "icon"   : "icon.bmp",
+    "start"  : "app.js",
+    "description": "drink monitor"
+  },
+  "weChat": {
+    "name": "weChat",
+    "package": "com.intel.smart_mug.weChat",
     "version": "0.0.1",
     "icon": "icon16x12.jpg",
     "iconJSON": "media.json",
-    "start": "index.js",
+    "start": "app.js",
     "description": "desc"
   },
-  "mole": {
-    "name": "mole",
-    "package": "com.intel.smart_mug.whac-a-mole",
+  "weather": {
+    "name": "weather",
+    "package": "com.intel.smart_mug.weather",
     "version": "0.0.1",
-    "icon"   : "icon.bmp",
+    "icon": "icon16x12.jpg",
     "iconJSON": "media.json",
     "start": "app.js"
   },
@@ -69,20 +51,12 @@
     "start": "app.js",
     "description": "desc"
   },
-  "drink": {
-    "name"   : "drink",
-    "package": "com.intel.smart_mug.drink",
+  "mole": {
+    "name": "mole",
+    "package": "com.intel.smart_mug.whac-a-mole",
     "version": "0.0.1",
     "icon"   : "icon.bmp",
-    "start"  : "app.js",
-    "description": "drink monitor"
-  },
-  "dice" : {
-    "name"   : "dice",
-    "package": "com.intel.smart_mug.dice",
-    "version": "0.0.1",
-    "icon"   : "icon.bmp",
-    "start"  : "app.js",
-    "description": "shake to run a dice"
+    "iconJSON": "media.json",
+    "start": "app.js"
   }
 }
