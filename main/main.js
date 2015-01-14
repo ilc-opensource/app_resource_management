@@ -14,9 +14,9 @@ var timeIntervalLazy = 10000;
 var logPrefix = '[OS] ';
 
 // For default app
-var defaultApp = null;
-//var defaultApp = path.join(__dirname, '../app/weather/app.js');
-var timeToLaunchDefaultApp = 6000000; // 10 minutes
+//var defaultApp = null;
+var defaultApp = path.join(__dirname, '../app/black_screen/app.js');
+var timeToLaunchDefaultApp = 60000; // 1 minute
 var timerLastTouchEvent = (new Date()).getTime();
 
 // For app management
@@ -419,6 +419,11 @@ touchEmitter.on('touchEvent', function(e, x, y, id) {
   // The first app don't handle escape
   if ((frontEndApp.app == path.join(__dirname, './startup.js')) && touchEvent == 'TOUCH_HOLD') {
     return;
+  }
+
+  // Convert any touch event to HOLD if front end app is default app
+  if (frontEndApp.app == defaultApp && touchEvent == 'TOUCH_CLICK') {
+    touchEvent = 'TOUCH_HOLD';
   }
   
   //console.log(logPrefix+'send a touchEvent '+touchEvent+' to '+frontEndApp.app);

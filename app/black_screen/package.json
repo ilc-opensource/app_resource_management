@@ -1,0 +1,9 @@
+{
+  "name": "black_screen",
+  "package": "com.intel.smart_mug.black_screen",
+  "version": "0.0.1",
+  "icon": "icon16x12.jpg",
+  "iconJSON": "media.json",
+  "start": "app.js",
+  "description": "desc"
+}
